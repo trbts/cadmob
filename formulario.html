@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d5cab">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Ficha de Cadastro Imobiliário</title>
+<style>
+:root{
+  --primary:#0d5cab; --primary-dark:#083d73; --primary-light:#e9f2fb;
+  --bg:#eef2f7; --card:#ffffff; --text:#16212e; --muted:#6b7a8d;
+  --border:#e3e9f1; --danger:#e05252; --success:#16a34a;
+  --radius:16px;
+  --shadow:0 1px 2px rgba(16,40,70,.06), 0 6px 18px rgba(16,40,70,.06);
+  --safe-top:env(safe-area-inset-top, 0px);
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body{
+  margin:0; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background:var(--bg); color:var(--text); font-size:15px; line-height:1.45;
+  -webkit-font-smoothing:antialiased; overscroll-behavior-y:none;
+}
+.app-header{
+  position:sticky; top:0; z-index:40;
+  background:linear-gradient(135deg, #0d5cab 0%, #08386b 100%);
+  color:#fff; padding:calc(var(--safe-top) + 16px) 16px 16px;
+  border-radius:0 0 22px 22px;
+  box-shadow:0 8px 24px rgba(8,56,107,.22); text-align:center;
+}
+.header-inner{ max-width:560px; margin:0 auto; }
+.brand-org{ margin:0; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.9px; opacity:.78; }
+.brand-title{ margin:4px 0 0; font-size:18px; font-weight:700; letter-spacing:-.3px; }
+.header-clear{ position:absolute; top:calc(var(--safe-top) + 12px); right:12px; width:34px; height:34px; border-radius:10px; border:0; display:grid; place-items:center; background:rgba(255,255,255,.14); color:#fff; }
+.header-clear:active{ transform:scale(.94); background:rgba(255,255,255,.28); }
+.header-clear svg{ width:16px; height:16px; }
+
+/* ===== USER CHIP (usuário logado) ===== */
+.header-user{
+  position:absolute; top:calc(var(--safe-top) + 12px); left:12px;
+  display:flex; align-items:center; gap:6px; padding:5px 10px 5px 5px;
+  border-radius:99px; background:rgba(255,255,255,.14); color:#fff;
+  font-size:11.5px; font-weight:600; max-width:140px;
+}
+.header-user .h-avatar{
+  width:22px; height:22px; border-radius:99px;
+  background:#fff; color:var(--primary); display:grid; place-items:center;
+  font-size:10.5px; font-weight:800; flex:0 0 auto;
+}
+.header-user .h-name{
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  max-width:100px;
+}
+
+.stepper{ display:flex; align-items:center; justify-content:center; max-width:420px; margin:16px auto 0; }
+.step{ flex:0 0 auto; display:grid; place-items:center; padding:0; border:0; background:none; cursor:default; }
+.step.clickable{ cursor:pointer; }
+.step-dot{ width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font-size:12.5px; font-weight:800; background:rgba(255,255,255,.14); color:rgba(255,255,255,.72); border:2px solid rgba(255,255,255,.22); transition:all .3s; }
+.step-line{ flex:1 1 auto; height:2px; min-width:8px; margin:0 3px; background:rgba(255,255,255,.20); border-radius:2px; transition:background .3s; }
+.step-line.done{ background:#4fd1c5; }
+.step.done .step-dot{ background:#4fd1c5; border-color:#4fd1c5; color:#06385f; }
+.step.active .step-dot{ background:#fff; border-color:#fff; color:var(--primary); transform:scale(1.14); box-shadow:0 0 0 4px rgba(255,255,255,.16); }
+@media (max-width:360px){ .step-dot{ width:26px; height:26px; font-size:11.5px; } }
+
+.app-main{ max-width:560px; margin:0 auto; padding:14px 14px 130px; }
+.step-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin:2px 4px 12px; }
+.step-head-eyebrow{ display:block; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--primary); }
+.step-head-title{ margin:2px 0 0; font-size:18px; font-weight:700; letter-spacing:-.35px; }
+.step-head-progress{ flex:0 0 auto; font-size:11.5px; font-weight:700; color:var(--muted); background:var(--card); border:1px solid var(--border); border-radius:99px; padding:5px 10px; white-space:nowrap; box-shadow:var(--shadow); }
+
+.card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:12px; overflow:hidden; border:1px solid rgba(227,233,241,.9); }
+.card-body{ padding:2px 16px 18px; }
+.step-panel{ display:none; }
+.step-panel.active{ display:block; animation:stepIn .3s cubic-bezier(.4,0,.2,1); }
+@keyframes stepIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+.field{ display:flex; flex-direction:column; gap:6px; margin-top:14px; min-width:0; }
+.field > label{ font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); }
+.field > label .req{ color:var(--danger); margin-left:2px; }
+.field input, .field select, .field textarea{ width:100%; min-height:48px; padding:12px 13px; font-family:inherit; font-size:16px; color:var(--text); background:#fbfcfe; border:1.5px solid var(--border); border-radius:12px; outline:none; transition:all .18s; -webkit-appearance:none; appearance:none; }
+.field select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; padding-right:38px; }
+.field input:focus, .field select:focus{ border-color:var(--primary); background:#fff; box-shadow:0 0 0 3.5px rgba(13,92,171,.12); }
+.field input::placeholder{ color:#a9b6c5; }
+.field.invalid input, .field.invalid select{ border-color:var(--danger); background:#fff6f6; }
+.field.valid input, .field.valid select{ border-color:var(--success); background:#f6fef9; }
+.field input[readonly]{ background:#f1f5f9; color:#475569; }
+.field input[readonly]:focus{ box-shadow:none; border-color:var(--border); }
+.field input:disabled, .field select:disabled{ background:#f1f5f9; color:#94a3b8; cursor:not-allowed; }
+.field .hint{ font-size:11.5px; color:var(--muted); margin-top:-2px; }
+.field .hint strong{ color:var(--primary); }
+
+.alert{ display:none; margin-top:12px; padding:12px 14px; border-radius:12px; font-size:13px; font-weight:600; line-height:1.45; }
+.alert.show{ display:block; animation:stepIn .25s ease; }
+.alert.error{ background:#fef2f2; color:#b91c1c; border:1.5px solid #fecaca; }
+.alert.warn{ background:#fffbeb; color:#b45309; border:1.5px solid #fde68a; }
+.alert.success{ background:#ecfdf5; color:#047857; border:1.5px solid #a7f3d0; }
+.alert .alert-title{ display:flex; align-items:center; gap:8px; font-weight:800; margin-bottom:4px; }
+.alert .alert-title svg{ width:16px; height:16px; }
+
+.sub-head{ margin:20px 0 0; font-size:11px; font-weight:800; letter-spacing:.9px; text-transform:uppercase; color:var(--primary); padding-bottom:6px; border-bottom:1px solid var(--border); }
+.sub-note{ margin:10px 0 0; font-size:11.5px; color:var(--muted); }
+.sub-note strong{ color:var(--primary); }
+
+.row{ display:grid; gap:0 10px; }
+.row-2{ grid-template-columns:1fr 1fr; }
+.row-3{ grid-template-columns:1fr 1fr 1fr; }
+.cep-row{ grid-template-columns:1.2fr 1.6fr .65fr; }
+
+.chips{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
+.chip{ display:flex; align-items:center; gap:9px; min-height:50px; padding:10px 11px; background:#fbfcfe; border:1.5px solid var(--border); border-radius:13px; cursor:pointer; user-select:none; transition:border-color .16s, background .16s, transform .1s; }
+.chip:active{ transform:scale(.975); }
+.chip input{ position:absolute; opacity:0; width:0; height:0; pointer-events:none; }
+.chip-box{ flex:0 0 auto; width:21px; height:21px; border-radius:7px; border:2px solid #c6d2e0; background:#fff; display:grid; place-items:center; transition:background .16s, border-color .16s; pointer-events:none; }
+.chip-box::after{ content:""; width:5px; height:9px; border:2px solid #fff; border-top:0; border-left:0; transform:rotate(45deg) translate(-1px,-1px) scale(0); transition:transform .16s; }
+.chip-text{ font-size:12.5px; font-weight:600; color:#41536a; line-height:1.25; pointer-events:none; }
+.chip.active{ border-color:var(--primary); background:var(--primary-light); }
+.chip.active .chip-box{ background:var(--primary); border-color:var(--primary); }
+.chip.active .chip-box::after{ transform:rotate(45deg) translate(-1px,-1px) scale(1); }
+.chip.active .chip-text{ color:var(--primary-dark); }
+
+.app-footer{ position:fixed; left:0; right:0; bottom:0; z-index:50; background:rgba(255,255,255,.95); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-top:1px solid var(--border); padding:10px 14px calc(10px + var(--safe-bottom)); }
+.footer-inner{ max-width:560px; margin:0 auto; display:flex; gap:10px; }
+.btn{ min-height:50px; padding:0 16px; border:0; border-radius:14px; font-family:inherit; font-size:15px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; transition:all .15s; }
+.btn:active{ transform:scale(.97); }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+.btn-primary{ flex:1 1 auto; color:#fff; background:linear-gradient(135deg, #0d5cab, #083d73); box-shadow:0 6px 16px rgba(13,92,171,.32); }
+.btn-ghost{ flex:0 0 38%; color:var(--primary); background:var(--primary-light); }
+.btn svg{ width:18px; height:18px; }
+
+.toast{ position:fixed; left:50%; bottom:calc(88px + var(--safe-bottom)); transform:translate(-50%, 20px); z-index:80; max-width:calc(100% - 40px); padding:12px 18px; border-radius:14px; background:#16212e; color:#fff; font-size:13.5px; font-weight:600; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.28); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; }
+.toast.show{ opacity:1; transform:translate(-50%, 0); }
+.toast.success{ background:#0f8a63; }
+.toast.error{ background:#c0392b; }
+
+/* ===== AUTH GATE ===== */
+.auth-gate{
+  position:fixed; inset:0; z-index:9999;
+  background:linear-gradient(135deg,#0d5cab,#083d73);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; text-align:center; padding:24px;
+}
+.auth-gate.hidden{ display:none; }
+.auth-gate-inner{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px; padding:36px 32px;
+  max-width:440px; width:100%;
+  box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+.auth-gate .gate-spinner{
+  width:38px; height:38px; border-radius:50%;
+  border:3px solid rgba(255,255,255,.2); border-top-color:#fff;
+  margin:0 auto 18px; animation:gateSpin .8s linear infinite;
+}
+@keyframes gateSpin{ to{transform:rotate(360deg)} }
+.auth-gate h2{ font-size:17px; color:#fff; margin-bottom:10px; font-weight:700; }
+.auth-gate p{ font-size:13.5px; color:rgba(255,255,255,.85); line-height:1.55; }
+.auth-gate .gate-btn{
+  margin-top:20px; background:rgba(255,255,255,.12); color:#fff;
+  border:1px solid rgba(255,255,255,.22); height:42px; padding:0 20px;
+  border-radius:10px; font-weight:600; font-size:13.5px;
+}
+
+@media (max-width:360px){
+  body{ font-size:14px; }
+  .brand-title{ font-size:16.5px; }
+  .step-head-title{ font-size:16.5px; }
+  .chips{ grid-template-columns:1fr; }
+  .row-3{ grid-template-columns:1fr 1fr; }
+  .cep-row{ grid-template-columns:1fr 1fr; }
+  .card-body{ padding:2px 13px 16px; }
+  .app-main{ padding-left:11px; padding-right:11px; }
+  .btn-ghost{ flex:0 0 42%; }
+  .header-user .h-name{ max-width:80px; }
+}
+@media (min-width:600px){ .chips{ grid-template-columns:repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     AUTH GATE — bloqueia todo o app até validar role 'funcionario'
+     ============================================================ -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-gate-inner">
+    <div class="gate-spinner" id="gateSpinner"></div>
+    <h2 id="gateTitle" style="display:none;">Verificando acesso…</h2>
+    <p id="gateMsg">Validando suas permissões, aguarde um instante.</p>
+    <button class="gate-btn" id="gateLogout" style="display:none;">Sair da conta</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     APP (só aparece após auth validar role=funcionario)
+     ============================================================ -->
+<div id="appShell" style="display:none;">
+
+<header class="app-header">
+  <div class="header-user" id="headerUser" title="Usuário logado">
+    <span class="h-avatar" id="headerAvatar">—</span>
+    <span class="h-name" id="headerName">—</span>
+  </div>
+  <button type="button" class="header-clear" id="btnClear" title="Limpar ficha">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+  </button>
+  <div class="header-inner">
+    <p class="brand-org">Prefeitura Municipal de Careiro</p>
+    <h1 class="brand-title">Ficha de Cadastro Imobiliário</h1>
+    <div class="stepper" id="stepper">
+      <div class="step" data-step="1"><span class="step-dot">1</span></div>
+      <div class="step-line" data-line="1"></div>
+      <div class="step" data-step="2"><span class="step-dot">2</span></div>
+      <div class="step-line" data-line="2"></div>
+      <div class="step" data-step="3"><span class="step-dot">3</span></div>
+      <div class="step-line" data-line="3"></div>
+      <div class="step" data-step="4"><span class="step-dot">4</span></div>
+      <div class="step-line" data-line="4"></div>
+      <div class="step" data-step="5"><span class="step-dot">5</span></div>
+      <div class="step-line" data-line="5"></div>
+      <div class="step" data-step="6"><span class="step-dot">6</span></div>
+      <div class="step-line" data-line="6"></div>
+      <div class="step" data-step="7"><span class="step-dot">7</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+  <div class="step-head">
+    <div>
+      <span class="step-head-eyebrow" id="stepCounter">Etapa 1 de 7</span>
+      <h2 class="step-head-title" id="stepTitle">Dados do Proprietário</h2>
+    </div>
+    <span class="step-head-progress" id="stepProgress">0%</span>
+  </div>
+
+  <form id="fichaForm" novalidate>
+
+    <!-- ============ ETAPA 1 ============ -->
+    <section class="step-panel active" data-step="1">
+      <div class="card">
+        <div class="card-body">
+          <div class="field">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" maxlength="50" required placeholder="Nome completo do proprietário" autocomplete="name">
+          </div>
+          <div class="row row-2">
+            <div class="field"><label for="nascimento">Nascimento</label><input type="date" id="nascimento" name="nascimento" required></div>
+            <div class="field"><label for="telefone">Telefone</label><input type="tel" id="telefone" name="telefone" required inputmode="numeric" data-mask="phone" placeholder="(00) 00000-0000"></div>
+          </div>
+
+          <p class="sub-head">Endereço do Lote</p>
+
+          <div class="row row-3">
+            <div class="field"><label for="bairro_prop">Bairro</label><select id="bairro_prop" name="bairro_prop" required><option value="">—</option></select></div>
+            <div class="field"><label for="quadra_prop">Quadra</label><select id="quadra_prop" name="quadra_prop" required disabled><option value="">—</option></select></div>
+            <div class="field"><label for="lote_prop">Lote</label><select id="lote_prop" name="lote_prop" required disabled><option value="">—</option></select></div>
+          </div>
+
+          <div id="proprietarioAlerta" class="alert"></div>
+
+          <div class="row row-2">
+            <div class="field">
+              <label for="unidade_prop">Unidade</label>
+              <input type="text" id="unidade_prop" name="unidade_prop" maxlength="10" placeholder="Ex.: A">
+            </div>
+            <div class="field"><label for="numero_prop">N°</label><input type="text" id="numero_prop" name="numero_prop" maxlength="10" required inputmode="numeric" placeholder="N°"></div>
+          </div>
+          <div class="field"><label for="logradouro_prop">Logradouro</label><select id="logradouro_prop" name="logradouro_prop" required><option value="">—</option></select></div>
+          <div class="field"><label for="complemento_prop">Complemento</label><input type="text" id="complemento_prop" name="complemento_prop" maxlength="50" placeholder="Apto, bloco, referência..."></div>
+          <div class="row cep-row">
+            <div class="field"><label for="cep">CEP</label><input type="text" id="cep" name="cep" required inputmode="numeric" data-mask="cep" placeholder="00000-000"></div>
+            <div class="field"><label for="cidade">Cidade</label><input type="text" id="cidade" name="cidade" required maxlength="50" placeholder="Cidade"></div>
+            <div class="field"><label for="uf">UF</label><input type="text" id="uf" name="uf" required maxlength="2" placeholder="UF" style="text-transform:uppercase"></div>
+          </div>
+          <div class="row row-2">
+            <div class="field"><label for="sexo">Sexo</label>
+              <select id="sexo" name="sexo" required>
+                <option value="">Selecione</option><option value="M">Masculino</option><option value="F">Feminino</option><option value="NI">Não informado</option>
+              </select></div>
+            <div class="field"><label for="estado_civil">Estado Civil</label>
+              <select id="estado_civil" name="estado_civil" required>
+                <option value="">Selecione</option><option value="solteiro">Solteiro(a)</option><option value="casado">Casado(a)</option>
+                <option value="divorciado">Divorciado(a)</option><option value="viuvo">Viúvo(a)</option><option value="uniao">União Estável</option>
+              </select></div>
+          </div>
+          <div class="field" id="wrap_cpf">
+            <label for="cpf_cnpj">CPF / CNPJ</label>
+            <input type="text" id="cpf_cnpj" name="cpf_cnpj" required inputmode="numeric" data-mask="doc" placeholder="000.000.000-00">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ETAPA 2 ============ -->
+    <section class="step-panel" data-step="2">
+      <div class="card"><div class="card-body">
+        <p class="sub-head">Terreno</p>
+        <div class="row row-2">
+          <div class="field"><label for="frente_terreno">Frente (m)</label><input type="text" id="frente_terreno" name="frente_terreno" required inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="fundo_terreno">Fundo (m)</label><input type="text" id="fundo_terreno" name="fundo_terreno" required inputmode="decimal" placeholder="0,00"></div>
+        </div>
+        <div class="row row-2">
+          <div class="field"><label for="lado_dir_terreno">Lado Direito (m)</label><input type="text" id="lado_dir_terreno" name="lado_dir_terreno" required inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_esq_terreno">Lado Esquerdo (m)</label><input type="text" id="lado_esq_terreno" name="lado_esq_terreno" required inputmode="decimal" placeholder="0,00"></div>
+        </div>
+        <div class="field"><label for="area_terreno">Área Terreno (m²)</label><input type="text" id="area_terreno" name="area_terreno" readonly placeholder="cálculo automático"></div>
+        <p class="sub-note">Área do terreno: <strong>Frente × Fundo</strong>.</p>
+        <p class="sub-head">Edificação</p>
+        <div class="row row-2">
+          <div class="field"><label for="frente_edif">Frente (m)</label><input type="text" id="frente_edif" name="frente_edif" required inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="fundo_edif">Fundo (m)</label><input type="text" id="fundo_edif" name="fundo_edif" required inputmode="decimal" placeholder="0,00"></div>
+        </div>
+        <div class="row row-2">
+          <div class="field"><label for="lado_dir_edif">Lado Direito (m)</label><input type="text" id="lado_dir_edif" name="lado_dir_edif" required inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_esq_edif">Lado Esquerdo (m)</label><input type="text" id="lado_esq_edif" name="lado_esq_edif" required inputmode="decimal" placeholder="0,00"></div>
+        </div>
+        <div class="row row-2">
+          <div class="field"><label for="num_frentes">N° de Frentes</label>
+            <select id="num_frentes" name="num_frentes" required><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="field"><label for="num_andares">N° de Andares</label>
+            <select id="num_andares" name="num_andares" required><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        </div>
+        <div class="row row-2">
+          <div class="field"><label for="area_edificada">Área Edificada (m²)</label><input type="text" id="area_edificada" name="area_edificada" readonly placeholder="cálculo automático"></div>
+          <div class="field"><label for="area_total_edificada">Área Total Edif. (m²)</label><input type="text" id="area_total_edificada" name="area_total_edificada" readonly placeholder="cálculo automático"></div>
+        </div>
+        <div class="field"><label for="ano_construcao">Ano Construção</label><input type="text" id="ano_construcao" name="ano_construcao" required inputmode="numeric" maxlength="4" placeholder="AAAA"></div>
+        <p class="sub-note">Área Edificada = <strong>Frente × Fundo</strong> · Área Total = <strong>Área Edificada × Andares</strong>.</p>
+      </div></div>
+    </section>
+
+    <!-- ============ ETAPA 3 ============ -->
+    <section class="step-panel" data-step="3">
+      <div class="card"><div class="card-body">
+        <div class="field"><label for="inscricao_anterior">Inscrição Anterior</label><input type="text" id="inscricao_anterior" name="inscricao_anterior" readonly placeholder="00.00.000.000.000"></div>
+
+        <div class="row row-3">
+          <div class="field"><label for="bairro_imovel">Bairro</label><select id="bairro_imovel" name="bairro_imovel" required><option value="">—</option></select></div>
+          <div class="field"><label for="quadra_imovel">Quadra</label><select id="quadra_imovel" name="quadra_imovel" required disabled><option value="">—</option></select></div>
+          <div class="field"><label for="lote_letra">Lote</label><select id="lote_letra" name="lote_letra" required disabled><option value="">—</option></select></div>
+        </div>
+
+        <div id="imovelAlerta" class="alert"></div>
+
+        <div class="row row-2">
+          <div class="field">
+            <label for="unidade_imovel">Unidade</label>
+            <input type="text" id="unidade_imovel" name="unidade_imovel" maxlength="10" placeholder="Ex.: A">
+          </div>
+          <div class="field"><label for="numero_imovel">N°</label><input type="text" id="numero_imovel" name="numero_imovel" maxlength="10" required inputmode="numeric" placeholder="N°"></div>
+        </div>
+        <div class="field"><label for="logradouro_imovel">Logradouro</label><select id="logradouro_imovel" name="logradouro_imovel" required><option value="">—</option></select></div>
+        <div class="field"><label for="complemento_imovel">Complemento</label><input type="text" id="complemento_imovel" name="complemento_imovel" maxlength="50" placeholder="Complemento"></div>
+        <div class="row cep-row">
+          <div class="field"><label for="cep_imovel">CEP</label><input type="text" id="cep_imovel" name="cep_imovel" inputmode="numeric" data-mask="cep" placeholder="00000-000"></div>
+          <div class="field"><label for="cidade_imovel">Cidade</label><input type="text" id="cidade_imovel" name="cidade_imovel" maxlength="50" placeholder="Cidade"></div>
+          <div class="field"><label for="uf_imovel">Estado (UF)</label><input type="text" id="uf_imovel" name="uf_imovel" maxlength="2" placeholder="UF" style="text-transform:uppercase"></div>
+        </div>
+        <div class="field">
+          <label for="valor_venal">Valor Venal (R$) — cálculo automático</label>
+          <input type="text" id="valor_venal" name="valor_venal" readonly placeholder="Área do terreno × R$/m² do bairro">
+          <div class="hint" id="valorVenalHint">Selecione o bairro e informe as medidas do terreno (etapa 2).</div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ ETAPA 4 — LOGRADOURO ============ -->
+    <section class="step-panel" data-step="4">
+      <div class="card"><div class="card-body">
+        <p class="sub-note">Toque nos itens que existem no logradouro do imóvel.</p>
+        <div class="chips" id="chipsLogradouro">
+          <div class="chip"><input type="checkbox" name="log_pavimentado"><span class="chip-box"></span><span class="chip-text">Pavimentado</span></div>
+          <div class="chip"><input type="checkbox" name="log_coleta_lixo"><span class="chip-box"></span><span class="chip-text">Coleta de Lixo</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_agua"><span class="chip-box"></span><span class="chip-text">Rede de Água</span></div>
+          <div class="chip"><input type="checkbox" name="log_iluminacao"><span class="chip-box"></span><span class="chip-text">Iluminação</span></div>
+          <div class="chip"><input type="checkbox" name="log_cabine_policial"><span class="chip-box"></span><span class="chip-text">Cabine Policial</span></div>
+          <div class="chip"><input type="checkbox" name="log_arborizacao"><span class="chip-box"></span><span class="chip-text">Arborização</span></div>
+          <div class="chip"><input type="checkbox" name="log_meio_fio"><span class="chip-box"></span><span class="chip-text">Meio Fio</span></div>
+          <div class="chip"><input type="checkbox" name="log_varricao"><span class="chip-box"></span><span class="chip-text">Varrição</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_publica"><span class="chip-box"></span><span class="chip-text">Rede Pública</span></div>
+          <div class="chip"><input type="checkbox" name="log_banca_jornal"><span class="chip-box"></span><span class="chip-text">Banca de Jornal</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_telefonica"><span class="chip-box"></span><span class="chip-text">Rede Telefônica</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_eletrica"><span class="chip-box"></span><span class="chip-text">Rede Elétrica</span></div>
+          <div class="chip"><input type="checkbox" name="log_galeria_pluvial"><span class="chip-box"></span><span class="chip-text">Galeria Pluvial</span></div>
+          <div class="chip"><input type="checkbox" name="log_esgoto"><span class="chip-box"></span><span class="chip-text">Esgoto</span></div>
+          <div class="chip"><input type="checkbox" name="log_ponto_onibus"><span class="chip-box"></span><span class="chip-text">Ponto de Ônibus</span></div>
+          <div class="chip"><input type="checkbox" name="log_correio"><span class="chip-box"></span><span class="chip-text">Correio</span></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ ETAPA 5 — TERRENO ============ -->
+    <section class="step-panel" data-step="5">
+      <div class="card"><div class="card-body">
+        <div class="field"><label for="situacao">01 — Situação</label>
+          <select id="situacao" name="situacao" required><option value="">Selecione</option>
+            <option value="1">1 - Livre</option><option value="2">2 - Ocupado</option><option value="3">3 - Alugado</option>
+            <option value="4">4 - Cedido</option><option value="5">5 - Invadido</option></select></div>
+
+        <div class="field"><label for="topografia">02 — Topografia</label>
+          <select id="topografia" name="topografia" required><option value="">Selecione</option>
+            <option value="1">1 - Plano</option><option value="2">2 - Aclive</option><option value="3">3 - Declive</option>
+            <option value="4">4 - Irregular</option><option value="5">5 - Montanhoso</option></select></div>
+
+        <div class="field"><label for="pedologia">03 — Pedologia</label>
+          <select id="pedologia" name="pedologia" required><option value="">Selecione</option>
+            <option value="1">1 - Firme</option><option value="2">2 - Alagadiço</option><option value="3">3 - Arenoso</option>
+            <option value="4">4 - Rochoso</option><option value="5">5 - Argiloso</option></select></div>
+
+        <div class="field"><label for="ocupacao">04 — Ocupação</label>
+          <select id="ocupacao" name="ocupacao" required><option value="">Selecione</option>
+            <option value="1">1 - Ocupado</option><option value="2">2 - Desocupado</option>
+            <option value="3">3 - Em construção</option></select></div>
+
+        <div class="field"><label for="patrimonio">05 — Patrimônio</label>
+          <select id="patrimonio" name="patrimonio" required><option value="">Selecione</option>
+            <option value="1">1 - Particular</option><option value="2">2 - Público Federal</option>
+            <option value="3">3 - Público Estadual</option><option value="4">4 - Público Municipal</option></select></div>
+      </div></div>
+    </section>
+
+    <!-- ============ ETAPA 6 — EDIFICAÇÃO ============ -->
+    <section class="step-panel" data-step="6">
+      <div class="card"><div class="card-body">
+        <div class="row row-2">
+          <div class="field"><label for="alinhamento">Alinhamento</label>
+            <select id="alinhamento" name="alinhamento" required><option value="">Selecione</option>
+              <option value="1">1 - Alinhado</option><option value="2">2 - Recuado</option><option value="3">3 - Esquina</option></select></div>
+          <div class="field"><label for="posicionamento">Posicionamento</label>
+            <select id="posicionamento" name="posicionamento" required><option value="">Selecione</option>
+              <option value="1">1 - Frente</option><option value="2">2 - Fundos</option>
+              <option value="3">3 - Lateral Direita</option><option value="4">4 - Lateral Esquerda</option></select></div>
+        </div>
+        <div class="field"><label for="situacao_unid">Situação Unid. Constru.</label>
+          <select id="situacao_unid" name="situacao_unid" required><option value="">Selecione</option>
+            <option value="1">1 - Própria</option><option value="2">2 - Alugada</option><option value="3">3 - Cedida</option><option value="4">4 - Invadida</option></select></div>
+        <div class="row row-2">
+          <div class="field"><label for="estrutura">Estrutura</label>
+            <select id="estrutura" name="estrutura" required><option value="">Selecione</option>
+              <option value="1">1 - Alvenaria</option><option value="2">2 - Madeira</option><option value="3">3 - Mista</option>
+              <option value="4">4 - Metálica</option><option value="5">5 - Concreto</option></select></div>
+          <div class="field"><label for="cobertura">Cobertura</label>
+            <select id="cobertura" name="cobertura" required><option value="">Selecione</option>
+              <option value="1">1 - Telha de Barro</option><option value="2">2 - Fibrocimento</option><option value="3">3 - Laje</option>
+              <option value="4">4 - Zinco</option><option value="5">5 - Palha</option></select></div>
+        </div>
+        <div class="row row-2">
+          <div class="field"><label for="paredes">Paredes</label>
+            <select id="paredes" name="paredes" required><option value="">Selecione</option>
+              <option value="1">1 - Alvenaria</option><option value="2">2 - Madeira</option><option value="3">3 - Mista</option><option value="4">4 - Taipa</option></select></div>
+          <div class="field"><label for="forro">Forro</label>
+            <select id="forro" name="forro" required><option value="">Selecione</option>
+              <option value="1">1 - Laje</option><option value="2">2 - Madeira</option><option value="3">3 - PVC</option>
+              <option value="4">4 - Gesso</option><option value="5">5 - Sem forro</option></select></div>
+        </div>
+        <div class="field"><label for="revest_fachada">Revestimento da Fachada</label>
+          <select id="revest_fachada" name="revest_fachada" required><option value="">Selecione</option>
+            <option value="1">1 - Reboco</option><option value="2">2 - Cerâmica</option><option value="3">3 - Pintura</option><option value="4">4 - Sem revestimento</option></select></div>
+        <div class="field"><label for="uso_principal">Uso Principal</label>
+          <select id="uso_principal" name="uso_principal" required><option value="">Selecione</option>
+            <option value="1">1 - Residencial</option><option value="2">2 - Comercial</option><option value="3">3 - Misto</option><option value="4">4 - Industrial</option></select></div>
+        <div class="row row-2">
+          <div class="field"><label for="instal_sanitaria">Instal. Sanitária</label>
+            <select id="instal_sanitaria" name="instal_sanitaria" required><option value="">Selecione</option>
+              <option value="1">1 - Rede Pública</option><option value="2">2 - Fossa Séptica</option>
+              <option value="3">3 - Fossa Rudimentar</option><option value="4">4 - Inexistente</option></select></div>
+          <div class="field"><label for="instal_eletrica">Instal. Elétrica</label>
+            <select id="instal_eletrica" name="instal_eletrica" required><option value="">Selecione</option>
+              <option value="1">1 - Rede Pública</option><option value="2">2 - Própria</option><option value="3">3 - Inexistente</option></select></div>
+        </div>
+        <div class="row row-2">
+          <div class="field"><label for="piso">Piso</label>
+            <select id="piso" name="piso" required><option value="">Selecione</option>
+              <option value="1">1 - Cerâmica</option><option value="2">2 - Cimento</option><option value="3">3 - Madeira</option>
+              <option value="4">4 - Porcelanato</option><option value="5">5 - Terra Batida</option></select></div>
+          <div class="field"><label for="conservacao">Est. de Conservação</label>
+            <select id="conservacao" name="conservacao" required><option value="">Selecione</option>
+              <option value="1">1 - Ótimo</option><option value="2">2 - Bom</option><option value="3">3 - Regular</option>
+              <option value="4">4 - Ruim</option><option value="5">5 - Péssimo</option></select></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ ETAPA 7 ============ -->
+    <section class="step-panel" data-step="7">
+      <div class="card"><div class="card-body">
+        <div class="field"><label for="responsavel">Nome do Responsável</label><select id="responsavel" name="responsavel" required><option value="">Carregando...</option></select></div>
+        <div class="field" id="wrap_senha_resp" style="display:none;">
+          <label for="senha_responsavel">Senha de Acesso <span class="req">*</span></label>
+          <input type="password" id="senha_responsavel" name="senha_responsavel" autocomplete="current-password" placeholder="Digite sua senha de funcionário">
+          <div class="hint">Somente o funcionário cadastrado (ativo) pode concluir o envio.</div>
+        </div>
+        <div class="field"><label for="data_registro">Data de Emissão</label><input type="date" id="data_registro" name="data_registro" required readonly></div>
+      </div></div>
+    </section>
+
+  </form>
+</main>
+
+<footer class="app-footer">
+  <div class="footer-inner">
+    <button type="button" class="btn btn-ghost" id="btnPrev">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Anterior
+    </button>
+    <button type="button" class="btn btn-primary" id="btnNext">
+      Próximo
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+    <button type="button" class="btn btn-primary" id="btnSave" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+      Salvar Ficha
+    </button>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+</div><!-- /#appShell -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, doc, onSnapshot, serverTimestamp,
+  getDocs, query, where, getDoc
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDgJC2zYMBW6zKOPDnxUkIxP-ko_NTaNjw",
+  authDomain: "cadmob.firebaseapp.com",
+  projectId: "cadmob",
+  storageBucket: "cadmob.firebasestorage.app",
+  messagingSenderId: "301431109388",
+  appId: "1:301431109388:web:e487b8e8236a6bee9a7b29"
+};
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+/* ============================================================
+   AUTH GATE — valida role 'funcionario' (ou superior)
+   ============================================================ */
+const FORM_ROLES = ['funcionario', 'admin', 'superadmin'];
+
+function gateShow(opts){
+  document.getElementById('authGate').classList.remove('hidden');
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('gateSpinner').style.display = (opts && opts.loading) ? '' : 'none';
+  const t = document.getElementById('gateTitle');
+  t.style.display = (opts && opts.title) ? '' : 'none';
+  t.textContent = (opts && opts.title) || '';
+  document.getElementById('gateMsg').textContent = (opts && opts.msg) || '';
+  document.getElementById('gateLogout').style.display = (opts && opts.showLogout) ? '' : 'none';
+}
+function gateHide(){
+  document.getElementById('authGate').classList.add('hidden');
+  document.getElementById('appShell').style.display = '';
+}
+document.getElementById('gateLogout').addEventListener('click', async () => {
+  try { await signOut(auth); } catch(e){}
+  window.location.replace('formulario-login.html');
+});
+
+function initials(s){
+  const parts = String(s || '').replace(/@.*/, '').split(/[\s._-]+/).filter(Boolean);
+  if(!parts.length) return '?';
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+
+let booted = false;
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    window.location.replace('formulario-login.html');
+    return;
+  }
+  gateShow({ loading:true, msg:'Validando permissões…' });
+
+  let role = 'user';
+  let nome = user.displayName || (user.email || '').split('@')[0] || 'Usuário';
+  try {
+    const snap = await getDoc(doc(db, 'usuarios', user.uid));
+    if(snap.exists()){
+      const d = snap.data();
+      role = String(d.role || 'user').toLowerCase();
+      nome = d.nome || nome;
+    }
+  } catch(err){
+    console.error('[gate] erro ao ler role:', err);
+    gateShow({
+      title:'Erro de conexão',
+      msg:'Não foi possível validar suas permissões. Tente novamente.',
+      showLogout:true
+    });
+    return;
+  }
+
+  if(!FORM_ROLES.includes(role)){
+    gateShow({
+      title:'Acesso pendente',
+      msg:'Sua conta ainda não foi aprovada. Aguarde a liberação pelo administrador (role "Funcionário").',
+      showLogout:true
+    });
+    return;
+  }
+
+  // OK — preenche chip do usuário e inicializa o formulário
+  document.getElementById('headerAvatar').textContent = initials(user.email || nome);
+  document.getElementById('headerName').textContent   = nome;
+  gateHide();
+
+  if(!booted){
+    booted = true;
+    initFormulario();
+  }
+});
+
+/* ============================================================
+   FORMULÁRIO — todo o código original
+   ============================================================ */
+function initFormulario(){
+(function () {
+  'use strict';
+
+  const form = document.getElementById('fichaForm');
+  const toastEl = document.getElementById('toast');
+  const DRAFT_KEY = 'careiro_ficha_draft_v3';
+
+  /* ============================================================
+     ESTADO
+     ============================================================ */
+  let LISTAS = { funcionarios: [], bairros: [], ruas: [] };
+  let QUADRAS = [];
+  let LOTES = [];
+  let FICHAS = [];
+  let fichasCarregadas = false;
+
+  function grupoAtivo(id){
+    const arr = Array.isArray(LISTAS[id]) ? LISTAS[id] : [];
+    if(id === 'bairros' || id === 'ruas') return arr.slice();
+    return arr.filter(o => o.ativo !== false);
+  }
+  function getFuncionarios(){ return grupoAtivo('funcionarios').map(o => o.label); }
+  function getBairros(){
+    return grupoAtivo('bairros').map((o, i) => ({
+      nome: o.label,
+      numero: String(o.numero != null ? o.numero : (i + 1)).padStart(3,'0'),
+      valor_m2: Number(o.valor_m2) || 0
+    }));
+  }
+  function getRuas(){ return grupoAtivo('ruas').map(o => o.label); }
+
+  function quadrasDoBairro(bairro){
+    return QUADRAS.filter(q => q.bairro === bairro).sort((a,b) => a.numero.localeCompare(b.numero));
+  }
+  function lotesDaQuadra(bairro, quadra){
+    return LOTES.filter(l => l.bairro === bairro && l.quadra === quadra).sort((a,b) => a.numero.localeCompare(b.numero));
+  }
+  function norm(s){ return String(s == null ? '' : s).trim(); }
+  function normalizarUnidade(u){ return String(u || '').trim().toUpperCase(); }
+
+  function fichasComChave(bairro, quadra, lote, unidade){
+    const b = norm(bairro);
+    const q = norm(quadra);
+    const l = norm(lote);
+    const u = normalizarUnidade(unidade);
+    return FICHAS.filter(function(f){
+      return norm(f.bairro_imovel) === b
+          && norm(f.quadra_imovel) === q
+          && norm(f.lote_letra)    === l
+          && normalizarUnidade(f.unidade_imovel) === u;
+    });
+  }
+  function fichasDoLote(bairro, quadra, lote){
+    const b = norm(bairro);
+    const q = norm(quadra);
+    const l = norm(lote);
+    return FICHAS.filter(function(f){
+      return norm(f.bairro_imovel) === b
+          && norm(f.quadra_imovel) === q
+          && norm(f.lote_letra)    === l;
+    });
+  }
+
+  async function consultarLoteNaNuvem(bairro, quadra, lote, unidade){
+    if(!bairro || !quadra || !lote) return [];
+    try {
+      const q = query(
+        collection(db, 'fichas'),
+        where('bairro_imovel', '==', bairro),
+        where('quadra_imovel', '==', quadra),
+        where('lote_letra', '==', lote)
+      );
+      const snap = await getDocs(q);
+      const u = normalizarUnidade(unidade);
+      const encontrados = [];
+      snap.forEach(d => {
+        const f = d.data();
+        if(normalizarUnidade(f.unidade_imovel) === u) encontrados.push(f);
+      });
+      return encontrados;
+    } catch(err){
+      console.warn('[consulta] falhou, usando cache local:', err);
+      return fichasComChave(bairro, quadra, lote, unidade);
+    }
+  }
+
+  /* ============================================================
+     POPULAR SELECTS BÁSICOS
+     ============================================================ */
+  function popularResponsaveis(){
+    const sel = document.getElementById('responsavel'); if(!sel) return;
+    const atual = sel.value;
+    const list = getFuncionarios();
+    sel.innerHTML = '<option value="">' + (list.length ? 'Selecione' : 'Nenhum responsável cadastrado') + '</option>' +
+      list.map(n => '<option value="' + String(n).replace(/"/g,'&quot;') + '">' + esc(n) + '</option>').join('');
+    if(atual) sel.value = atual;
+    atualizarCampoSenha();
+  }
+  function popularBairros(){
+    const list = getBairros();
+    ['bairro_prop','bairro_imovel'].forEach(id => {
+      const sel = document.getElementById(id); if(!sel) return;
+      const atual = sel.value;
+      sel.innerHTML = '<option value="">' + (list.length ? 'Selecione' : 'Nenhum bairro cadastrado') + '</option>' +
+        list.map(b => '<option value="' + String(b.nome).replace(/"/g,'&quot;') + '">' + esc(b.numero) + ' - ' + esc(b.nome) + '</option>').join('');
+      if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
+    });
+  }
+  function popularRuas(){
+    const list = getRuas();
+    ['logradouro_prop','logradouro_imovel'].forEach(id => {
+      const sel = document.getElementById(id); if(!sel) return;
+      const atual = sel.value;
+      sel.innerHTML = '<option value="">' + (list.length ? 'Selecione a rua' : 'Nenhum logradouro cadastrado') + '</option>' +
+        list.map(r => '<option value="' + String(r).replace(/"/g,'&quot;') + '">' + esc(r) + '</option>').join('');
+      if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
+    });
+  }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* ============================================================
+     QUADRAS E LOTES DINÂMICOS
+     ============================================================ */
+  function atualizarQuadras(sufixo){
+    const bairro = document.getElementById('bairro_' + sufixo).value;
+    const selQ = document.getElementById('quadra_' + sufixo);
+    const selL = document.getElementById(sufixo === 'prop' ? 'lote_prop' : 'lote_letra');
+    const inpU = document.getElementById('unidade_' + sufixo);
+
+    if(selL){
+      selL.innerHTML = '<option value="">—</option>';
+      selL.value = '';
+      selL.disabled = !bairro;
+    }
+    if(inpU && inpU.value) inpU.value = '';
+
+    if(!bairro){
+      if(selQ){ selQ.innerHTML = '<option value="">—</option>'; selQ.value = ''; selQ.disabled = true; }
+      if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
+      return;
+    }
+
+    const lista = quadrasDoBairro(bairro);
+    const atualQ = selQ.value;
+    if(selQ){
+      selQ.disabled = false;
+      selQ.innerHTML = '<option value="">' + (lista.length ? 'Selecione' : 'Nenhuma quadra cadastrada para este bairro') + '</option>' +
+        lista.map(q => '<option value="' + esc(q.numero) + '">' + esc(q.numero) + (q.label ? ' — ' + esc(q.label) : '') + '</option>').join('');
+      if(atualQ && lista.some(q => q.numero === atualQ)) selQ.value = atualQ;
+      else selQ.value = '';
+    }
+
+    const quadraAtual = selQ ? selQ.value : '';
+    if(quadraAtual) atualizarLotes(sufixo);
+    if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
+  }
+
+  function atualizarLotes(sufixo){
+    const bairro = document.getElementById('bairro_' + sufixo).value;
+    const quadra = document.getElementById('quadra_' + sufixo).value;
+    const selL = document.getElementById(sufixo === 'prop' ? 'lote_prop' : 'lote_letra');
+    const inpU = document.getElementById('unidade_' + sufixo);
+    if(!selL) return;
+
+    selL.innerHTML = '<option value="">—</option>';
+    selL.value = '';
+    selL.disabled = !quadra;
+
+    if(inpU && inpU.value) inpU.value = '';
+
+    if(!bairro || !quadra){
+      if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
+      return;
+    }
+
+    const lista = lotesDaQuadra(bairro, quadra);
+    selL.innerHTML = '<option value="">' + (lista.length ? 'Selecione' : 'Nenhum lote cadastrado para esta quadra') + '</option>' +
+      lista.map(function(l){
+        return '<option value="' + esc(l.numero) + '">' + esc(l.numero) + (l.label ? ' — ' + esc(l.label) : '') + '</option>';
+      }).join('');
+
+    if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
+  }
+
+  /* ============================================================
+     ALERTA DE DUPLICIDADE — PROPRIETÁRIO
+     ============================================================ */
+  function atualizarAlertaProprietario(){
+    const el = document.getElementById('proprietarioAlerta');
+    if(!el) return;
+    el.className = 'alert';
+    el.innerHTML = '';
+
+    const bairro = document.getElementById('bairro_prop').value;
+    const quadra = document.getElementById('quadra_prop').value;
+    const lote   = document.getElementById('lote_prop').value;
+    const unidade= document.getElementById('unidade_prop').value;
+
+    if(!bairro || !quadra || !lote) return;
+
+    const duplicadas = fichasComChave(bairro, quadra, lote, unidade);
+    const todas = fichasDoLote(bairro, quadra, lote);
+
+    if(duplicadas.length > 0){
+      const uTxt = normalizarUnidade(unidade)
+        ? ' <strong>(unidade ' + esc(normalizarUnidade(unidade)) + ')</strong>'
+        : ' <strong>sem unidade</strong>';
+      el.className = 'alert show error';
+      el.innerHTML =
+        '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Lote já cadastrado</div>' +
+        'Este lote' + uTxt + ' já possui cadastro no sistema. Selecione outro lote para continuar.';
+      return;
+    }
+
+    if(todas.length > 0){
+      const usadas = [];
+      todas.forEach(function(f){
+        const u = normalizarUnidade(f.unidade_imovel);
+        if(u && !usadas.includes(u)) usadas.push(u);
+      });
+      el.className = 'alert show warn';
+      el.innerHTML =
+        '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Lote com cadastros existentes</div>' +
+        'Este lote já possui ' + todas.length + ' cadastro(s)' +
+        (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
+        '. Informe uma unidade diferente para prosseguir.';
+      return;
+    }
+
+    el.className = 'alert show success';
+    el.innerHTML =
+      '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Lote disponível</div>' +
+      'Este lote está livre para cadastro.';
+  }
+
+  /* ============================================================
+     ALERTA DE DUPLICIDADE — IMÓVEL
+     ============================================================ */
+  function atualizarAlertaImovel(){
+    const el = document.getElementById('imovelAlerta');
+    if(!el) return;
+    el.className = 'alert';
+    el.innerHTML = '';
+
+    const bairro = document.getElementById('bairro_imovel').value;
+    const quadra = document.getElementById('quadra_imovel').value;
+    const lote   = document.getElementById('lote_letra').value;
+    const unidade= document.getElementById('unidade_imovel').value;
+
+    if(!bairro || !quadra || !lote) return;
+
+    const duplicadas = fichasComChave(bairro, quadra, lote, unidade);
+    const todas = fichasDoLote(bairro, quadra, lote);
+
+    if(duplicadas.length > 0){
+      const uTxt = normalizarUnidade(unidade)
+        ? ' (unidade <strong>' + esc(normalizarUnidade(unidade)) + '</strong>)'
+        : ' <strong>sem unidade</strong>';
+      el.className = 'alert show error';
+      el.innerHTML =
+        '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Cadastro já existe</div>' +
+        'Já existe um cadastro para este lote' + uTxt + '. Não é possível duplicar.';
+      return;
+    }
+
+    if(todas.length > 0){
+      const usadas = [];
+      todas.forEach(function(f){
+        const u = normalizarUnidade(f.unidade_imovel);
+        if(u && !usadas.includes(u)) usadas.push(u);
+      });
+      el.className = 'alert show warn';
+      el.innerHTML =
+        '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Lote com cadastros existentes</div>' +
+        'Este lote já possui ' + todas.length + ' cadastro(s)' +
+        (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
+        '. Informe uma unidade diferente para prosseguir.';
+      return;
+    }
+
+    el.className = 'alert show success';
+    el.innerHTML =
+      '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Lote disponível</div>' +
+      'Este lote ainda não possui cadastro.';
+  }
+
+  function imovelEstaBloqueado(){
+    const bairro = document.getElementById('bairro_imovel').value;
+    const quadra = document.getElementById('quadra_imovel').value;
+    const lote   = document.getElementById('lote_letra').value;
+    const unidade= document.getElementById('unidade_imovel').value;
+    if(!bairro || !quadra || !lote) return false;
+    return fichasComChave(bairro, quadra, lote, unidade).length > 0;
+  }
+
+  /* ============================================================
+     LISTENERS DO FIREBASE
+     ============================================================ */
+  function escutarListas(){
+    onSnapshot(doc(db,'config','listas'), snap => {
+      const data = snap.exists() ? (snap.data().grupos || {}) : {};
+      LISTAS = {
+        funcionarios: Array.isArray(data.funcionarios) ? data.funcionarios : [],
+        bairros:      Array.isArray(data.bairros)      ? data.bairros      : [],
+        ruas:         Array.isArray(data.ruas)         ? data.ruas         : []
+      };
+      popularResponsaveis(); popularBairros(); popularRuas();
+      calcularValorVenal();
+    });
+  }
+  function escutarQuadras(){
+    onSnapshot(doc(db,'config','quadras'), snap => {
+      QUADRAS = snap.exists() && Array.isArray(snap.data().items) ? snap.data().items : [];
+      atualizarQuadras('prop');
+      atualizarQuadras('imovel');
+    });
+  }
+  function escutarLotes(){
+    onSnapshot(doc(db,'config','lotes'), snap => {
+      LOTES = snap.exists() && Array.isArray(snap.data().items) ? snap.data().items : [];
+      const qp = document.getElementById('quadra_prop').value;
+      const qi = document.getElementById('quadra_imovel').value;
+      atualizarQuadras('prop');
+      atualizarQuadras('imovel');
+      if(qp){ document.getElementById('quadra_prop').value = qp; atualizarLotes('prop'); }
+      if(qi){ document.getElementById('quadra_imovel').value = qi; atualizarLotes('imovel'); }
+    });
+  }
+  function escutarFichas(){
+    onSnapshot(collection(db,'fichas'), snap => {
+      FICHAS = [];
+      snap.forEach(d => FICHAS.push(Object.assign({ id: d.id }, d.data())));
+      fichasCarregadas = true;
+      atualizarAlertaImovel();
+      atualizarAlertaProprietario();
+    }, err => {
+      console.warn('Erro ao escutar fichas:', err);
+      fichasCarregadas = true;
+    });
+  }
+
+  /* ============================================================
+     MÁSCARAS
+     ============================================================ */
+  function onlyDigits(v){ return v.replace(/\D+/g, ''); }
+  const masks = {
+    cep: v => { v = onlyDigits(v).slice(0,8); return v.length > 5 ? v.slice(0,5) + '-' + v.slice(5) : v; },
+    phone: v => {
+      v = onlyDigits(v).slice(0,11);
+      if(v.length <= 2) return v.length ? '(' + v : '';
+      if(v.length <= 6) return '(' + v.slice(0,2) + ') ' + v.slice(2);
+      if(v.length <= 10) return '(' + v.slice(0,2) + ') ' + v.slice(2,6) + '-' + v.slice(6);
+      return '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+    },
+    doc: v => {
+      v = onlyDigits(v).slice(0,14);
+      if(v.length <= 11){
+        return v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+      }
+      return v.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2');
+    }
+  };
+  document.querySelectorAll('[data-mask]').forEach(input => {
+    const fn = masks[input.dataset.mask]; if(!fn) return;
+    input.addEventListener('input', () => {
+      const pos = input.selectionStart, before = input.value.length;
+      input.value = fn(input.value);
+      const after = input.value.length;
+      input.setSelectionRange(pos + (after - before), pos + (after - before));
+    });
+  });
+
+  /* ============================================================
+     CHIPS DE LOGRADOURO
+     ============================================================ */
+  function configurarChips(){
+    document.querySelectorAll('.chip').forEach(function(chip){
+      const input = chip.querySelector('input[type="checkbox"]');
+      if(!input) return;
+
+      const syncVisual = function(){
+        chip.classList.toggle('active', !!input.checked);
+      };
+      syncVisual();
+
+      chip.addEventListener('click', function(e){
+        if(e.target === input) return;
+        e.preventDefault();
+        input.checked = !input.checked;
+        syncVisual();
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+
+      chip.addEventListener('keydown', function(e){
+        if(e.key === ' ' || e.key === 'Enter'){
+          e.preventDefault();
+          input.checked = !input.checked;
+          syncVisual();
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+
+      input.addEventListener('change', syncVisual);
+    });
+  }
+
+  /* ============================================================
+     HELPERS
+     ============================================================ */
+  function parseDecimal(v){
+    v = String(v == null ? '' : v).replace(/[^\d,.-]/g,'');
+    if(!v) return 0;
+    if(v.indexOf(',') >= 0) return Number(v.replace(/\./g,'').replace(',','.')) || 0;
+    return Number(v) || 0;
+  }
+  function formatMoney(n){ return (Number(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function formatArea(n){ return (Number(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  /* ============================================================
+     CPF / CNPJ
+     ============================================================ */
+  function validarCPF(cpf){
+    cpf = String(cpf).replace(/\D/g,'');
+    if(cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+    let s = 0;
+    for(let i = 0; i < 9; i++) s += parseInt(cpf[i]) * (10 - i);
+    let r = (s * 10) % 11; if(r === 10 || r === 11) r = 0;
+    if(r !== parseInt(cpf[9])) return false;
+    s = 0;
+    for(let i = 0; i < 10; i++) s += parseInt(cpf[i]) * (11 - i);
+    r = (s * 10) % 11; if(r === 10 || r === 11) r = 0;
+    return r === parseInt(cpf[10]);
+  }
+  function validarCNPJ(cnpj){
+    cnpj = String(cnpj).replace(/\D/g,'');
+    if(cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
+    let t = 12, n = cnpj.substring(0,t), d = cnpj.substring(t), s = 0, p = t - 7;
+    for(let i = t; i >= 1; i--){ s += parseInt(n.charAt(t-i)) * p--; if(p < 2) p = 9; }
+    let r = s % 11 < 2 ? 0 : 11 - (s % 11);
+    if(r !== parseInt(d.charAt(0))) return false;
+    t = 13; n = cnpj.substring(0,t); s = 0; p = t - 7;
+    for(let i = t; i >= 1; i--){ s += parseInt(n.charAt(t-i)) * p--; if(p < 2) p = 9; }
+    r = s % 11 < 2 ? 0 : 11 - (s % 11);
+    return r === parseInt(d.charAt(1));
+  }
+  function validarCpfCnpj(valor){
+    const d = String(valor).replace(/\D/g,'');
+    if(d.length === 11) return validarCPF(valor);
+    if(d.length === 14) return validarCNPJ(valor);
+    return false;
+  }
+  const cpfInput = document.getElementById('cpf_cnpj');
+  const cpfWrap  = document.getElementById('wrap_cpf');
+  function checarCpfVisual(){
+    const digits = cpfInput.value.replace(/\D/g,'');
+    cpfWrap.classList.remove('valid','invalid');
+    if(!digits.length) return;
+    if(digits.length === 11 || digits.length === 14){
+      cpfWrap.classList.add(validarCpfCnpj(cpfInput.value) ? 'valid' : 'invalid');
+    } else if(digits.length > 11 && digits.length !== 14){
+      cpfWrap.classList.add('invalid');
+    }
+  }
+  cpfInput.addEventListener('input', checarCpfVisual);
+  cpfInput.addEventListener('blur',  checarCpfVisual);
+
+  /* ============================================================
+     INSCRIÇÃO ANTERIOR
+     ============================================================ */
+  function getBairroInfo(nome){ return getBairros().find(x => x.nome === nome) || null; }
+  function gerarInscricao(){
+    const bairro = document.getElementById('bairro_imovel').value;
+    const quadra = document.getElementById('quadra_imovel').value;
+    const lote   = document.getElementById('lote_letra').value;
+    const insc   = document.getElementById('inscricao_anterior');
+    if(!bairro || !quadra || !lote){ insc.value = ''; return; }
+    const info = getBairroInfo(bairro);
+    const b = (info && info.numero ? String(info.numero) : '000').padStart(3,'0');
+    insc.value = '00.00.' + String(quadra).padStart(3,'0') + '.' + String(lote).padStart(3,'0') + '.' + b;
+  }
+
+  /* ============================================================
+     CÁLCULOS
+     ============================================================ */
+  function calcAreas(){
+    const g = id => document.getElementById(id);
+    const num = id => { const el = g(id); return el ? parseDecimal(el.value) : 0; };
+
+    const ft = num('frente_terreno'), fu = num('fundo_terreno');
+    const areaTerreno = (ft > 0 && fu > 0) ? ft * fu : 0;
+    if(g('area_terreno')) g('area_terreno').value = areaTerreno > 0 ? formatArea(areaTerreno) : '';
+
+    const fe = num('frente_edif'), fo = num('fundo_edif');
+    const areaEdif = (fe > 0 && fo > 0) ? fe * fo : 0;
+    if(g('area_edificada')) g('area_edificada').value = areaEdif > 0 ? formatArea(areaEdif) : '';
+
+    const andares = Number(g('num_andares') ? g('num_andares').value : 0) || 0;
+    const areaTotal = (areaEdif > 0 && andares > 0) ? areaEdif * andares : 0;
+    if(g('area_total_edificada')) g('area_total_edificada').value = areaTotal > 0 ? formatArea(areaTotal) : '';
+
+    calcularValorVenal();
+  }
+  function calcularValorVenal(){
+    const bairroEl = document.getElementById('bairro_imovel');
+    const areaEl   = document.getElementById('area_terreno');
+    const valorEl  = document.getElementById('valor_venal');
+    const hintEl   = document.getElementById('valorVenalHint');
+    if(!bairroEl || !areaEl || !valorEl) return;
+
+    const bairroNome = bairroEl.value;
+    const area = parseDecimal(areaEl.value);
+    const info = bairroNome ? getBairroInfo(bairroNome) : null;
+    const m2 = info ? Number(info.valor_m2) || 0 : 0;
+    const total = area * m2;
+
+    if(total > 0){
+      valorEl.value = formatMoney(total);
+      if(hintEl) hintEl.innerHTML = '<strong>' + formatArea(area) + ' m²</strong> × <strong>R$ ' + formatMoney(m2) + '/m²</strong> (' + esc(bairroNome) + ') = <strong>R$ ' + formatMoney(total) + '</strong>';
+    } else {
+      valorEl.value = '';
+      if(hintEl){
+        if(!bairroNome) hintEl.textContent = 'Selecione o bairro e informe as medidas do terreno (etapa 2).';
+        else if(!info) hintEl.textContent = 'Bairro não encontrado nas listas.';
+        else if(m2 <= 0) hintEl.textContent = 'Este bairro não possui R$/m² cadastrado.';
+        else hintEl.textContent = 'Informe Frente e Fundo do terreno (etapa 2).';
+      }
+    }
+    updateProgress();
+  }
+
+  /* ============================================================
+     CEP → ViaCEP
+     ============================================================ */
+  function bindCep(cepId, cidadeId, ufId, bairroTargetId, logradouroTargetId, extra){
+    const cepEl = document.getElementById(cepId); if(!cepEl) return;
+    let timer = null, ultimo = '';
+    cepEl.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const cep = cepEl.value.replace(/\D/g,'');
+        if(cep.length !== 8 || cep === ultimo) return;
+        ultimo = cep;
+        fetch('https://viacep.com.br/ws/' + cep + '/json/').then(r => r.json()).then(data => {
+          if(data.erro){ toast('CEP não encontrado.', 'error'); return; }
+          const cid = document.getElementById(cidadeId);
+          const uf  = document.getElementById(ufId);
+          const bEl = bairroTargetId ? document.getElementById(bairroTargetId) : null;
+          const lEl = logradouroTargetId ? document.getElementById(logradouroTargetId) : null;
+          if(cid && !cid.value.trim()) cid.value = data.localidade || '';
+          if(uf  && !uf.value.trim())  uf.value  = (data.uf || '').toUpperCase();
+          if(lEl && !lEl.value && data.logradouro){
+            const opt = [...lEl.options].find(o => o.value.toLowerCase() === data.logradouro.toLowerCase());
+            if(opt) lEl.value = opt.value;
+          }
+          if(bEl && !bEl.value && data.bairro){
+            const opt = [...bEl.options].find(o => o.value.toLowerCase() === data.bairro.toLowerCase());
+            if(opt) bEl.value = opt.value;
+          }
+          if(typeof extra === 'function') extra();
+        }).catch(()=>{});
+      }, 600);
+    });
+  }
+  bindCep('cep','cidade','uf', null, 'logradouro_prop', () => { calcAreas(); });
+  bindCep('cep_imovel','cidade_imovel','uf_imovel', 'bairro_imovel', 'logradouro_imovel', () => { gerarInscricao(); calcularValorVenal(); });
+
+  /* ============================================================
+     DATA
+     ============================================================ */
+  function preencherDataEmissao(){
+    const dr = document.getElementById('data_registro'); if(!dr) return;
+    const hoje = new Date();
+    dr.value = new Date(hoje.getTime() - hoje.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  }
+  preencherDataEmissao();
+  (function marcarObrigatorios(){
+    document.querySelectorAll('[required]').forEach(el => {
+      const wrap = el.closest('.field'); if(!wrap) return;
+      const label = wrap.querySelector('label');
+      if(!label || label.querySelector('.req')) return;
+      const star = document.createElement('span'); star.className = 'req'; star.textContent = ' *';
+      label.appendChild(star);
+    });
+  })();
+
+  /* ============================================================
+     SENHA DO RESPONSÁVEL
+     ============================================================ */
+  function atualizarCampoSenha(){
+    const respEl = document.getElementById('responsavel');
+    const wrap   = document.getElementById('wrap_senha_resp');
+    const senhaEl= document.getElementById('senha_responsavel');
+    if(!respEl || !wrap || !senhaEl) return;
+    if(respEl.value){
+      wrap.style.display = '';
+      senhaEl.setAttribute('required','');
+    } else {
+      wrap.style.display = 'none';
+      senhaEl.removeAttribute('required');
+      senhaEl.value = '';
+      wrap.classList.remove('invalid','valid');
+    }
+  }
+  document.getElementById('responsavel').addEventListener('change', function(){
+    atualizarCampoSenha(); updateProgress();
+  });
+
+  /* ============================================================
+     STEPPER
+     ============================================================ */
+  const TOTAL_STEPS = 7;
+  const STEP_TITLES = ['Dados do Proprietário','Terreno / Edificação','Dados do Imóvel','Dados do Logradouro','Dados do Terreno','Dados da Edificação','Responsável e Data'];
+  let currentStep = 1;
+  const completedSteps = new Set();
+
+  function renderStepper(){
+    document.querySelectorAll('.step').forEach(s => {
+      const n = Number(s.dataset.step);
+      const done = completedSteps.has(n) && n !== currentStep;
+      s.classList.toggle('active', n === currentStep);
+      s.classList.toggle('done', done);
+      s.classList.toggle('clickable', n < currentStep || completedSteps.has(n));
+    });
+    document.querySelectorAll('.step-line').forEach(l => {
+      l.classList.toggle('done', completedSteps.has(Number(l.dataset.line)));
+    });
+  }
+  function renderStep(){
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.toggle('active', Number(p.dataset.step) === currentStep));
+    document.getElementById('stepCounter').textContent = 'Etapa ' + currentStep + ' de ' + TOTAL_STEPS;
+    document.getElementById('stepTitle').textContent   = STEP_TITLES[currentStep - 1];
+    document.getElementById('btnPrev').style.display = currentStep === 1 ? 'none' : '';
+    document.getElementById('btnNext').style.display = currentStep === TOTAL_STEPS ? 'none' : '';
+    document.getElementById('btnSave').style.display = currentStep === TOTAL_STEPS ? '' : 'none';
+    renderStepper();
+    updateProgress();
+  }
+  function showFieldError(err){
+    toast(err.msg, 'error');
+    const el = err.el;
+    if(!el) return;
+    setTimeout(() => {
+      try { el.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(e){}
+      setTimeout(() => { try { el.focus({ preventScroll:true }); } catch(e){} }, 320);
+    }, 60);
+  }
+
+  async function goToStep(n, force){
+    n = Math.max(1, Math.min(TOTAL_STEPS, n));
+    if(n === currentStep) return true;
+
+    if(n > currentStep && !force){
+      const errs = await validarEtapa(currentStep);
+      if(errs.length){ showFieldError(errs[0]); return false; }
+      completedSteps.add(currentStep);
+    }
+
+    currentStep = n;
+    renderStep();
+    try { window.scrollTo({ top:0, behavior:'smooth' }); } catch(e){ window.scrollTo(0,0); }
+    return true;
+  }
+
+  document.querySelectorAll('.step').forEach(s => {
+    s.addEventListener('click', async function(){
+      const n = Number(s.dataset.step);
+      if(n === currentStep) return;
+      if(n < currentStep || completedSteps.has(n)) await goToStep(n, true);
+    });
+  });
+  document.getElementById('btnNext').addEventListener('click', async () => { await goToStep(currentStep + 1); });
+  document.getElementById('btnPrev').addEventListener('click', async () => { await goToStep(currentStep - 1, true); });
+
+  /* ============================================================
+     PROGRESSO
+     ============================================================ */
+  function getFields(){
+    return [...form.querySelectorAll('input[required]:not([type="checkbox"]):not([type="radio"]):not([readonly]), select[required]')].filter(el => !!el.name);
+  }
+  function updateProgress(){
+    const fields = getFields(); if(!fields.length) return;
+    const filled = fields.filter(el => String(el.value).trim() !== '').length;
+    const pct = Math.round((filled / fields.length) * 100);
+    const el = document.getElementById('stepProgress');
+    if(el) el.textContent = pct + '%';
+  }
+
+  /* ============================================================
+     COLETA / LIMPEZA
+     ============================================================ */
+  function collect(){
+    const data = {};
+    form.querySelectorAll('[name]').forEach(el => {
+      if(el.name === 'senha_responsavel') return;
+      if(el.type === 'checkbox') data[el.name] = el.checked;
+      else if(el.type === 'radio'){ if(el.checked) data[el.name] = el.value; }
+      else data[el.name] = el.value;
+    });
+    const info = getBairroInfo(document.getElementById('bairro_imovel').value);
+    data.valor_m2_bairro = info ? Number(info.valor_m2) || 0 : 0;
+    data.area_terreno_num = parseDecimal(document.getElementById('area_terreno').value);
+    data.area_edificada_num = parseDecimal(document.getElementById('area_edificada').value);
+    data.area_total_edificada_num = parseDecimal(document.getElementById('area_total_edificada').value);
+    data.valor_venal_num = parseDecimal(document.getElementById('valor_venal').value);
+    return data;
+  }
+  function clearForm(){
+    form.reset();
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.field.invalid,.field.valid').forEach(f => f.classList.remove('invalid','valid'));
+    document.getElementById('inscricao_anterior').value = '';
+    document.getElementById('valor_venal').value = '';
+    popularResponsaveis(); popularBairros(); popularRuas();
+    atualizarQuadras('prop'); atualizarQuadras('imovel');
+    atualizarCampoSenha();
+    preencherDataEmissao();
+    calcAreas();
+    atualizarAlertaImovel();
+    atualizarAlertaProprietario();
+    completedSteps.clear();
+    currentStep = 1;
+    renderStep();
+    updateProgress();
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+  }
+
+  /* ============================================================
+     TOAST
+     ============================================================ */
+  let toastTimer = null;
+  function toast(msg, type){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show' + (type ? ' ' + type : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.className = 'toast' + (type ? ' ' + type : ''); }, 3000);
+  }
+
+  /* ============================================================
+     VALIDAÇÃO POR ETAPA
+     ============================================================ */
+  async function validarEtapa(stepNum){
+    const panel = document.querySelector('.step-panel[data-step="' + stepNum + '"]');
+    if(!panel) return [];
+    const invalidos = [];
+    panel.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
+
+    panel.querySelectorAll('[required]').forEach(el => {
+      if(el.name === 'senha_responsavel') return;
+      const wrap = el.closest('.field');
+      const val = String(el.value || '').trim();
+      if(!val){
+        if(wrap) wrap.classList.add('invalid');
+        const labelEl = wrap ? wrap.querySelector('label') : null;
+        const labelTxt = labelEl ? labelEl.textContent.trim().replace(/\s*\*$/,'') : el.name;
+        invalidos.push({ el: el, msg: 'Campo obrigatório: ' + labelTxt });
+      }
+    });
+
+    if(panel.contains(cpfInput) && cpfInput.value.trim() && !validarCpfCnpj(cpfInput.value)){
+      cpfWrap.classList.add('invalid'); cpfWrap.classList.remove('valid');
+      invalidos.push({ el: cpfInput, msg: 'CPF/CNPJ inválido.' });
+    }
+
+    if(stepNum === 1){
+      const bairro = document.getElementById('bairro_prop').value;
+      const quadra = document.getElementById('quadra_prop').value;
+      const lote   = document.getElementById('lote_prop').value;
+      const unidade= document.getElementById('unidade_prop').value;
+      if(bairro && quadra && lote){
+        const registradas = await consultarLoteNaNuvem(bairro, quadra, lote, unidade);
+        if(registradas.length > 0){
+          atualizarAlertaProprietario();
+          invalidos.push({
+            el: document.getElementById('lote_prop'),
+            msg: 'Este lote já possui cadastro. Selecione outro lote.'
+          });
+        }
+      }
+    }
+
+    if(stepNum === 3){
+      const bairro = document.getElementById('bairro_imovel').value;
+      const quadra = document.getElementById('quadra_imovel').value;
+      const lote   = document.getElementById('lote_letra').value;
+      const unidade= document.getElementById('unidade_imovel').value;
+      if(bairro && quadra && lote){
+        const registradas = await consultarLoteNaNuvem(bairro, quadra, lote, unidade);
+        if(registradas.length > 0){
+          atualizarAlertaImovel();
+          const uTxt = normalizarUnidade(unidade)
+            ? 'unidade ' + normalizarUnidade(unidade)
+            : 'sem unidade';
+          invalidos.push({
+            el: document.getElementById('lote_letra'),
+            msg: 'Já existe cadastro para este lote (' + uTxt + ').'
+          });
+        }
+      }
+    }
+
+    const respEl  = document.getElementById('responsavel');
+    const senhaEl = document.getElementById('senha_responsavel');
+    if(respEl && panel.contains(respEl) && respEl.value){
+      const wrap = senhaEl ? senhaEl.closest('.field') : null;
+      if(!senhaEl || !senhaEl.value.trim()){
+        if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
+        invalidos.push({ el: senhaEl || respEl, msg: 'Digite a senha de acesso do responsável.' });
+      } else {
+        const func = grupoAtivo('funcionarios').find(o => o.label === respEl.value);
+        if(!func){
+          if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
+          invalidos.push({ el: senhaEl, msg: 'Responsável inativo ou não cadastrado.' });
+        } else if(!func.senha){
+          if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
+          invalidos.push({ el: senhaEl, msg: 'Responsável sem senha cadastrada. Contate o administrador.' });
+        } else if(String(func.senha) !== senhaEl.value){
+          if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
+          invalidos.push({ el: senhaEl, msg: 'Senha incorreta para ' + respEl.value + '.' });
+        } else {
+          if(wrap){ wrap.classList.remove('invalid'); wrap.classList.add('valid'); }
+        }
+      }
+    }
+
+    return invalidos;
+  }
+
+  /* ============================================================
+     SALVAR — Firebase
+     ============================================================ */
+  document.getElementById('btnSave').addEventListener('click', async function () {
+    let primeiroErro = null;
+    for(let s = 1; s <= TOTAL_STEPS; s++){
+      const errs = await validarEtapa(s);
+      if(!errs.length) completedSteps.add(s);
+      else if(!primeiroErro) primeiroErro = { step: s, err: errs[0] };
+    }
+    if(primeiroErro){
+      await goToStep(primeiroErro.step, true);
+      setTimeout(() => showFieldError(primeiroErro.err), 140);
+      return;
+    }
+
+    const bairro = document.getElementById('bairro_imovel').value;
+    const quadra = document.getElementById('quadra_imovel').value;
+    const lote   = document.getElementById('lote_letra').value;
+    const unidade= document.getElementById('unidade_imovel').value;
+    const registradas = await consultarLoteNaNuvem(bairro, quadra, lote, unidade);
+    if(registradas.length > 0){
+      toast('Este lote/unidade já possui cadastro.', 'error');
+      await goToStep(3, true);
+      return;
+    }
+
+    const btn = this;
+    btn.disabled = true;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = 'Salvando...';
+
+    try {
+      const payload = collect();
+      payload.criado_em = serverTimestamp();
+      payload.origem = 'mobile';
+      payload.criado_por_uid = auth.currentUser ? auth.currentUser.uid : null;
+      payload.criado_por_email = auth.currentUser ? auth.currentUser.email : null;
+      await addDoc(collection(db, 'fichas'), payload);
+      toast('Ficha enviada para a nuvem!', 'success');
+      try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+      setTimeout(() => { clearForm(); window.scrollTo({ top:0, behavior:'smooth' }); }, 500);
+    } catch(err){
+      console.error(err);
+      toast('Falha ao salvar na nuvem. Verifique a conexão.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  });
+
+  document.getElementById('btnClear').addEventListener('click', function () {
+    if(!window.confirm('Deseja realmente limpar todos os campos da ficha?')) return;
+    clearForm();
+    toast('Ficha limpa.', 'success');
+    window.scrollTo({ top:0, behavior:'smooth' });
+  });
+
+  /* ============================================================
+     AUTOSAVE
+     ============================================================ */
+  let saveTimer = null;
+  function agendarRascunho(){
+    updateProgress();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(collect())); } catch(e){}
+    }, 700);
+  }
+  form.addEventListener('input',  agendarRascunho);
+  form.addEventListener('change', function(){ gerarInscricao(); agendarRascunho(); });
+
+  /* ============================================================
+     EVENTOS — BAIRRO / QUADRA / LOTE / UNIDADE
+     ============================================================ */
+  document.getElementById('bairro_prop').addEventListener('change', function(){
+    atualizarQuadras('prop');
+  });
+  document.getElementById('quadra_prop').addEventListener('change', function(){
+    atualizarLotes('prop');
+  });
+  document.getElementById('lote_prop').addEventListener('change', function(){
+    atualizarAlertaProprietario();
+  });
+  document.getElementById('unidade_prop').addEventListener('input', function(){
+    atualizarAlertaProprietario();
+  });
+
+  document.getElementById('bairro_imovel').addEventListener('change', function(){
+    atualizarQuadras('imovel');
+    gerarInscricao(); calcularValorVenal();
+  });
+  document.getElementById('quadra_imovel').addEventListener('change', function(){
+    atualizarLotes('imovel');
+    gerarInscricao();
+  });
+  document.getElementById('lote_letra').addEventListener('change', function(){
+    gerarInscricao();
+    atualizarAlertaImovel();
+  });
+  document.getElementById('unidade_imovel').addEventListener('input', function(){
+    atualizarAlertaImovel();
+  });
+
+  /* ============================================================
+     OUTROS EVENTOS
+     ============================================================ */
+  ['bairro_imovel','area_terreno'].forEach(id => {
+    const el = document.getElementById(id); if(!el) return;
+    el.addEventListener('input', calcularValorVenal);
+    el.addEventListener('change', calcularValorVenal);
+  });
+  ['frente_terreno','fundo_terreno','frente_edif','fundo_edif','num_andares'].forEach(id => {
+    const el = document.getElementById(id); if(!el) return;
+    el.addEventListener('input', calcAreas);
+    el.addEventListener('change', calcAreas);
+  });
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  (function init(){
+    configurarChips();
+
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch(e){}
+    if(draft){
+      const temDados = Object.keys(draft).some(k => draft[k] && draft[k] !== false);
+      if(temDados){
+        form.querySelectorAll('[name]').forEach(el => {
+          if(el.name === 'senha_responsavel') return;
+          if(!(el.name in draft)) return;
+          if(el.type === 'checkbox') el.checked = !!draft[el.name];
+          else if(el.type === 'radio') el.checked = (el.value === draft[el.name]);
+          else el.value = draft[el.name];
+        });
+        document.querySelectorAll('.chip').forEach(function(chip){
+          const input = chip.querySelector('input[type="checkbox"]');
+          if(input) chip.classList.toggle('active', !!input.checked);
+        });
+      }
+    }
+
+    escutarListas();
+    escutarQuadras();
+    escutarLotes();
+    escutarFichas();
+
+    setTimeout(() => {
+      atualizarQuadras('prop');
+      atualizarQuadras('imovel');
+      if(draft){
+        const qp = draft.quadra_prop, lp = draft.lote_prop;
+        const qi = draft.quadra_imovel, li = draft.lote_letra;
+        if(qp){
+          document.getElementById('quadra_prop').value = qp;
+          atualizarLotes('prop');
+          if(lp) document.getElementById('lote_prop').value = lp;
+        }
+        if(qi){
+          document.getElementById('quadra_imovel').value = qi;
+          atualizarLotes('imovel');
+          if(li) document.getElementById('lote_letra').value = li;
+        }
+      }
+      checarCpfVisual();
+      gerarInscricao();
+      calcAreas();
+      atualizarCampoSenha();
+      atualizarAlertaImovel();
+      atualizarAlertaProprietario();
+      updateProgress();
+    }, 500);
+
+    preencherDataEmissao();
+    atualizarCampoSenha();
+    calcAreas();
+    renderStep();
+  })();
+
+})();
+} /* /initFormulario */
+</script>
+</body>
+</html>
