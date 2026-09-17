@@ -522,7 +522,7 @@ body{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
-  getFirestore, collection, addDoc, doc, onSnapshot, serverTimestamp,
+  getFirestore, collection, doc, onSnapshot,
   getDocs, query, where, getDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -538,6 +538,50 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
+
+/* ============================================================
+   WORKER (Cloudflare) — validação + gravação das fichas
+   ------------------------------------------------------------
+   O front-end NÃO grava mais fichas direto no Firestore.
+   Ele envia os dados para o Worker (com o ID Token do usuário
+   logado no Firebase Auth); o Worker valida a permissão (role),
+   valida os dados e só então grava no Firestore usando uma
+   Service Account (Admin), com privilégios que ignoram as
+   regras de segurança do cliente.
+   ============================================================ */
+const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
+
+async function enviarFichaViaWorker(payload){
+  if(!auth.currentUser){
+    const e = new Error('sem_sessao');
+    e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
+    throw e;
+  }
+  const idToken = await auth.currentUser.getIdToken();
+  let resp;
+  try {
+    resp = await fetch(WORKER_URL + '/fichas', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + idToken
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch(networkErr){
+    const e = new Error('falha_rede');
+    e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
+    throw e;
+  }
+  let data = null;
+  try { data = await resp.json(); } catch(parseErr){}
+  if(!resp.ok){
+    const e = new Error((data && data.error) || 'erro_worker_' + resp.status);
+    e.mensagemUsuario = (data && data.message) || 'Falha ao salvar na nuvem.';
+    throw e;
+  }
+  return data;
+}
 
 /* ============================================================
    AUTH GATE — valida role 'funcionario' (ou superior)
@@ -1482,17 +1526,15 @@ function initFormulario(){
 
     try {
       const payload = collect();
-      payload.criado_em = serverTimestamp();
-      payload.origem = 'mobile';
-      payload.criado_por_uid = auth.currentUser ? auth.currentUser.uid : null;
-      payload.criado_por_email = auth.currentUser ? auth.currentUser.email : null;
-      await addDoc(collection(db, 'fichas'), payload);
+      // criado_em / origem / criado_por_* agora são definidos pelo
+      // Worker no servidor — não confiamos mais nesses valores vindos do cliente.
+      await enviarFichaViaWorker(payload);
       toast('Ficha enviada para a nuvem!', 'success');
       try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
       setTimeout(() => { clearForm(); window.scrollTo({ top:0, behavior:'smooth' }); }, 500);
     } catch(err){
       console.error(err);
-      toast('Falha ao salvar na nuvem. Verifique a conexão.', 'error');
+      toast(err.mensagemUsuario || 'Falha ao salvar na nuvem. Verifique a conexão.', 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalHTML;
