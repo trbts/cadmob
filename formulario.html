@@ -41,8 +41,10 @@ body{
   position:absolute; top:calc(var(--safe-top) + 12px); left:12px;
   display:flex; align-items:center; gap:6px; padding:5px 10px 5px 5px;
   border-radius:99px; background:rgba(255,255,255,.14); color:#fff;
-  font-size:11.5px; font-weight:600; max-width:140px;
+  font-size:11.5px; font-weight:600; max-width:150px;
+  border:0; font-family:inherit; cursor:pointer; transition:background .15s;
 }
+.header-user:active{ transform:scale(.96); background:rgba(255,255,255,.28); }
 .header-user .h-avatar{
   width:22px; height:22px; border-radius:99px;
   background:#fff; color:var(--primary); display:grid; place-items:center;
@@ -50,7 +52,10 @@ body{
 }
 .header-user .h-name{
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  max-width:100px;
+  max-width:88px;
+}
+.header-user .h-logout-icon{
+  width:14px; height:14px; flex:0 0 auto; opacity:.85;
 }
 
 .stepper{ display:flex; align-items:center; justify-content:center; max-width:420px; margin:16px auto 0; }
@@ -78,8 +83,8 @@ body{
 .field{ display:flex; flex-direction:column; gap:6px; margin-top:14px; min-width:0; }
 .field > label{ font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); }
 .field > label .req{ color:var(--danger); margin-left:2px; }
-.field input, .field select, .field textarea{ width:100%; min-height:48px; padding:12px 13px; font-family:inherit; font-size:16px; color:var(--text); background:#fbfcfe; border:1.5px solid var(--border); border-radius:12px; outline:none; transition:all .18s; -webkit-appearance:none; appearance:none; }
-.field select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; padding-right:38px; }
+.field input, .field select, .field textarea{ width:100%; min-height:48px; padding:12px 13px; font-family:inherit; font-size:16px; color:var(--text); background:#fbfcfe; border:1.5px solid var(--border); border-radius:12px; outline:none; transition:all .18s; -webkit-appearance:none; appearance:none; text-overflow:ellipsis; }
+.field select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; padding-right:38px; white-space:nowrap; overflow:hidden; }
 .field input:focus, .field select:focus{ border-color:var(--primary); background:#fff; box-shadow:0 0 0 3.5px rgba(13,92,171,.12); }
 .field input::placeholder{ color:#a9b6c5; }
 .field.invalid input, .field.invalid select{ border-color:var(--danger); background:#fff6f6; }
@@ -105,7 +110,7 @@ body{
 .row{ display:grid; gap:0 10px; }
 .row-2{ grid-template-columns:1fr 1fr; }
 .row-3{ grid-template-columns:1fr 1fr 1fr; }
-.cep-row{ grid-template-columns:1.2fr 1.6fr .65fr; }
+.cep-row{ grid-template-columns:1fr 1.7fr .6fr; }
 
 .chips{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
 .chip{ display:flex; align-items:center; gap:9px; min-height:50px; padding:10px 11px; background:#fbfcfe; border:1.5px solid var(--border); border-radius:13px; cursor:pointer; user-select:none; transition:border-color .16s, background .16s, transform .1s; }
@@ -169,6 +174,12 @@ body{
 }
 .photo-block.has-photo{
   border-style:solid; background:#fff; padding:12px;
+}
+.photo-block.invalid{
+  border-color:var(--danger); background:#fff6f6;
+}
+.photo-block .req-hint{
+  margin-top:10px; font-size:11.5px; font-weight:700; color:var(--danger);
 }
 .photo-btn{
   display:inline-flex; align-items:center; gap:10px; height:48px; padding:0 20px;
@@ -242,10 +253,11 @@ body{
 <div id="appShell" style="display:none;">
 
 <header class="app-header">
-  <div class="header-user" id="headerUser" title="Usuário logado">
+  <button type="button" class="header-user" id="headerUser" title="Sair da conta">
     <span class="h-avatar" id="headerAvatar">—</span>
     <span class="h-name" id="headerName">—</span>
-  </div>
+    <svg class="h-logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+  </button>
   <button type="button" class="header-clear" id="btnClear" title="Limpar ficha">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
   </button>
@@ -296,8 +308,8 @@ body{
 
           <p class="sub-head">Endereço do Lote</p>
 
-          <div class="row row-3">
-            <div class="field"><label for="bairro_prop">Bairro</label><select id="bairro_prop" name="bairro_prop" required><option value="">—</option></select></div>
+          <div class="field"><label for="bairro_prop">Bairro</label><select id="bairro_prop" name="bairro_prop" required><option value="">—</option></select></div>
+          <div class="row row-2">
             <div class="field"><label for="quadra_prop">Quadra</label><select id="quadra_prop" name="quadra_prop" required disabled><option value="">—</option></select></div>
             <div class="field"><label for="lote_prop">Lote</label><select id="lote_prop" name="lote_prop" required disabled><option value="">—</option></select></div>
           </div>
@@ -380,8 +392,8 @@ body{
       <div class="card"><div class="card-body">
         <div class="field"><label for="inscricao_anterior">Inscrição Anterior</label><input type="text" id="inscricao_anterior" name="inscricao_anterior" readonly placeholder="00.00.000.000.000"></div>
 
-        <div class="row row-3">
-          <div class="field"><label for="bairro_imovel">Bairro</label><select id="bairro_imovel" name="bairro_imovel" required><option value="">—</option></select></div>
+        <div class="field"><label for="bairro_imovel">Bairro</label><select id="bairro_imovel" name="bairro_imovel" required><option value="">—</option></select></div>
+        <div class="row row-2">
           <div class="field"><label for="quadra_imovel">Quadra</label><select id="quadra_imovel" name="quadra_imovel" required disabled><option value="">—</option></select></div>
           <div class="field"><label for="lote_letra">Lote</label><select id="lote_letra" name="lote_letra" required disabled><option value="">—</option></select></div>
         </div>
@@ -400,7 +412,7 @@ body{
         <div class="row cep-row">
           <div class="field"><label for="cep_imovel">CEP</label><input type="text" id="cep_imovel" name="cep_imovel" inputmode="numeric" data-mask="cep" placeholder="00000-000"></div>
           <div class="field"><label for="cidade_imovel">Cidade</label><input type="text" id="cidade_imovel" name="cidade_imovel" maxlength="50" placeholder="Cidade"></div>
-          <div class="field"><label for="uf_imovel">Estado (UF)</label><input type="text" id="uf_imovel" name="uf_imovel" maxlength="2" placeholder="UF" style="text-transform:uppercase"></div>
+          <div class="field"><label for="uf_imovel">UF</label><input type="text" id="uf_imovel" name="uf_imovel" maxlength="2" placeholder="UF" style="text-transform:uppercase"></div>
         </div>
         <div class="field">
           <label for="valor_venal">Valor Venal (R$) — cálculo automático</label>
@@ -408,7 +420,7 @@ body{
           <div class="hint" id="valorVenalHint">Selecione o bairro e informe as medidas do terreno (etapa 2).</div>
         </div>
 
-        <p class="sub-head">Foto do Imóvel</p>
+        <p class="sub-head">Foto do Imóvel <span class="req">*</span></p>
         <div class="photo-block" id="photoBlock">
           <input type="file" id="foto_input" accept="image/*" capture="environment" hidden>
 
@@ -420,7 +432,7 @@ body{
               </svg>
               Tirar foto
             </button>
-            <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio.</p>
+            <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio. Se a localização estiver disponível, ela é adicionada na foto e enviada junto com a ficha.</p>
           </div>
 
           <div class="photo-preview" id="photoPreview" style="display:none;">
@@ -560,6 +572,9 @@ body{
     <section class="step-panel" data-step="7">
       <div class="card"><div class="card-body">
         <div class="field"><label for="responsavel">Nome do Responsável</label><select id="responsavel" name="responsavel" required><option value="">Carregando...</option></select></div>
+        <div class="field" id="wrap_responsavel_logado" style="display:none;">
+          <div class="hint">Conectado como <strong class="logado-nome">—</strong> · <a href="#" id="linkTrocarResponsavel" style="color:var(--primary);font-weight:700;">Trocar</a></div>
+        </div>
         <div class="field" id="wrap_senha_resp" style="display:none;">
           <label for="senha_responsavel">Senha de Acesso <span class="req">*</span></label>
           <input type="password" id="senha_responsavel" name="senha_responsavel" autocomplete="current-password" placeholder="Digite sua senha de funcionário">
@@ -676,9 +691,14 @@ function gateHide(){
   document.getElementById('authGate').classList.add('hidden');
   document.getElementById('appShell').style.display = '';
 }
-document.getElementById('gateLogout').addEventListener('click', async () => {
+async function sairDaConta(){
   try { await signOut(auth); } catch(e){}
   window.location.replace('formulario-login.html');
+}
+document.getElementById('gateLogout').addEventListener('click', sairDaConta);
+document.getElementById('headerUser').addEventListener('click', function(){
+  if(!window.confirm('Deseja sair da sua conta?')) return;
+  sairDaConta();
 });
 
 function initials(s){
@@ -744,6 +764,24 @@ function initFormulario(){
   const form = document.getElementById('fichaForm');
   const toastEl = document.getElementById('toast');
   const DRAFT_KEY = 'careiro_ficha_draft_v3';
+  const RESP_LOGIN_KEY = 'careiro_responsavel_logado_v1';
+
+  /* ============================================================
+     LOGIN PERSISTENTE DO RESPONSÁVEL (etapa 7)
+     ------------------------------------------------------------
+     Depois que o responsável digita a senha corretamente uma vez
+     neste aparelho, ele fica "logado" e não precisa redigitar a
+     senha nas próximas fichas — até clicar em "Trocar".
+     ============================================================ */
+  function getResponsavelLogado(){
+    try { return localStorage.getItem(RESP_LOGIN_KEY) || ''; } catch(e){ return ''; }
+  }
+  function setResponsavelLogado(nome){
+    try { localStorage.setItem(RESP_LOGIN_KEY, nome || ''); } catch(e){}
+  }
+  function limparResponsavelLogado(){
+    try { localStorage.removeItem(RESP_LOGIN_KEY); } catch(e){}
+  }
 
   /* ============================================================
      ESTADO
@@ -833,8 +871,11 @@ function initFormulario(){
     const list = getFuncionarios();
     sel.innerHTML = '<option value="">' + (list.length ? 'Selecione' : 'Nenhum responsável cadastrado') + '</option>' +
       list.map(n => '<option value="' + String(n).replace(/"/g,'&quot;') + '">' + esc(n) + '</option>').join('');
+    const logado = getResponsavelLogado();
     if(atual) sel.value = atual;
+    else if(logado && list.includes(logado)) sel.value = logado;
     atualizarCampoSenha();
+    syncTitle(sel);
   }
   function popularBairros(){
     const list = getBairros();
@@ -844,6 +885,7 @@ function initFormulario(){
       sel.innerHTML = '<option value="">' + (list.length ? 'Selecione' : 'Nenhum bairro cadastrado') + '</option>' +
         list.map(b => '<option value="' + String(b.nome).replace(/"/g,'&quot;') + '">' + esc(b.numero) + ' - ' + esc(b.nome) + '</option>').join('');
       if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
+      syncTitle(sel);
     });
   }
   function popularRuas(){
@@ -854,9 +896,30 @@ function initFormulario(){
       sel.innerHTML = '<option value="">' + (list.length ? 'Selecione a rua' : 'Nenhum logradouro cadastrado') + '</option>' +
         list.map(r => '<option value="' + String(r).replace(/"/g,'&quot;') + '">' + esc(r) + '</option>').join('');
       if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
+      syncTitle(sel);
     });
   }
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* ============================================================
+     TOOLTIP DE TEXTO COMPLETO
+     ------------------------------------------------------------
+     Em campos estreitos, o valor selecionado pode ficar maior que
+     a caixa. Mantemos o texto completo no atributo "title" para
+     que ele apareça ao passar o mouse / segurar o toque.
+     ============================================================ */
+  function syncTitle(el){
+    if(!el) return;
+    if(el.tagName === 'SELECT'){
+      const opt = el.options[el.selectedIndex];
+      el.title = opt ? opt.textContent.trim() : '';
+    } else {
+      el.title = el.value || '';
+    }
+  }
+  function refreshTitles(){
+    form.querySelectorAll('select, input[readonly]').forEach(syncTitle);
+  }
 
   /* ============================================================
      QUADRAS E LOTES DINÂMICOS
@@ -871,11 +934,12 @@ function initFormulario(){
       selL.innerHTML = '<option value="">—</option>';
       selL.value = '';
       selL.disabled = !bairro;
+      syncTitle(selL);
     }
     if(inpU && inpU.value) inpU.value = '';
 
     if(!bairro){
-      if(selQ){ selQ.innerHTML = '<option value="">—</option>'; selQ.value = ''; selQ.disabled = true; }
+      if(selQ){ selQ.innerHTML = '<option value="">—</option>'; selQ.value = ''; selQ.disabled = true; syncTitle(selQ); }
       if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
       return;
     }
@@ -888,6 +952,7 @@ function initFormulario(){
         lista.map(q => '<option value="' + esc(q.numero) + '">' + esc(q.numero) + (q.label ? ' — ' + esc(q.label) : '') + '</option>').join('');
       if(atualQ && lista.some(q => q.numero === atualQ)) selQ.value = atualQ;
       else selQ.value = '';
+      syncTitle(selQ);
     }
 
     const quadraAtual = selQ ? selQ.value : '';
@@ -905,6 +970,7 @@ function initFormulario(){
     selL.innerHTML = '<option value="">—</option>';
     selL.value = '';
     selL.disabled = !quadra;
+    syncTitle(selL);
 
     if(inpU && inpU.value) inpU.value = '';
 
@@ -918,6 +984,7 @@ function initFormulario(){
       lista.map(function(l){
         return '<option value="' + esc(l.numero) + '">' + esc(l.numero) + (l.label ? ' — ' + esc(l.label) : '') + '</option>';
       }).join('');
+    syncTitle(selL);
 
     if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
   }
@@ -958,12 +1025,25 @@ function initFormulario(){
         const u = normalizarUnidade(f.unidade_imovel);
         if(u && !usadas.includes(u)) usadas.push(u);
       });
+
+      // Já foi informada uma unidade própria e ela não colide com nenhuma
+      // já cadastrada nesse lote → é um desmembramento válido, não um problema.
+      if(normalizarUnidade(unidade)){
+        el.className = 'alert show success';
+        el.innerHTML =
+          '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Unidade disponível</div>' +
+          'Este lote já possui ' + todas.length + ' cadastro(s)' +
+          (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
+          ', mas a unidade <strong>' + esc(normalizarUnidade(unidade)) + '</strong> ainda está livre (desmembramento do lote).';
+        return;
+      }
+
       el.className = 'alert show warn';
       el.innerHTML =
         '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Lote com cadastros existentes</div>' +
         'Este lote já possui ' + todas.length + ' cadastro(s)' +
         (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
-        '. Informe uma unidade diferente para prosseguir.';
+        '. Informe uma unidade diferente (ex.: A, B) para cadastrar este como um desmembramento do lote.';
       return;
     }
 
@@ -1009,12 +1089,25 @@ function initFormulario(){
         const u = normalizarUnidade(f.unidade_imovel);
         if(u && !usadas.includes(u)) usadas.push(u);
       });
+
+      // Já foi informada uma unidade própria e ela não colide com nenhuma
+      // já cadastrada nesse lote → é um desmembramento válido, não um problema.
+      if(normalizarUnidade(unidade)){
+        el.className = 'alert show success';
+        el.innerHTML =
+          '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Unidade disponível</div>' +
+          'Este lote já possui ' + todas.length + ' cadastro(s)' +
+          (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
+          ', mas a unidade <strong>' + esc(normalizarUnidade(unidade)) + '</strong> ainda está livre (desmembramento do lote).';
+        return;
+      }
+
       el.className = 'alert show warn';
       el.innerHTML =
         '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Lote com cadastros existentes</div>' +
         'Este lote já possui ' + todas.length + ' cadastro(s)' +
         (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
-        '. Informe uma unidade diferente para prosseguir.';
+        '. Informe uma unidade diferente (ex.: A, B) para cadastrar este como um desmembramento do lote.';
       return;
     }
 
@@ -1117,6 +1210,7 @@ function initFormulario(){
   let fotoBase64 = '';
   let fotoTipo   = '';
   let fotoTamanhoBytes = 0;
+  let fotoGeo = null; // { lat, lng, precisao, horario }
 
   const photoInput   = document.getElementById('foto_input');
   const photoBlock   = document.getElementById('photoBlock');
@@ -1143,8 +1237,10 @@ function initFormulario(){
     fotoBase64 = '';
     fotoTipo = '';
     fotoTamanhoBytes = 0;
+    fotoGeo = null;
     if(photoImg) photoImg.removeAttribute('src');
     if(photoInput) photoInput.value = '';
+    if(photoBlock) photoBlock.classList.remove('invalid');
     renderFotoUI();
   }
 
@@ -1178,10 +1274,12 @@ function initFormulario(){
       r.readAsDataURL(blob);
     });
   }
-  function desenharEmCanvas(img, w, h){
+  function desenharEmCanvas(img, w, h, geo){
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    carimbarLocalizacao(ctx, w, h, geo);
     return c;
   }
   function suportaWebP(){
@@ -1192,8 +1290,60 @@ function initFormulario(){
     } catch(e){ return false; }
   }
 
+  /* -------- Geolocalização -------- */
+  function obterLocalizacao(timeoutMs){
+    const limite = timeoutMs || 8000;
+    return new Promise(resolve => {
+      if(!('geolocation' in navigator)){ resolve(null); return; }
+      let resolvido = false;
+      const encerrar = (val) => { if(resolvido) return; resolvido = true; resolve(val); };
+      const timer = setTimeout(() => encerrar(null), limite);
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          clearTimeout(timer);
+          encerrar({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            precisao: pos.coords.accuracy || null,
+            horario: pos.timestamp || Date.now()
+          });
+        },
+        () => { clearTimeout(timer); encerrar(null); },
+        { enableHighAccuracy: true, timeout: limite, maximumAge: 0 }
+      );
+    });
+  }
+
+  /* -------- Carimbo de localização/data na própria imagem -------- */
+  function carimbarLocalizacao(ctx, w, h, geo){
+    if(!geo) return;
+    const barH = Math.max(30, Math.round(h * 0.085));
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.58)';
+    ctx.fillRect(0, h - barH, w, barH);
+
+    const fonteBase = Math.max(11, Math.round(w / 34));
+    const pad = Math.round(fonteBase * 0.7);
+    const linha1 = '📍 ' + geo.lat.toFixed(6) + ', ' + geo.lng.toFixed(6) +
+      (geo.precisao ? ' (±' + Math.round(geo.precisao) + 'm)' : '');
+    const linha2 = new Date(geo.horario).toLocaleString('pt-BR');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.textBaseline = 'middle';
+    if(barH >= fonteBase * 2.3){
+      ctx.font = fonteBase + 'px -apple-system, Arial, sans-serif';
+      ctx.fillText(linha1, pad, h - barH + barH * 0.32);
+      ctx.font = Math.round(fonteBase * 0.86) + 'px -apple-system, Arial, sans-serif';
+      ctx.fillText(linha2, pad, h - barH + barH * 0.74);
+    } else {
+      ctx.font = fonteBase + 'px -apple-system, Arial, sans-serif';
+      ctx.fillText(linha1 + '  ·  ' + linha2, pad, h - barH / 2);
+    }
+    ctx.restore();
+  }
+
   /* -------- Compressão principal -------- */
-  async function comprimirImagemParaBase64(file, maxBytes){
+  async function comprimirImagemParaBase64(file, maxBytes, geo){
     const alvo = maxBytes || (150 * 1024);
     const img = await loadImageFromFile(file);
 
@@ -1215,7 +1365,7 @@ function initFormulario(){
     // Fase 1: varia qualidade no tamanho atual
     const qualidades = [0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.28, 0.22];
     for(const q of qualidades){
-      const canvas = desenharEmCanvas(img, w, h);
+      const canvas = desenharEmCanvas(img, w, h, geo);
       let blob = await canvasToBlob(canvas, formatoPrimario, q);
       if(!blob && formatoPrimario !== fallback) blob = await canvasToBlob(canvas, fallback, q);
       if(!blob) continue;
@@ -1231,7 +1381,7 @@ function initFormulario(){
       w = Math.max(320, Math.round(w * escala));
       h = Math.max(320, Math.round(h * escala));
 
-      const canvas = desenharEmCanvas(img, w, h);
+      const canvas = desenharEmCanvas(img, w, h, geo);
       let blob = await canvasToBlob(canvas, formatoPrimario, 0.72);
       if(!blob && formatoPrimario !== fallback) blob = await canvasToBlob(canvas, fallback, 0.72);
       if(!blob) break;
@@ -1256,19 +1406,29 @@ function initFormulario(){
       return;
     }
     setFotoLoading(true);
+    const geo = await obterLocalizacao(8000);
     try {
-      const res = await comprimirImagemParaBase64(file, 150 * 1024);
+      const res = await comprimirImagemParaBase64(file, 150 * 1024, geo);
       fotoBase64 = res.base64;
       fotoTipo   = res.tipo;
       fotoTamanhoBytes = res.tamanho;
+      fotoGeo = geo;
       photoImg.src = 'data:' + res.tipo + ';base64,' + res.base64;
+      if(photoBlock) photoBlock.classList.remove('invalid');
       const fmtLabel = /webp/i.test(res.tipo) ? 'WebP' : 'JPEG';
-      photoInfo.innerHTML =
+      let infoHtml =
         'Tamanho final: <strong>' + (res.tamanho / 1024).toFixed(1) + ' KB</strong>' +
         ' · ' + res.width + '×' + res.height + ' px · ' + fmtLabel;
+      if(geo){
+        infoHtml += '<br>📍 ' + geo.lat.toFixed(6) + ', ' + geo.lng.toFixed(6) +
+          (geo.precisao ? ' <span style="color:var(--muted)">(±' + Math.round(geo.precisao) + ' m)</span>' : '');
+      } else {
+        infoHtml += '<br><span style="color:var(--danger)">Localização não incluída (ative o GPS/permissão e tire a foto novamente, se necessário).</span>';
+      }
+      photoInfo.innerHTML = infoHtml;
       renderFotoUI();
       updateProgress();
-      toast('Foto processada (' + (res.tamanho/1024).toFixed(0) + ' KB).', 'success');
+      toast(geo ? 'Foto processada com localização.' : 'Foto processada (sem localização).', 'success');
     } catch(err){
       console.error('[foto]', err);
       renderFotoUI();
@@ -1494,10 +1654,31 @@ function initFormulario(){
      SENHA DO RESPONSÁVEL
      ============================================================ */
   function atualizarCampoSenha(){
-    const respEl = document.getElementById('responsavel');
-    const wrap   = document.getElementById('wrap_senha_resp');
-    const senhaEl= document.getElementById('senha_responsavel');
+    const respEl     = document.getElementById('responsavel');
+    const wrap       = document.getElementById('wrap_senha_resp');
+    const senhaEl    = document.getElementById('senha_responsavel');
+    const logadoWrap = document.getElementById('wrap_responsavel_logado');
     if(!respEl || !wrap || !senhaEl) return;
+
+    const logado = getResponsavelLogado();
+
+    // Responsável selecionado já autenticou a senha antes neste aparelho:
+    // não pede a senha de novo, só mostra quem está logado.
+    if(respEl.value && logado && logado === respEl.value){
+      wrap.style.display = 'none';
+      senhaEl.removeAttribute('required');
+      senhaEl.value = '';
+      wrap.classList.remove('invalid','valid');
+      if(logadoWrap){
+        logadoWrap.style.display = '';
+        const nomeEl = logadoWrap.querySelector('.logado-nome');
+        if(nomeEl) nomeEl.textContent = logado;
+      }
+      return;
+    }
+
+    if(logadoWrap) logadoWrap.style.display = 'none';
+
     if(respEl.value){
       wrap.style.display = '';
       senhaEl.setAttribute('required','');
@@ -1510,6 +1691,13 @@ function initFormulario(){
   }
   document.getElementById('responsavel').addEventListener('change', function(){
     atualizarCampoSenha(); updateProgress();
+  });
+  document.getElementById('linkTrocarResponsavel').addEventListener('click', function(e){
+    e.preventDefault();
+    limparResponsavelLogado();
+    atualizarCampoSenha();
+    const senhaEl = document.getElementById('senha_responsavel');
+    if(senhaEl) setTimeout(() => { try { senhaEl.focus(); } catch(err){} }, 50);
   });
 
   /* ============================================================
@@ -1615,6 +1803,12 @@ function initFormulario(){
       data.foto_base64        = fotoBase64;
       data.foto_tipo          = fotoTipo;
       data.foto_tamanho_bytes = fotoTamanhoBytes;
+      if(fotoGeo){
+        data.foto_latitude       = fotoGeo.lat;
+        data.foto_longitude      = fotoGeo.lng;
+        data.foto_precisao_m     = fotoGeo.precisao;
+        data.foto_geo_horario    = fotoGeo.horario;
+      }
     }
     return data;
   }
@@ -1636,6 +1830,7 @@ function initFormulario(){
     currentStep = 1;
     renderStep();
     updateProgress();
+    refreshTitles();
     try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
   }
 
@@ -1711,13 +1906,34 @@ function initFormulario(){
           });
         }
       }
+
+      const photoBlock = document.getElementById('photoBlock');
+      if(!fotoBase64){
+        if(photoBlock) photoBlock.classList.add('invalid');
+        invalidos.push({
+          el: document.getElementById('btnTirarFoto') || photoBlock,
+          msg: 'A foto do imóvel é obrigatória.'
+        });
+      } else if(photoBlock){
+        photoBlock.classList.remove('invalid');
+      }
     }
 
     const respEl  = document.getElementById('responsavel');
     const senhaEl = document.getElementById('senha_responsavel');
     if(respEl && panel.contains(respEl) && respEl.value){
       const wrap = senhaEl ? senhaEl.closest('.field') : null;
-      if(!senhaEl || !senhaEl.value.trim()){
+      const logado = getResponsavelLogado();
+      if(logado && logado === respEl.value){
+        // Já autenticado anteriormente neste aparelho — não exige senha de novo.
+        const func = grupoAtivo('funcionarios').find(o => o.label === respEl.value);
+        if(!func){
+          limparResponsavelLogado();
+          atualizarCampoSenha();
+          invalidos.push({ el: respEl, msg: 'Responsável inativo ou não cadastrado.' });
+        }
+        // ok, segue validado
+      } else if(!senhaEl || !senhaEl.value.trim()){
         if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
         invalidos.push({ el: senhaEl || respEl, msg: 'Digite a senha de acesso do responsável.' });
       } else {
@@ -1733,6 +1949,8 @@ function initFormulario(){
           invalidos.push({ el: senhaEl, msg: 'Senha incorreta para ' + respEl.value + '.' });
         } else {
           if(wrap){ wrap.classList.remove('invalid'); wrap.classList.add('valid'); }
+          setResponsavelLogado(respEl.value);
+          atualizarCampoSenha();
         }
       }
     }
@@ -1807,8 +2025,8 @@ function initFormulario(){
       try { localStorage.setItem(DRAFT_KEY, JSON.stringify(collect(false))); } catch(e){}
     }, 700);
   }
-  form.addEventListener('input',  agendarRascunho);
-  form.addEventListener('change', function(){ gerarInscricao(); agendarRascunho(); });
+  form.addEventListener('input',  function(){ refreshTitles(); agendarRascunho(); });
+  form.addEventListener('change', function(){ gerarInscricao(); refreshTitles(); agendarRascunho(); });
 
   /* ============================================================
      EVENTOS — BAIRRO / QUADRA / LOTE / UNIDADE
@@ -1910,6 +2128,7 @@ function initFormulario(){
       atualizarAlertaImovel();
       atualizarAlertaProprietario();
       updateProgress();
+      refreshTitles();
     }, 500);
 
     preencherDataEmissao();
@@ -1917,6 +2136,7 @@ function initFormulario(){
     calcAreas();
     renderFotoUI();
     renderStep();
+    refreshTitles();
   })();
 
 })();
