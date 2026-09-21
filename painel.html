@@ -997,15 +997,22 @@ const LOG_ITEMS = [
   ['log_correio',         'Correio']
 ];
 
-/* ============================================================
-   COMPLETUDE DA FICHA (Terreno / Edificação)
-   ============================================================ */
-const TERRENO_CAMPOS = ['situacao','topografia','pedologia','ocupacao','patrimonio'];
-const EDIF_CAMPOS    = ['alinhamento','posicionamento','situacao_unid','estrutura','cobertura','paredes','forro','revest_fachada','uso_principal','instal_sanitaria','instal_eletrica','piso','conservacao'];
+
+/* Medidas da Etapa 2 (Terreno / Edificação).
+   A ficha é considerada "Completa" somente quando TODAS as medidas
+   abaixo estão preenchidas. Como as Etapas 5 e 6 (características
+   do Terreno/Edificação) já são obrigatórias no formulário mobile,
+   não é preciso validá-las aqui. */
+const MEDIDAS_CAMPOS = [
+  'frente_terreno','fundo_terreno','lado_dir_terreno','lado_esq_terreno',
+  'frente_edif','fundo_edif','lado_dir_edif','lado_esq_edif',
+  'num_frentes','num_andares','ano_construcao'
+];
 
 function fichaCompleta(r){
-  return TERRENO_CAMPOS.every(function(f){ return !!r[f]; })
-      && EDIF_CAMPOS.every(function(f){ return !!r[f]; });
+  return MEDIDAS_CAMPOS.every(function(f){
+    return String(r[f] || '').trim() !== '';
+  });
 }
 
 /* ============================================================
