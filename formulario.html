@@ -39,23 +39,14 @@ body{
 /* ===== USER CHIP (usuário logado) ===== */
 .header-user{
   position:absolute; top:calc(var(--safe-top) + 12px); left:12px;
-  display:flex; align-items:center; gap:6px; padding:5px 10px 5px 5px;
+  display:flex; align-items:center; justify-content:center;
+  width:38px; height:38px; padding:0;
   border-radius:99px; background:rgba(255,255,255,.14); color:#fff;
-  font-size:11.5px; font-weight:600; max-width:150px;
   border:0; font-family:inherit; cursor:pointer; transition:background .15s;
 }
 .header-user:active{ transform:scale(.96); background:rgba(255,255,255,.28); }
-.header-user .h-avatar{
-  width:22px; height:22px; border-radius:99px;
-  background:#fff; color:var(--primary); display:grid; place-items:center;
-  font-size:10.5px; font-weight:800; flex:0 0 auto;
-}
-.header-user .h-name{
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  max-width:88px;
-}
 .header-user .h-logout-icon{
-  width:14px; height:14px; flex:0 0 auto; opacity:.85;
+  width:18px; height:18px; flex:0 0 auto;
 }
 
 .stepper{ display:flex; align-items:center; justify-content:center; max-width:420px; margin:16px auto 0; }
@@ -110,7 +101,7 @@ body{
 .row{ display:grid; gap:0 10px; }
 .row-2{ grid-template-columns:1fr 1fr; }
 .row-3{ grid-template-columns:1fr 1fr 1fr; }
-.cep-row{ grid-template-columns:1fr 1.7fr .6fr; }
+.cep-row{ grid-template-columns:minmax(122px,1fr) minmax(0,1.6fr) minmax(56px,.75fr); }
 
 .chips{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
 .chip{ display:flex; align-items:center; gap:9px; min-height:50px; padding:10px 11px; background:#fbfcfe; border:1.5px solid var(--border); border-radius:13px; cursor:pointer; user-select:none; transition:border-color .16s, background .16s, transform .1s; }
@@ -228,7 +219,6 @@ body{
   .card-body{ padding:2px 13px 16px; }
   .app-main{ padding-left:11px; padding-right:11px; }
   .btn-ghost{ flex:0 0 42%; }
-  .header-user .h-name{ max-width:80px; }
 }
 @media (min-width:600px){ .chips{ grid-template-columns:repeat(3, 1fr); } }
 </style>
@@ -254,8 +244,6 @@ body{
 
 <header class="app-header">
   <button type="button" class="header-user" id="headerUser" title="Sair da conta">
-    <span class="h-avatar" id="headerAvatar">—</span>
-    <span class="h-name" id="headerName">—</span>
     <svg class="h-logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
   </button>
   <button type="button" class="header-clear" id="btnClear" title="Limpar ficha">
@@ -701,12 +689,6 @@ document.getElementById('headerUser').addEventListener('click', function(){
   sairDaConta();
 });
 
-function initials(s){
-  const parts = String(s || '').replace(/@.*/, '').split(/[\s._-]+/).filter(Boolean);
-  if(!parts.length) return '?';
-  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
-}
-
 let booted = false;
 onAuthStateChanged(auth, async (user) => {
   if(!user){
@@ -716,13 +698,10 @@ onAuthStateChanged(auth, async (user) => {
   gateShow({ loading:true, msg:'Validando permissões…' });
 
   let role = 'user';
-  let nome = user.displayName || (user.email || '').split('@')[0] || 'Usuário';
   try {
     const snap = await getDoc(doc(db, 'usuarios', user.uid));
     if(snap.exists()){
-      const d = snap.data();
-      role = String(d.role || 'user').toLowerCase();
-      nome = d.nome || nome;
+      role = String(snap.data().role || 'user').toLowerCase();
     }
   } catch(err){
     console.error('[gate] erro ao ler role:', err);
@@ -743,9 +722,7 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // OK — preenche chip do usuário e inicializa o formulário
-  document.getElementById('headerAvatar').textContent = initials(user.email || nome);
-  document.getElementById('headerName').textContent   = nome;
+  // OK — libera acesso e inicializa o formulário
   gateHide();
 
   if(!booted){
@@ -949,7 +926,7 @@ function initFormulario(){
     if(selQ){
       selQ.disabled = false;
       selQ.innerHTML = '<option value="">' + (lista.length ? 'Selecione' : 'Nenhuma quadra cadastrada para este bairro') + '</option>' +
-        lista.map(q => '<option value="' + esc(q.numero) + '">' + esc(q.numero) + (q.label ? ' — ' + esc(q.label) : '') + '</option>').join('');
+        lista.map(q => '<option value="' + esc(q.numero) + '">' + esc(q.numero) + '</option>').join('');
       if(atualQ && lista.some(q => q.numero === atualQ)) selQ.value = atualQ;
       else selQ.value = '';
       syncTitle(selQ);
@@ -982,7 +959,7 @@ function initFormulario(){
     const lista = lotesDaQuadra(bairro, quadra);
     selL.innerHTML = '<option value="">' + (lista.length ? 'Selecione' : 'Nenhum lote cadastrado para esta quadra') + '</option>' +
       lista.map(function(l){
-        return '<option value="' + esc(l.numero) + '">' + esc(l.numero) + (l.label ? ' — ' + esc(l.label) : '') + '</option>';
+        return '<option value="' + esc(l.numero) + '">' + esc(l.numero) + '</option>';
       }).join('');
     syncTitle(selL);
 
