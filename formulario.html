@@ -430,7 +430,7 @@ body{
               </svg>
               Tirar foto
             </button>
-            <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio. Se a localização estiver disponível, ela é adicionada na foto e enviada junto com a ficha.</p>
+            <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio. O GPS é acionado em modo de alta precisão e seleciona automaticamente a melhor amostra (≤ 8 m quando possível).</p>
           </div>
 
           <div class="photo-preview" id="photoPreview" style="display:none;">
@@ -755,10 +755,6 @@ function initFormulario(){
 
   /* ============================================================
      LOGIN PERSISTENTE DO RESPONSÁVEL (etapa 7)
-     ------------------------------------------------------------
-     Depois que o responsável digita a senha corretamente uma vez
-     neste aparelho, ele fica "logado" e não precisa redigitar a
-     senha nas próximas fichas — até clicar em "Trocar".
      ============================================================ */
   function getResponsavelLogado(){
     try { return localStorage.getItem(RESP_LOGIN_KEY) || ''; } catch(e){ return ''; }
@@ -890,10 +886,6 @@ function initFormulario(){
 
   /* ============================================================
      TOOLTIP DE TEXTO COMPLETO
-     ------------------------------------------------------------
-     Em campos estreitos, o valor selecionado pode ficar maior que
-     a caixa. Mantemos o texto completo no atributo "title" para
-     que ele apareça ao passar o mouse / segurar o toque.
      ============================================================ */
   function syncTitle(el){
     if(!el) return;
@@ -1013,8 +1005,6 @@ function initFormulario(){
         if(u && !usadas.includes(u)) usadas.push(u);
       });
 
-      // Já foi informada uma unidade própria e ela não colide com nenhuma
-      // já cadastrada nesse lote → é um desmembramento válido, não um problema.
       if(normalizarUnidade(unidade)){
         el.className = 'alert show success';
         el.innerHTML =
@@ -1077,8 +1067,6 @@ function initFormulario(){
         if(u && !usadas.includes(u)) usadas.push(u);
       });
 
-      // Já foi informada uma unidade própria e ela não colide com nenhuma
-      // já cadastrada nesse lote → é um desmembramento válido, não um problema.
       if(normalizarUnidade(unidade)){
         el.className = 'alert show success';
         el.innerHTML =
@@ -1220,6 +1208,13 @@ function initFormulario(){
     photoEmpty.style.display   = on ? 'none' : (fotoBase64 ? 'none' : '');
     photoPreview.style.display = on ? 'none' : (fotoBase64 ? '' : 'none');
   }
+  // Atualiza o texto do indicador de carregamento da foto sem perder o spinner.
+  // Ex.: setFotoLoadingTexto('Localizando… precisão atual 12 m')
+  function setFotoLoadingTexto(txt){
+    if(!photoLoading) return;
+    photoLoading.innerHTML = '<span class="spinner"></span> ' + esc(String(txt || ''));
+  }
+
   function resetFoto(){
     fotoBase64 = '';
     fotoTipo = '';
@@ -1277,27 +1272,80 @@ function initFormulario(){
     } catch(e){ return false; }
   }
 
-  /* -------- Geolocalização -------- */
-  function obterLocalizacao(timeoutMs){
-    const limite = timeoutMs || 8000;
+  /* -------- Geolocalização de alta precisão (watchPosition) --------
+     Em vez de aceitar a primeira leitura do GPS (que costuma chegar
+     com erro de 30–80 m), observamos a posição continuamente e
+     guardamos SEMPRE a amostra com menor `coords.accuracy` (melhor
+     precisão). O watch é encerrado assim que a precisão atinge o
+     alvo (≤ alvoPrecisao) ou quando o tempo limite estoura — nesse
+     caso devolvemos a melhor amostra obtida até ali. Em ambos os
+     caminhos chamamos clearWatch() para liberar o sensor.        */
+  function obterLocalizacaoPrecisa(opts){
+    const cfg          = opts || {};
+    const timeoutMs    = Number(cfg.timeoutMs)    > 0 ? Number(cfg.timeoutMs)    : 8000;
+    const alvoPrecisao = Number(cfg.alvoPrecisao) > 0 ? Number(cfg.alvoPrecisao) : 8;
+    const onUpdate     = typeof cfg.onUpdate === 'function' ? cfg.onUpdate : null;
+
     return new Promise(resolve => {
       if(!('geolocation' in navigator)){ resolve(null); return; }
-      let resolvido = false;
-      const encerrar = (val) => { if(resolvido) return; resolvido = true; resolve(val); };
-      const timer = setTimeout(() => encerrar(null), limite);
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          clearTimeout(timer);
-          encerrar({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            precisao: pos.coords.accuracy || null,
-            horario: pos.timestamp || Date.now()
-          });
-        },
-        () => { clearTimeout(timer); encerrar(null); },
-        { enableHighAccuracy: true, timeout: limite, maximumAge: 0 }
-      );
+
+      let melhor    = null;   // melhor amostra (menor accuracy)
+      let watchId   = null;
+      let encerrado = false;
+      const inicio  = Date.now();
+      let timer     = null;
+
+      const finalizar = () => {
+        if(encerrado) return;
+        encerrado = true;
+        if(watchId !== null){
+          try { navigator.geolocation.clearWatch(watchId); } catch(e){}
+          watchId = null;
+        }
+        if(timer) clearTimeout(timer);
+        resolve(melhor);
+      };
+
+      timer = setTimeout(finalizar, timeoutMs);
+
+      try {
+        watchId = navigator.geolocation.watchPosition(
+          pos => {
+            const acc = Number(pos.coords.accuracy);
+            const amostra = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              precisao: Number.isFinite(acc) ? acc : null,
+              horario: pos.timestamp || Date.now()
+            };
+
+            // Guarda sempre a melhor (menor accuracy)
+            if(melhor === null
+               || (amostra.precisao != null &&
+                   (melhor.precisao == null || amostra.precisao < melhor.precisao))){
+              melhor = amostra;
+            }
+
+            // Notifica o chamador (UI) sobre a precisão corrente
+            if(onUpdate){
+              try { onUpdate(melhor, Date.now() - inicio); } catch(e){}
+            }
+
+            // Atingiu o alvo? Encerra imediatamente.
+            if(melhor && melhor.precisao != null && melhor.precisao <= alvoPrecisao){
+              finalizar();
+            }
+          },
+          () => { finalizar(); }, // erro (permissão/SO) → devolve o que tiver
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: timeoutMs
+          }
+        );
+      } catch(e){
+        finalizar();
+      }
     });
   }
 
@@ -1392,8 +1440,27 @@ function initFormulario(){
       photoInput.value = '';
       return;
     }
+
     setFotoLoading(true);
-    const geo = await obterLocalizacao(8000);
+    setFotoLoadingTexto('Localizando… buscando sinal de GPS');
+
+    // Coleta de GPS com watchPosition: pega sempre a MELHOR amostra.
+    const geo = await obterLocalizacaoPrecisa({
+      timeoutMs: 8000,
+      alvoPrecisao: 8,
+      onUpdate: (melhor, decorridoMs) => {
+        const restante = Math.max(0, Math.round((8000 - decorridoMs) / 1000));
+        if(!melhor || melhor.precisao == null){
+          setFotoLoadingTexto('Localizando… aguardando leitura (' + restante + 's)');
+          return;
+        }
+        const p = Math.round(melhor.precisao);
+        setFotoLoadingTexto('Localizando… precisão atual ' + p + ' m (restam ' + restante + 's)');
+      }
+    });
+
+    setFotoLoadingTexto('Processando imagem…');
+
     try {
       const res = await comprimirImagemParaBase64(file, 150 * 1024, geo);
       fotoBase64 = res.base64;
@@ -1402,17 +1469,23 @@ function initFormulario(){
       fotoGeo = geo;
       photoImg.src = 'data:' + res.tipo + ';base64,' + res.base64;
       if(photoBlock) photoBlock.classList.remove('invalid');
+
       const fmtLabel = /webp/i.test(res.tipo) ? 'WebP' : 'JPEG';
       let infoHtml =
         'Tamanho final: <strong>' + (res.tamanho / 1024).toFixed(1) + ' KB</strong>' +
         ' · ' + res.width + '×' + res.height + ' px · ' + fmtLabel;
+
       if(geo){
         infoHtml += '<br>📍 ' + geo.lat.toFixed(6) + ', ' + geo.lng.toFixed(6) +
           (geo.precisao ? ' <span style="color:var(--muted)">(±' + Math.round(geo.precisao) + ' m)</span>' : '');
+        if(geo.precisao && geo.precisao > 30){
+          infoHtml += '<br><span style="color:var(--danger)">Precisão acima de 30 m — se possível, refaça a foto em área mais aberta.</span>';
+        }
       } else {
         infoHtml += '<br><span style="color:var(--danger)">Localização não incluída (ative o GPS/permissão e tire a foto novamente, se necessário).</span>';
       }
       photoInfo.innerHTML = infoHtml;
+
       renderFotoUI();
       updateProgress();
       toast(geo ? 'Foto processada com localização.' : 'Foto processada (sem localização).', 'success');
@@ -1649,8 +1722,6 @@ function initFormulario(){
 
     const logado = getResponsavelLogado();
 
-    // Responsável selecionado já autenticou a senha antes neste aparelho:
-    // não pede a senha de novo, só mostra quem está logado.
     if(respEl.value && logado && logado === respEl.value){
       wrap.style.display = 'none';
       senhaEl.removeAttribute('required');
@@ -1895,6 +1966,8 @@ function initFormulario(){
       }
 
       const photoBlock = document.getElementById('photoBlock');
+      const PRECISAO_MAX_M = 30; // teto aceitável no cliente
+
       if(!fotoBase64){
         if(photoBlock) photoBlock.classList.add('invalid');
         invalidos.push({
@@ -1903,6 +1976,17 @@ function initFormulario(){
         });
       } else if(photoBlock){
         photoBlock.classList.remove('invalid');
+
+        // Sanidade de precisão: se a melhor amostra ficou acima do teto,
+        // orienta o funcionário a se deslocar e tentar novamente.
+        if(fotoGeo && fotoGeo.precisao != null && fotoGeo.precisao > PRECISAO_MAX_M){
+          photoBlock.classList.add('invalid');
+          invalidos.push({
+            el: document.getElementById('btnTirarFoto') || photoBlock,
+            msg: 'Localização com precisão fraca (±' + Math.round(fotoGeo.precisao) +
+                 ' m). Vá para uma área mais aberta, aguarde o GPS travar e tire a foto novamente.'
+          });
+        }
       }
     }
 
@@ -1912,14 +1996,12 @@ function initFormulario(){
       const wrap = senhaEl ? senhaEl.closest('.field') : null;
       const logado = getResponsavelLogado();
       if(logado && logado === respEl.value){
-        // Já autenticado anteriormente neste aparelho — não exige senha de novo.
         const func = grupoAtivo('funcionarios').find(o => o.label === respEl.value);
         if(!func){
           limparResponsavelLogado();
           atualizarCampoSenha();
           invalidos.push({ el: respEl, msg: 'Responsável inativo ou não cadastrado.' });
         }
-        // ok, segue validado
       } else if(!senhaEl || !senhaEl.value.trim()){
         if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
         invalidos.push({ el: senhaEl || respEl, msg: 'Digite a senha de acesso do responsável.' });
