@@ -1945,26 +1945,104 @@ Pages.estrutura.novaQuadra = function(){
   const bairro = State.est.bairro; if(!bairro) return;
   const existentes = State.quadras.filter(function(q){ return q.bairro === bairro; });
   const proximo = String(existentes.length + 1).padStart(3,'0');
+
   Modal.open({
-    title:'Nova quadra', subtitle:'Bairro ' + bairro, size:'sm', confirmText:'Criar',
+    title:'Nova(s) quadra(s)',
+    subtitle:'Bairro ' + bairro,
+    size:'sm',
+    confirmText:'Criar',
     body:
-      '<div class="field"><label>Número da quadra <span class="req">*</span></label>' +
-        '<input type="text" id="q_num" maxlength="6" value="' + proximo + '" inputmode="numeric"></div>' +
-      '<div class="field"><label>Rótulo (opcional)</label>' +
-        '<input type="text" id="q_lbl" placeholder="Ex.: Quadra próxima à praça"></div>',
+      '<div class="field"><label>Modo de criação</label>' +
+        '<select id="q_modo">' +
+          '<option value="unico">Quadra única</option>' +
+          '<option value="faixa">Faixa de quadras (em lote)</option>' +
+        '</select></div>' +
+
+      '<div id="q_unico_box">' +
+        '<div class="field"><label>Número da quadra <span class="req">*</span></label>' +
+          '<input type="text" id="q_num" maxlength="6" value="' + proximo + '" inputmode="numeric"></div>' +
+        '<div class="field"><label>Rótulo (opcional)</label>' +
+          '<input type="text" id="q_lbl" placeholder="Ex.: Quadra próxima à praça"></div>' +
+      '</div>' +
+
+      '<div id="q_faixa_box" style="display:none;">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<div class="field"><label>De <span class="req">*</span></label>' +
+            '<input type="text" id="q_de" maxlength="6" value="' + proximo + '" inputmode="numeric"></div>' +
+          '<div class="field"><label>Até <span class="req">*</span></label>' +
+            '<input type="text" id="q_ate" maxlength="6" value="' +
+              String(Number(proximo) + 9).padStart(3,'0') + '" inputmode="numeric"></div>' +
+        '</div>' +
+        '<div style="font-size:12px;color:var(--muted);background:var(--primary-light);padding:10px 12px;border-radius:8px;">' +
+          'Os números são completados com zeros à esquerda automaticamente. Ex.: <strong>001</strong> a <strong>010</strong> cria 10 quadras.' +
+        '</div>' +
+      '</div>',
+
     onConfirm: async function(modal){
-      const num = modal.querySelector('#q_num').value.trim();
-      const lbl = modal.querySelector('#q_lbl').value.trim();
-      if(!num){ toast('Informe o número da quadra.', 'warning'); return false; }
-      if(existentes.some(function(q){ return q.numero === num; })){
-        toast('Já existe uma quadra com este número neste bairro.', 'error'); return false;
+      const modo = modal.querySelector('#q_modo').value;
+      const novas = [];
+
+      if(modo === 'unico'){
+        const numRaw = modal.querySelector('#q_num').value.trim();
+        const lbl = modal.querySelector('#q_lbl').value.trim();
+        if(!numRaw){ toast('Informe o número da quadra.', 'warning'); return false; }
+        /* Padrão da quadra: 3 dígitos (ex.: 007), igual ao do lote.
+           Só aplica o zero à esquerda quando o valor digitado é
+           puramente numérico. */
+        const num = /^\d+$/.test(numRaw) ? numRaw.padStart(3, '0') : numRaw;
+        if(existentes.some(function(q){ return q.numero === num; })){
+          toast('Já existe uma quadra com este número neste bairro.', 'error'); return false;
+        }
+        novas.push({ id: uid(), bairro: bairro, numero: num, label: lbl || ('Quadra ' + num) });
+      } else {
+        const de  = modal.querySelector('#q_de').value.trim();
+        const ate = modal.querySelector('#q_ate').value.trim();
+        if(!de || !ate){ toast('Informe os números inicial e final.', 'warning'); return false; }
+
+        const numDe  = parseInt(de.replace(/\D/g,''), 10);
+        const numAte = parseInt(ate.replace(/\D/g,''), 10);
+        if(!Number.isFinite(numDe) || !Number.isFinite(numAte)){
+          toast('Números inválidos.', 'warning'); return false;
+        }
+        if(numAte < numDe){ toast('O número final deve ser ≥ o inicial.', 'warning'); return false; }
+
+        const total = numAte - numDe + 1;
+        if(total > 200){ toast('Máximo de 200 quadras por vez.', 'warning'); return false; }
+
+        /* Padrão da quadra: sempre no mínimo 3 dígitos (000), igual ao
+           padrão do lote — mesmo que "De"/"Até" tenham menos dígitos. */
+        const pad = Math.max(3, String(numDe).length, String(numAte).length);
+        for(let i = numDe; i <= numAte; i++){
+          const num = String(i).padStart(pad, '0');
+          if(existentes.some(function(q){ return q.numero === num; })) continue;
+          if(novas.some(function(q){ return q.numero === num; })) continue;
+          novas.push({ id: uid(), bairro: bairro, numero: num, label: 'Quadra ' + num });
+        }
+        if(!novas.length){
+          toast('Nenhuma quadra nova para criar (todas já existem).', 'warning'); return false;
+        }
       }
-      State.quadras.push({ id: uid(), bairro: bairro, numero: num, label: lbl || ('Quadra ' + num) });
+
+      novas.forEach(function(q){ State.quadras.push(q); });
       await salvarEstrutura();
       renderEstrutura();
-      toast('Quadra criada.', 'success', 'Quadra ' + num);
+      toast(novas.length + ' quadra(s) criada(s).', 'success', novas.map(function(q){ return q.numero; }).join(', '));
     }
   });
+
+  // Alterna visualmente os dois blocos (único / faixa)
+  setTimeout(function(){
+    const sel = document.getElementById('q_modo');
+    const boxUnico = document.getElementById('q_unico_box');
+    const boxFaixa = document.getElementById('q_faixa_box');
+    if(sel){
+      sel.addEventListener('change', function(){
+        const isFaixa = sel.value === 'faixa';
+        boxUnico.style.display = isFaixa ? 'none' : '';
+        boxFaixa.style.display = isFaixa ? '' : 'none';
+      });
+    }
+  }, 60);
 };
 Pages.estrutura.editLote = function(lid){
   const l = State.lotes.find(function(x){ return x.id === lid; }); if(!l) return;
