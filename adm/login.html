@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icons/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Entrar · Cadastro Imobiliário</title>
 <style>
 :root{
@@ -36,11 +40,11 @@ button{ cursor:pointer; border:0; background:none; }
 .auth-head{ text-align:center; margin-bottom:26px; }
 .auth-logo{
   width:56px; height:56px; border-radius:16px;
-  background:linear-gradient(135deg, var(--primary), #8b5cf6);
-  color:#fff; display:grid; place-items:center; margin:0 auto 14px;
-  font-weight:800; font-size:18px; letter-spacing:-.5px;
-  box-shadow:0 12px 26px rgba(79,70,229,.4);
+  background:#fff; border:1px solid var(--border);
+  display:grid; place-items:center; margin:0 auto 14px; overflow:hidden;
+  box-shadow:0 12px 26px rgba(79,70,229,.25);
 }
+.auth-logo img{ width:100%; height:100%; object-fit:cover; display:block; }
 .auth-head h1{ font-size:20px; font-weight:700; letter-spacing:-.3px; }
 .auth-head p{ font-size:13px; color:var(--muted); margin-top:4px; }
 
@@ -113,7 +117,7 @@ button{ cursor:pointer; border:0; background:none; }
 <div class="auth-wrap">
   <div class="auth-card">
     <div class="auth-head">
-      <div class="auth-logo">CI</div>
+      <div class="auth-logo"><img src="logo.png" alt="Cadastro Imobiliário"></div>
       <h1>Cadastro Imobiliário</h1>
       <p>Prefeitura Municipal de Careiro</p>
     </div>
