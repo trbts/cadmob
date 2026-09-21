@@ -537,10 +537,15 @@ ul{ list-style:none; }
 .lightbox .lb-close svg{ width:20px; height:20px; }
 .lightbox .lb-caption{
   position:absolute; top:78px; left:50%; transform:translateX(-50%);
-  color:#fff; font-size:12.5px; font-weight:600;
-  background:rgba(255,255,255,.12); padding:8px 18px; border-radius:99px;
-  border:1px solid rgba(255,255,255,.16); max-width:90%; text-align:center;
+  color:#000; font-size:13px; font-weight:800;
+  max-width:90%; text-align:center; padding:0 12px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  -webkit-text-stroke:3px #fff; paint-order:stroke fill;
+  text-shadow:
+    -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff,
+    -1.5px  1.5px 0 #fff, 1.5px  1.5px 0 #fff,
+    0 -1.5px 0 #fff, 0 1.5px 0 #fff,
+    -1.5px 0 0 #fff, 1.5px 0 0 #fff;
 }
 
 #toastRoot{ position:fixed; top:22px; right:22px; z-index:2000; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
@@ -1009,8 +1014,18 @@ const MEDIDAS_CAMPOS = [
   'num_frentes','num_andares','ano_construcao'
 ];
 
+/* Caminho alternativo de completude: se as medidas individuais não
+   foram preenchidas, mas as 3 áreas ("— auto") foram informadas
+   manualmente na edição do painel, a ficha já conta como completa. */
+const AREA_CAMPOS = ['area_terreno', 'area_edificada', 'area_total_edificada'];
+
 function fichaCompleta(r){
-  return MEDIDAS_CAMPOS.every(function(f){
+  const porMedidas = MEDIDAS_CAMPOS.every(function(f){
+    return String(r[f] || '').trim() !== '';
+  });
+  if(porMedidas) return true;
+
+  return AREA_CAMPOS.every(function(f){
     return String(r[f] || '').trim() !== '';
   });
 }
@@ -2032,9 +2047,12 @@ Pages.estrutura.novoLote = function(){
       const novos = [];
 
       if(modo === 'unico'){
-        const num = modal.querySelector('#l_num').value.trim();
+        const numRaw = modal.querySelector('#l_num').value.trim();
         const lbl = modal.querySelector('#l_lbl').value.trim();
-        if(!num){ toast('Informe o número do lote.', 'warning'); return false; }
+        if(!numRaw){ toast('Informe o número do lote.', 'warning'); return false; }
+        /* Padrão do lote: 3 dígitos (ex.: 007). Só aplica o zero à
+           esquerda quando o valor digitado é puramente numérico. */
+        const num = /^\d+$/.test(numRaw) ? numRaw.padStart(3, '0') : numRaw;
         if(existentes.some(function(l){ return l.numero === num; })){
           toast('Já existe um lote com este número nesta quadra.', 'error'); return false;
         }
@@ -2054,7 +2072,10 @@ Pages.estrutura.novoLote = function(){
         const total = numAte - numDe + 1;
         if(total > 200){ toast('Máximo de 200 lotes por vez.', 'warning'); return false; }
 
-        const pad = Math.max(String(numDe).length, String(numAte).length);
+        /* Padrão do lote: sempre no mínimo 3 dígitos (000), mesmo que
+           "De"/"Até" tenham sido digitados com menos dígitos (ex.: 1 a 10
+           agora vira 001 a 010, e não 01 a 10). */
+        const pad = Math.max(3, String(numDe).length, String(numAte).length);
         for(let i = numDe; i <= numAte; i++){
           const num = String(i).padStart(pad, '0');
           if(existentes.some(function(l){ return l.numero === num; })) continue;
@@ -2362,7 +2383,9 @@ function renderLotesView(){
         '<button class="action-btn" data-action="view" title="Ver ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
         '<button class="action-btn" data-action="edit" title="Editar ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
         '<button class="action-btn" data-action="status" title="Alterar status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>' +
-        '<button class="action-btn danger" data-action="remove" title="Remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' +
+        (CurrentRole === 'superadmin'
+          ? '<button class="action-btn danger" data-action="remove" title="Remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>'
+          : '') +
       '</div></div>';
   }).join('') + '</div>';
 
@@ -2835,7 +2858,7 @@ const EDIT_SCHEMA = {
       { n:'fundo_terreno', l:'Fundo (m)', t:'text' },
       { n:'lado_dir_terreno', l:'Lado Direito (m)', t:'text' },
       { n:'lado_esq_terreno', l:'Lado Esquerdo (m)', t:'text' },
-      { n:'area_terreno', l:'Área Terreno (m²) — auto', t:'text', readonly:true }
+      { n:'area_terreno', l:'Área Terreno (m²) — auto', t:'text' }
     ]},
     { section:'Edificação — Medidas', icon:SVG_ICONS.build, fields: [
       { n:'frente_edif', l:'Frente (m)', t:'text' },
@@ -2844,8 +2867,8 @@ const EDIT_SCHEMA = {
       { n:'lado_esq_edif', l:'Lado Esquerdo (m)', t:'text' },
       { n:'num_frentes', l:'N° de Frentes', t:'select', opt:'num_frentes' },
       { n:'num_andares', l:'N° de Andares', t:'select', opt:'num_andares' },
-      { n:'area_edificada', l:'Área Edificada (m²) — auto', t:'text', readonly:true },
-      { n:'area_total_edificada', l:'Área Total Edif. (m²) — auto', t:'text', readonly:true },
+      { n:'area_edificada', l:'Área Edificada (m²) — auto', t:'text' },
+      { n:'area_total_edificada', l:'Área Total Edif. (m²) — auto', t:'text' },
       { n:'ano_construcao', l:'Ano de Construção', t:'text', max:4 }
     ]}
   ],
@@ -3046,12 +3069,21 @@ Pages.registros.edit = function(id){
       const areaE = fe * fo;
       const areaTE = areaE * nAnd;
 
-      updates.area_terreno = areaT > 0 ? formatArea(areaT) : '';
-      updates.area_edificada = areaE > 0 ? formatArea(areaE) : '';
-      updates.area_total_edificada = areaTE > 0 ? formatArea(areaTE) : '';
-      updates.area_terreno_num = areaT;
-      updates.area_edificada_num = areaE;
-      updates.area_total_edificada_num = areaTE;
+      /* Os campos de área são calculados automaticamente a partir das
+         medidas acima. Porém, agora também podem ser preenchidos
+         manualmente no painel (ex.: quando as medidas individuais não
+         estão disponíveis). Nesse caso, o valor digitado é preservado
+         em vez de ser zerado pelo cálculo automático. */
+      const areaTManual = String(updates.area_terreno || '').trim();
+      const areaEManual = String(updates.area_edificada || '').trim();
+      const areaTEManual = String(updates.area_total_edificada || '').trim();
+
+      updates.area_terreno = areaT > 0 ? formatArea(areaT) : areaTManual;
+      updates.area_edificada = areaE > 0 ? formatArea(areaE) : areaEManual;
+      updates.area_total_edificada = areaTE > 0 ? formatArea(areaTE) : areaTEManual;
+      updates.area_terreno_num = areaT > 0 ? areaT : (parseDecimalSafe(areaTManual) || 0);
+      updates.area_edificada_num = areaE > 0 ? areaE : (parseDecimalSafe(areaEManual) || 0);
+      updates.area_total_edificada_num = areaTE > 0 ? areaTE : (parseDecimalSafe(areaTEManual) || 0);
 
       /* Inscrição anterior recalculada */
       if(updates.bairro_imovel && updates.quadra_imovel && updates.lote_letra){
@@ -3203,6 +3235,10 @@ Pages.registros.openStatus = function(id){
   });
 };
 Pages.registros.remove = function(id){
+  if(CurrentRole !== 'superadmin'){
+    toast('Apenas o Super Admin pode remover fichas.', 'warning');
+    return;
+  }
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   Modal.confirm({
     title:'Remover ficha?', message:'A ficha de "' + (r.nome||'—') + '" será excluída permanentemente. O lote voltará a ficar disponível.', confirmText:'Remover', danger:true,
