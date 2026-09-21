@@ -409,6 +409,75 @@ ul{ list-style:none; }
 }
 .ficha-photo-empty svg{ width:36px; height:36px; display:block; margin:0 auto 10px; color:var(--soft); }
 
+/* Barra de ações abaixo da foto (visualização) */
+.ficha-photo-actions{
+  display:flex; gap:10px; flex-wrap:wrap;
+  justify-content:center; margin-top:14px;
+}
+
+/* ============================================================
+   EDITOR DE IMAGEM PARA A4
+   ============================================================ */
+.img-editor-preview{
+  position:relative; background:#0f172a;
+  border-radius:14px; overflow:hidden;
+  display:grid; place-items:center;
+  padding:16px; min-height:280px;
+}
+.img-editor-preview canvas{
+  max-width:100%; max-height:58vh;
+  border-radius:6px;
+  box-shadow:0 14px 34px rgba(0,0,0,.4);
+  display:block;
+}
+.img-editor-controls{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  margin-top:16px;
+}
+@media (max-width:640px){
+  .img-editor-controls{ grid-template-columns:1fr; }
+}
+.img-editor-controls .control-group{
+  background:#f8fafc; border:1px solid var(--border);
+  border-radius:12px; padding:12px 14px;
+}
+.img-editor-controls .control-group > label{
+  display:block; font-size:11px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.6px;
+  color:var(--muted); margin-bottom:10px;
+}
+.rotate-btns{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;
+}
+.rotate-btns button{
+  height:56px; border-radius:10px; border:1.5px solid var(--border);
+  background:#fff; color:var(--text); font-size:11px; font-weight:700;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; cursor:pointer; transition:all .15s;
+}
+.rotate-btns button:hover{ border-color:var(--primary); }
+.rotate-btns button.active{
+  border-color:var(--primary); background:var(--primary-light);
+  color:var(--primary); box-shadow:0 0 0 3px rgba(79,70,229,.10);
+}
+.rotate-btns button svg{ width:18px; height:18px; }
+.fit-btns{ display:flex; flex-direction:column; gap:6px; }
+.fit-btns label{
+  display:flex; align-items:center; gap:10px; padding:10px 12px;
+  border:1.5px solid var(--border); border-radius:10px; cursor:pointer;
+  background:#fff; font-size:12.5px; font-weight:600;
+  transition:border-color .15s, background .15s;
+}
+.fit-btns label:hover{ border-color:var(--border-strong); }
+.fit-btns label.checked{
+  border-color:var(--primary); background:var(--primary-light); color:var(--primary);
+}
+.fit-btns label input{ accent-color:var(--primary); flex:0 0 auto; }
+.fit-btns .fit-desc{
+  font-size:11px; color:var(--muted); font-weight:500; margin-left:auto;
+}
+.fit-btns label.checked .fit-desc{ color:var(--primary); opacity:.75; }
+
 .lc-photo-chip{
   display:inline-flex; align-items:center; gap:5px;
   font-size:10.5px; font-weight:700;
@@ -741,7 +810,7 @@ const db   = getFirestore(app);
 
 const FORM_GROUPS = [
   { id:'funcionarios', label:'Funcionários / Responsáveis', target:'responsavel', desc:'Responsáveis pelo preenchimento. Cada funcionário possui uma senha de acesso.', hasSenha:true, hasStatus:true },
-  { id:'bairros',      label:'Bairros',                    target:'bairro',      desc:'Bairros do município (com valor do m² para o valor venal).', hasValorM2:true },
+  { id:'bairros',      label:'Bairros',                    target:'bairro',      desc:'Bairros do município.' },
   { id:'ruas',         label:'Logradouros (Ruas)',         target:'logradouro',  desc:'Nomes de ruas / logradouros.' }
 ];
 
@@ -841,7 +910,7 @@ const State = {
   listas    : { grupos: { funcionarios:[], bairros:[], ruas:[] }, updated_at:null },
   quadras   : [],
   lotes     : [],
-  hier      : { bairro:null, quadra:null, rua:'', sortQuadras:'asc', sortLotes:'lote_asc' },
+  hier      : { bairro:null, quadra:null, rua:'', sortQuadras:'asc', sortLotes:'lote_asc', filterCompletude:'' },
   est       : { bairro:null, quadra:null },
   page      : 'dashboard',
   listasExpanded: {}
@@ -927,6 +996,17 @@ const LOG_ITEMS = [
   ['log_ponto_onibus',    'Ponto de Ônibus'],
   ['log_correio',         'Correio']
 ];
+
+/* ============================================================
+   COMPLETUDE DA FICHA (Terreno / Edificação)
+   ============================================================ */
+const TERRENO_CAMPOS = ['situacao','topografia','pedologia','ocupacao','patrimonio'];
+const EDIF_CAMPOS    = ['alinhamento','posicionamento','situacao_unid','estrutura','cobertura','paredes','forro','revest_fachada','uso_principal','instal_sanitaria','instal_eletrica','piso','conservacao'];
+
+function fichaCompleta(r){
+  return TERRENO_CAMPOS.every(function(f){ return !!r[f]; })
+      && EDIF_CAMPOS.every(function(f){ return !!r[f]; });
+}
 
 /* ============================================================
    FOTO — compressão no navegador (~150KB)
@@ -1030,6 +1110,229 @@ document.addEventListener('keydown', (e) => {
 function fotoDataUrl(reg){
   if(!reg || !reg.foto_base64) return '';
   return 'data:' + (reg.foto_tipo || 'image/jpeg') + ';base64,' + reg.foto_base64;
+}
+
+/* ============================================================
+   DOWNLOAD DA FOTO EM FORMATO A4
+   ============================================================ */
+
+/* Rotaciona uma imagem em 0/90/180/270 e devolve HTMLCanvasElement
+   (ou a própria imagem, quando rotation = 0). */
+function rotateImageElement(img, rotation){
+  const rot = ((Number(rotation) || 0) % 360 + 360) % 360;
+  if(!rot) return img;
+
+  const w = img.naturalWidth  || img.width;
+  const h = img.naturalHeight || img.height;
+
+  const c = document.createElement('canvas');
+  if(rot === 90 || rot === 270){ c.width = h; c.height = w; }
+  else                        { c.width = w; c.height = h; }
+
+  const ctx = c.getContext('2d');
+  ctx.translate(c.width / 2, c.height / 2);
+  ctx.rotate(rot * Math.PI / 180);
+  ctx.drawImage(img, -w / 2, -h / 2);
+  return c;
+}
+
+/* Renderiza a página A4 completa em um canvas já existente.
+   ------------------------------------------------------------
+   A info do lote fica FIXA no canto superior esquerdo, com
+   escala reduzida automaticamente quando a imagem está na
+   horizontal (90°/270°). A imagem é desenhada abaixo desse
+   cabeçalho fixo. */
+async function renderA4Canvas(canvas, reg, img, state){
+  const cfg      = state || {};
+  const rotation = ((Number(cfg.rotation) || 0) % 360 + 360) % 360;
+  const fitMode  = cfg.fitMode || 'contain';
+
+  // A4 retrato @ 150 DPI ≈ 1240 × 1754 px
+  const A4_W     = 1240;
+  const A4_H     = 1754;
+  const MARGIN   = 40;
+  const FOOTER   = 44;
+  const HEADER_H = 150;   // área reservada para o texto fixo (topo-esquerdo)
+
+  canvas.width  = A4_W;
+  canvas.height = A4_H;
+  const ctx = canvas.getContext('2d');
+
+  // Fundo branco
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, A4_W, A4_H);
+
+  // Aplica rotação
+  const src  = rotateImageElement(img, rotation);
+  const srcW = src.naturalWidth  || src.width;
+  const srcH = src.naturalHeight || src.height;
+
+  // Área útil da imagem (abaixo do cabeçalho fixo)
+  const areaX = MARGIN;
+  const areaY = MARGIN + HEADER_H;
+  const areaW = A4_W - MARGIN * 2;
+  const areaH = A4_H - MARGIN * 2 - FOOTER - HEADER_H;
+
+  // Cálculo do retângulo de desenho conforme o modo de ajuste
+  let drawW, drawH, drawX, drawY;
+  if(fitMode === 'stretch'){
+    drawW = areaW; drawH = areaH;
+    drawX = areaX; drawY = areaY;
+  } else if(fitMode === 'cover'){
+    const ratio = Math.max(areaW / srcW, areaH / srcH);
+    drawW = Math.round(srcW * ratio);
+    drawH = Math.round(srcH * ratio);
+    drawX = Math.round(areaX + (areaW - drawW) / 2);
+    drawY = Math.round(areaY + (areaH - drawH) / 2);
+  } else { // contain
+    const ratio = Math.min(areaW / srcW, areaH / srcH);
+    drawW = Math.round(srcW * ratio);
+    drawH = Math.round(srcH * ratio);
+    drawX = Math.round(areaX + (areaW - drawW) / 2);
+    drawY = Math.round(areaY + (areaH - drawH) / 2);
+  }
+
+  // Fundo com sombra
+  ctx.save();
+  ctx.shadowColor = 'rgba(15,23,42,.20)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 6;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(drawX, drawY, drawW, drawH);
+  ctx.restore();
+
+  // Imagem (com clip quando "cover")
+  ctx.save();
+  if(fitMode === 'cover'){
+    ctx.beginPath();
+    ctx.rect(drawX, drawY, drawW, drawH);
+    ctx.clip();
+  }
+  ctx.drawImage(src, drawX, drawY, drawW, drawH);
+  ctx.restore();
+
+  // Moldura fina
+  ctx.save();
+  ctx.strokeStyle = 'rgba(15,23,42,.22)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(drawX + .75, drawY + .75, drawW - 1.5, drawH - 1.5);
+  ctx.restore();
+
+  /* ---------- INFO FIXA NO CANTO SUPERIOR ESQUERDO ----------
+     Ajusta automaticamente o tamanho da fonte quando a imagem
+     está na horizontal (90°/270°). */
+  const isHorizontal = (rotation === 90 || rotation === 270);
+  const escala = isHorizontal ? 0.82 : 1;
+
+  const baseX = MARGIN + 4;
+  let ty = MARGIN + 8;
+
+  ctx.textBaseline = 'top';
+  ctx.textAlign = 'left';
+  ctx.lineJoin = 'round';
+  ctx.miterLimit = 2;
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#ffffff';
+  ctx.fillStyle   = '#000000';
+
+  function desenharLinha(txt, size, bold){
+    ctx.font = (bold ? '800 ' : '600 ') + Math.round(size * escala) +
+               'px -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    const t = String(txt == null ? '' : txt);
+    ctx.strokeText(t, baseX, ty);
+    ctx.fillText(t, baseX, ty);
+    ty += Math.round(size * escala * 1.28);
+  }
+
+  desenharLinha(reg.nome || 'Sem proprietário', 34, true);
+
+  const unid = (reg.unidade_imovel && String(reg.unidade_imovel).trim())
+    ? ' · Unid. ' + String(reg.unidade_imovel).trim().toUpperCase()
+    : '';
+  desenharLinha(
+    'Bairro: ' + (reg.bairro_imovel || '—') +
+    ' · Quadra: ' + (reg.quadra_imovel || '—') +
+    ' · Lote: ' + (reg.lote_letra || '—') + unid,
+    24, false
+  );
+
+  const endereco = (reg.logradouro_imovel || 'Endereço não informado') +
+                   (reg.numero_imovel ? ', ' + reg.numero_imovel : '');
+  desenharLinha(endereco, 20, false);
+
+  if(reg.inscricao_anterior){
+    desenharLinha('Inscrição: ' + reg.inscricao_anterior, 18, false);
+  }
+
+  // Rodapé da página A4
+  ctx.fillStyle = '#475569';
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = '600 16px -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  const dt = new Date();
+  const rodape = 'Prefeitura Municipal de Careiro · Cadastro Imobiliário · ' +
+                 dt.toLocaleDateString('pt-BR');
+  ctx.fillText(rodape, MARGIN, A4_H - 16);
+}
+
+/* Prévia em escala reduzida (para o editor). */
+async function renderA4Preview(canvas, reg, img, state){
+  const off = document.createElement('canvas');
+  await renderA4Canvas(off, reg, img, state);
+  const scale = 0.45;
+  const W = Math.round(off.width  * scale);
+  const H = Math.round(off.height * scale);
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(off, 0, 0, W, H);
+}
+
+/* Baixa o arquivo A4 usando as opções fornecidas. */
+async function baixarFotoA4(reg, opts){
+  if(!reg || !reg.foto_base64){
+    toast('Esta ficha não possui foto anexada.', 'warning');
+    return;
+  }
+  const dataUrl = fotoDataUrl(reg);
+
+  let img;
+  try {
+    img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload  = () => resolve(i);
+      i.onerror = reject;
+      i.src = dataUrl;
+    });
+  } catch(e){
+    toast('Não foi possível carregar a foto.', 'error');
+    return;
+  }
+
+  const canvas = document.createElement('canvas');
+  await renderA4Canvas(canvas, reg, img, opts || {});
+
+  canvas.toBlob(function(blob){
+    if(!blob){ toast('Falha ao gerar a imagem.', 'error'); return; }
+    const url = URL.createObjectURL(blob);
+
+    const partes = [
+      'ficha',
+      String(reg.bairro_imovel || 'bairro').replace(/\s+/g,''),
+      'Q' + (reg.quadra_imovel || '00'),
+      'L' + (reg.lote_letra || '00')
+    ];
+    if(reg.unidade_imovel) partes.push('U' + String(reg.unidade_imovel).trim().toUpperCase());
+    const nome = partes.join('_').replace(/[^\w.-]+/g,'_') + '_A4.jpg';
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nome;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast('Imagem A4 baixada.', 'success', nome);
+  }, 'image/jpeg', 0.92);
 }
 
 /* ============================================================
@@ -1179,7 +1482,7 @@ function renderDashboard(){
   });
   const aprov = regs.filter(function(r){ return getStatusFromReg(r) === 'aprovado'; }).length;
   const pend  = total - aprov;
-  const valor = regs.reduce(function(s,r){ return s + (Number(r.valor_venal_num) || 0); }, 0);
+  const completas = regs.filter(function(r){ return fichaCompleta(r); }).length;
 
   document.getElementById('statGrid').innerHTML = [
     { ico:'i1', label:'Total de Lotes', value: total, trend: bSet.size + ' bairros · ' + qSet.size + ' quadras',
@@ -1188,8 +1491,8 @@ function renderDashboard(){
       svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' },
     { ico:'i3', label:'Pendentes', value: pend, trend: pend>0?'Aguardando análise':'Tudo em dia', down: pend>0,
       svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' },
-    { ico:'i4', label:'Valor Total Venal', value: fmtMoney(valor), trend: 'Somatório dos lotes',
-      svg:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' }
+    { ico:'i4', label:'Fichas Completas', value: completas, trend: total ? Math.round(completas/total*100)+'% com Terreno/Edif. preenchidos' : '—',
+      svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' }
   ].map(function(s){
     return '<div class="stat"><div class="stat-ico ' + s.ico + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + s.svg + '</svg></div>' +
     '<div class="stat-value">' + s.value + '</div><div class="stat-label">' + s.label + '</div>' +
@@ -1212,10 +1515,13 @@ function renderDashboard(){
     ? recent.map(function(r){
         const ini = (r.nome||'?').split(' ').map(function(w){ return w[0]; }).slice(0,2).join('').toUpperCase();
         const st = getStatusFromReg(r);
+        const comp = fichaCompleta(r);
         return '<div class="mini-item"><div class="mini-avatar">' + esc(ini) + '</div>' +
           '<div class="mini-info"><strong>' + esc(r.nome||'Sem proprietário') + '</strong>' +
           '<span>' + esc(r.bairro_imovel||'—') + ' · Q ' + esc(r.quadra_imovel||'—') + ' · L ' + esc(r.lote_letra||'—') + (r.unidade_imovel ? ' · Unid. ' + esc(r.unidade_imovel) : '') + '</span></div>' +
-          '<span class="badge ' + esc(st) + '">' + statusLabel(st) + '</span></div>';
+          '<span class="badge ' + esc(st) + '">' + statusLabel(st) + '</span>' +
+          '<span class="badge ' + (comp ? 'aprovado' : 'pendente') + '">' + (comp ? 'Completo' : 'Incompleto') + '</span>' +
+          '</div>';
       }).join('')
     : '<div class="empty"><strong>Nenhum lote cadastrado</strong><span>Aguardando o envio do formulário mobile.</span></div>';
 }
@@ -1247,9 +1553,6 @@ function renderListas(){
           '<div style="text-align:right;">Ações</div></div>' +
         g.options.map(function(o, idx){
           const isFirst = idx === 0, isLast = idx === g.options.length - 1;
-          const m2Badge = (fg.hasValorM2 && o.valor_m2 != null)
-            ? '<span class="opt-m2">R$ ' + Number(o.valor_m2).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '/m²</span>'
-            : '';
           const senhaBadge = (fg.hasSenha)
             ? (o.senha
                 ? '<span class="opt-m2" style="background:var(--purple-bg);color:#6d28d9;border-color:#ddd6fe;">senha definida</span>'
@@ -1266,7 +1569,7 @@ function renderListas(){
               '<button class="' + (isFirst ? 'disabled' : '') + '" ' + (isFirst ? '' : 'onclick="Pages.listas.move(\'' + fg.id + '\',\'' + o.id + '\',-1)"') + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>' +
               '<button class="' + (isLast ? 'disabled' : '') + '" ' + (isLast ? '' : 'onclick="Pages.listas.move(\'' + fg.id + '\',\'' + o.id + '\',1)"') + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>' +
             '</div>' +
-            '<div class="opt-label">' + esc(o.label) + m2Badge + senhaBadge + '</div>' +
+            '<div class="opt-label">' + esc(o.label) + senhaBadge + '</div>' +
             statusCell +
             '<div class="opt-actions">' +
               '<button class="action-btn" title="Editar" onclick="Pages.listas.editOption(\'' + fg.id + '\',\'' + o.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
@@ -1331,8 +1634,6 @@ Pages.listas.addOption = function(gid){
       '<div class="field"><label>Rótulo exibido <span class="req">*</span></label>' +
         '<input type="text" id="o_lbl" placeholder="ex.: ' + (isBairros ? 'Centro' : (isFuncs ? 'João Silva' : 'Rua das Flores')) + '">' +
       '</div>' +
-      (isBairros ? '<div class="field"><label>Valor do m² (R$) <span class="req">*</span></label>' +
-        '<input type="text" id="o_m2" inputmode="decimal" placeholder="ex.: 350,00"></div>' : '') +
       (isFuncs ? '<div class="field"><label>Senha de acesso <span class="req">*</span></label>' +
         '<input type="password" id="o_senha" autocomplete="new-password" placeholder="Defina uma senha (mín. 4 caracteres)"></div>' : '') +
       (hasStatus ? '<div class="field"><label>Status inicial</label>' +
@@ -1346,9 +1647,6 @@ Pages.listas.addOption = function(gid){
       const novo = { id: uid(), value: gerarChave(lbl, g.options), label: lbl };
       if(hasStatus){ novo.ativo = modal.querySelector('#o_ativo').value === 'true'; }
       if(isBairros){
-        const m2 = parseMoneyInput(modal.querySelector('#o_m2').value);
-        if(!(m2 > 0)){ toast('Informe um valor de m² válido.', 'warning'); return false; }
-        novo.valor_m2 = m2;
         novo.numero = String(g.options.length + 1).padStart(3,'0');
       }
       if(isFuncs){
@@ -1375,8 +1673,6 @@ Pages.listas.editOption = function(gid, oid){
     body:
       '<div class="field"><label>Rótulo exibido <span class="req">*</span></label>' +
         '<input type="text" id="o_lbl" value="' + esc(o.label) + '"></div>' +
-      (isBairros ? '<div class="field"><label>Valor do m² (R$) <span class="req">*</span></label>' +
-        '<input type="text" id="o_m2" inputmode="decimal" value="' + (o.valor_m2 != null ? Number(o.valor_m2).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '') + '"></div>' : '') +
       (isFuncs ? '<div class="field"><label>Nova senha</label>' +
         '<input type="password" id="o_senha" autocomplete="new-password" placeholder="' + (o.senha ? 'Deixe em branco para manter a atual' : 'Defina uma senha') + '"></div>' : '') +
       (hasStatus ? '<div class="field"><label>Status</label><select id="o_ativo">' +
@@ -1390,11 +1686,6 @@ Pages.listas.editOption = function(gid, oid){
         toast('Já existe outra opção com este rótulo.', 'error'); return false;
       }
       const labelAnterior = o.label;
-      if(isBairros){
-        const m2 = parseMoneyInput(modal.querySelector('#o_m2').value);
-        if(!(m2 > 0)){ toast('Informe um valor de m² válido.', 'warning'); return false; }
-        o.valor_m2 = m2;
-      }
       if(isFuncs){
         const senha = modal.querySelector('#o_senha').value;
         if(senha){
@@ -1465,7 +1756,7 @@ async function propagarRenomeBairro(antigo, novo){
 function getBairrosAtivos(){
   const arr = State.listas.grupos.bairros || [];
   return arr.map(function(o, i){
-    return { nome:o.label, numero:String(o.numero != null ? o.numero : (i+1)).padStart(3,'0'), valor_m2:Number(o.valor_m2)||0 };
+    return { nome:o.label, numero:String(o.numero != null ? o.numero : (i+1)).padStart(3,'0') };
   });
 }
 function fichasDoLote(bairro, quadra, lote){
@@ -1678,35 +1969,118 @@ Pages.estrutura.editLote = function(lid){
     }
   });
 };
+
+/* ------------------------------------------------------------
+   NOVO LOTE — Modo único + modo FAIXA (criação em lote)
+   ------------------------------------------------------------
+   Modo "faixa": informa-se o número inicial e final (ex.: 001
+   a 010) e o sistema cria todos os lotes da faixa com zeros à
+   esquerda. Lotes já existentes são ignorados silenciosamente.
+   Limite: 200 lotes por vez.
+   ------------------------------------------------------------ */
 Pages.estrutura.novoLote = function(){
   const bairro = State.est.bairro, quadra = State.est.quadra;
   if(!bairro || !quadra) return;
   const existentes = State.lotes.filter(function(l){ return l.bairro === bairro && l.quadra === quadra; });
   const proximo = String(existentes.length + 1).padStart(3,'0');
+
   Modal.open({
-    title:'Novo lote', subtitle:'Bairro ' + bairro + ' · Quadra ' + quadra, size:'sm', confirmText:'Criar',
+    title:'Novo(s) lote(s)',
+    subtitle:'Bairro ' + bairro + ' · Quadra ' + quadra,
+    size:'sm',
+    confirmText:'Criar',
     body:
-      '<div class="field"><label>Número do lote <span class="req">*</span></label>' +
-        '<input type="text" id="l_num" maxlength="6" value="' + proximo + '" inputmode="numeric"></div>' +
-      '<div class="field"><label>Rótulo (opcional)</label>' +
-        '<input type="text" id="l_lbl" placeholder="Ex.: Lote da esquina"></div>' +
-      '<div style="font-size:12px;color:var(--muted);background:var(--primary-light);padding:10px 12px;border-radius:8px;margin-top:4px;">' +
-        'As unidades (A, B, C…) são informadas no <strong>formulário mobile</strong>, não aqui. O mesmo lote pode receber cadastros para unidades diferentes.' +
+      '<div class="field"><label>Modo de criação</label>' +
+        '<select id="l_modo">' +
+          '<option value="unico">Lote único</option>' +
+          '<option value="faixa">Faixa de lotes (em lote)</option>' +
+        '</select></div>' +
+
+      '<div id="l_unico_box">' +
+        '<div class="field"><label>Número do lote <span class="req">*</span></label>' +
+          '<input type="text" id="l_num" maxlength="10" value="' + proximo + '" inputmode="numeric"></div>' +
+        '<div class="field"><label>Rótulo (opcional)</label>' +
+          '<input type="text" id="l_lbl" placeholder="Ex.: Lote da esquina"></div>' +
+      '</div>' +
+
+      '<div id="l_faixa_box" style="display:none;">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<div class="field"><label>De <span class="req">*</span></label>' +
+            '<input type="text" id="l_de" maxlength="10" value="' + proximo + '" inputmode="numeric"></div>' +
+          '<div class="field"><label>Até <span class="req">*</span></label>' +
+            '<input type="text" id="l_ate" maxlength="10" value="' +
+              String(Number(proximo) + 9).padStart(3,'0') + '" inputmode="numeric"></div>' +
+        '</div>' +
+        '<div style="font-size:12px;color:var(--muted);background:var(--primary-light);padding:10px 12px;border-radius:8px;">' +
+          'Os números são completados com zeros à esquerda automaticamente. Ex.: <strong>001</strong> a <strong>010</strong> cria 10 lotes.' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="font-size:12px;color:var(--muted);background:var(--primary-light);padding:10px 12px;border-radius:8px;margin-top:6px;">' +
+        'As unidades (A, B, C…) são informadas no <strong>formulário mobile</strong>, não aqui.' +
       '</div>',
+
     onConfirm: async function(modal){
-      const num = modal.querySelector('#l_num').value.trim();
-      const lbl = modal.querySelector('#l_lbl').value.trim();
-      if(!num){ toast('Informe o número do lote.', 'warning'); return false; }
-      if(existentes.some(function(l){ return l.numero === num; })){
-        toast('Já existe um lote com este número nesta quadra.', 'error'); return false;
+      const modo = modal.querySelector('#l_modo').value;
+      const novos = [];
+
+      if(modo === 'unico'){
+        const num = modal.querySelector('#l_num').value.trim();
+        const lbl = modal.querySelector('#l_lbl').value.trim();
+        if(!num){ toast('Informe o número do lote.', 'warning'); return false; }
+        if(existentes.some(function(l){ return l.numero === num; })){
+          toast('Já existe um lote com este número nesta quadra.', 'error'); return false;
+        }
+        novos.push({ id: uid(), bairro: bairro, quadra: quadra, numero: num, label: lbl || ('Lote ' + num) });
+      } else {
+        const de  = modal.querySelector('#l_de').value.trim();
+        const ate = modal.querySelector('#l_ate').value.trim();
+        if(!de || !ate){ toast('Informe os números inicial e final.', 'warning'); return false; }
+
+        const numDe  = parseInt(de.replace(/\D/g,''), 10);
+        const numAte = parseInt(ate.replace(/\D/g,''), 10);
+        if(!Number.isFinite(numDe) || !Number.isFinite(numAte)){
+          toast('Números inválidos.', 'warning'); return false;
+        }
+        if(numAte < numDe){ toast('O número final deve ser ≥ o inicial.', 'warning'); return false; }
+
+        const total = numAte - numDe + 1;
+        if(total > 200){ toast('Máximo de 200 lotes por vez.', 'warning'); return false; }
+
+        const pad = Math.max(String(numDe).length, String(numAte).length);
+        for(let i = numDe; i <= numAte; i++){
+          const num = String(i).padStart(pad, '0');
+          if(existentes.some(function(l){ return l.numero === num; })) continue;
+          if(novos.some(function(l){ return l.numero === num; })) continue;
+          novos.push({ id: uid(), bairro: bairro, quadra: quadra, numero: num, label: 'Lote ' + num });
+        }
+        if(!novos.length){
+          toast('Nenhum lote novo para criar (todos já existem).', 'warning'); return false;
+        }
       }
-      State.lotes.push({ id: uid(), bairro: bairro, quadra: quadra, numero: num, label: lbl || ('Lote ' + num) });
+
+      novos.forEach(function(l){ State.lotes.push(l); });
       await salvarEstrutura();
       renderEstrutura();
-      toast('Lote criado.', 'success', 'Lote ' + num);
+      toast(novos.length + ' lote(s) criado(s).', 'success', novos.map(function(l){ return l.numero; }).join(', '));
     }
   });
+
+  // Alterna visualmente os dois blocos (único / faixa)
+  setTimeout(function(){
+    const sel = document.getElementById('l_modo');
+    const boxUnico = document.getElementById('l_unico_box');
+    const boxFaixa = document.getElementById('l_faixa_box');
+    if(sel){
+      sel.addEventListener('change', function(){
+        const isFaixa = sel.value === 'faixa';
+        boxUnico.style.display = isFaixa ? 'none' : '';
+        boxFaixa.style.display = isFaixa ? '' : 'none';
+      });
+    }
+  }, 60);
 };
+
 Pages.estrutura.removeLote = function(lid){
   const l = State.lotes.find(function(x){ return x.id === lid; }); if(!l) return;
   const fichas = fichasDoLote(l.bairro, l.quadra, l.numero);
@@ -1727,13 +2101,14 @@ Pages.estrutura.removeLote = function(lid){
 /* ============================================================
    REGISTROS — navegação (Bairros → Quadras → Lotes)
    ============================================================ */
-Pages.registros.goRoot = function(){ State.hier = { bairro:null, quadra:null, rua:'', sortQuadras:'asc', sortLotes:'lote_asc' }; renderRegistros(); };
+Pages.registros.goRoot = function(){ State.hier = { bairro:null, quadra:null, rua:'', sortQuadras:'asc', sortLotes:'lote_asc', filterCompletude:'' }; renderRegistros(); };
 Pages.registros.goBairro = function(b){ State.hier.bairro = b; State.hier.quadra = null; State.hier.rua = ''; renderRegistros(); };
 Pages.registros.goBairroLevel = function(){ State.hier.quadra = null; State.hier.rua = ''; renderRegistros(); };
 Pages.registros.goQuadra = function(q){ State.hier.quadra = q; State.hier.rua = ''; renderRegistros(); };
 Pages.registros.setRua = function(r){ State.hier.rua = r; renderRegistros(); };
 Pages.registros.setSortQuadras = function(v){ State.hier.sortQuadras = v; renderRegistros(); };
 Pages.registros.setSortLotes  = function(v){ State.hier.sortLotes  = v; renderRegistros(); };
+Pages.registros.setFilterCompletude = function(v){ State.hier.filterCompletude = v; renderRegistros(); };
 
 function renderRegistros(){
   renderBreadcrumb();
@@ -1818,7 +2193,6 @@ function renderQuadrasView(){
     return sortQ === 'desc' ? -cmp : cmp;
   });
 
-  /* Barra de filtros */
   const extraEl = document.getElementById('hierExtra');
   extraEl.innerHTML =
     '<div class="filters-bar">' +
@@ -1854,7 +2228,7 @@ function renderQuadrasView(){
   });
 }
 
-/* ---------- LOTES (com filtros de rua e ordenação) ---------- */
+/* ---------- LOTES (com filtros de rua, ordenação e completude) ---------- */
 function renderLotesView(){
   const bairro = State.hier.bairro, quadra = State.hier.quadra;
   document.getElementById('hierTitle').textContent = 'Lotes · Quadra ' + quadra;
@@ -1866,10 +2240,17 @@ function renderLotesView(){
 
   const ruas = [...new Set(lotes.map(function(l){ return norm(l.logradouro_imovel); }).filter(Boolean))].sort();
 
-  /* Aplica filtro de rua */
+  /* Filtro de rua */
   if(State.hier.rua) lotes = lotes.filter(function(l){ return norm(l.logradouro_imovel) === State.hier.rua; });
 
-  /* Aplica ordenação */
+  /* Filtro de completude (Terreno/Edificação) */
+  if(State.hier.filterCompletude === 'completo'){
+    lotes = lotes.filter(function(l){ return fichaCompleta(l); });
+  } else if(State.hier.filterCompletude === 'incompleto'){
+    lotes = lotes.filter(function(l){ return !fichaCompleta(l); });
+  }
+
+  /* Ordenação */
   const sortL = State.hier.sortLotes || 'lote_asc';
   lotes.sort(function(a, b){
     switch(sortL){
@@ -1881,16 +2262,12 @@ function renderLotesView(){
         return String(a.nome||'').localeCompare(String(b.nome||''), 'pt-BR', { sensitivity:'base' });
       case 'nome_desc':
         return String(b.nome||'').localeCompare(String(a.nome||''), 'pt-BR', { sensitivity:'base' });
-      case 'valor_desc':
-        return (Number(b.valor_venal_num)||0) - (Number(a.valor_venal_num)||0);
-      case 'valor_asc':
-        return (Number(a.valor_venal_num)||0) - (Number(b.valor_venal_num)||0);
       default:
         return 0;
     }
   });
 
-  /* Barra de filtros: rua (se houver mais de uma) + ordenação */
+  /* Barra de filtros */
   const extraEl = document.getElementById('hierExtra');
   let extraHTML = '<div class="filters-bar">';
 
@@ -1913,6 +2290,19 @@ function renderLotesView(){
       '</select>';
   }
 
+  /* Filtro de completude */
+  extraHTML +=
+      '<label>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+        'Terreno/Edif.:' +
+      '</label>' +
+      '<select id="filterCompletude">' +
+        '<option value=""'           + (State.hier.filterCompletude === ''           ? ' selected' : '') + '>Todos</option>' +
+        '<option value="completo"'   + (State.hier.filterCompletude === 'completo'   ? ' selected' : '') + '>Completos</option>' +
+        '<option value="incompleto"' + (State.hier.filterCompletude === 'incompleto' ? ' selected' : '') + '>Incompletos</option>' +
+      '</select>';
+
+  /* Ordenação */
   extraHTML +=
       '<label>' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>' +
@@ -1923,8 +2313,6 @@ function renderLotesView(){
         '<option value="lote_desc"'  + (sortL === 'lote_desc'  ? ' selected' : '') + '>Lote: Z → A</option>' +
         '<option value="nome_asc"'   + (sortL === 'nome_asc'   ? ' selected' : '') + '>Nome: A → Z</option>' +
         '<option value="nome_desc"'  + (sortL === 'nome_desc'  ? ' selected' : '') + '>Nome: Z → A</option>' +
-        '<option value="valor_desc"' + (sortL === 'valor_desc' ? ' selected' : '') + '>Valor: maior → menor</option>' +
-        '<option value="valor_asc"'  + (sortL === 'valor_asc'  ? ' selected' : '') + '>Valor: menor → maior</option>' +
       '</select>' +
       '<span class="filters-count"><strong>' + lotes.length + '</strong> lote' + (lotes.length === 1 ? '' : 's') + '</span>' +
     '</div>';
@@ -1936,6 +2324,9 @@ function renderLotesView(){
       Pages.registros.setRua(e.target.value);
     });
   }
+  document.getElementById('filterCompletude').addEventListener('change', function(e){
+    Pages.registros.setFilterCompletude(e.target.value);
+  });
   document.getElementById('sortLotesSel').addEventListener('change', function(e){
     Pages.registros.setSortLotes(e.target.value);
   });
@@ -1947,6 +2338,7 @@ function renderLotesView(){
 
   document.getElementById('hierContent').innerHTML = '<div class="lote-list">' + lotes.map(function(l){
     const status = getStatusFromReg(l);
+    const completo = fichaCompleta(l);
     const fotoChip = l.foto_base64
       ? '<div><span class="lc-photo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Foto anexada</span></div>'
       : '';
@@ -1955,10 +2347,10 @@ function renderLotesView(){
       '<div class="lc-info">' +
         '<div class="lc-title">' + esc(l.nome||'Sem proprietário') + '</div>' +
         '<div class="lc-sub">' + esc(l.logradouro_imovel||'Rua não informada') + (l.numero_imovel? ', ' + esc(l.numero_imovel) : '') + (l.unidade_imovel ? ' — Unid. ' + esc(l.unidade_imovel) : '') + '</div>' +
-        (l.valor_venal_num ? '<div style="font-size:12.5px;font-weight:700;color:var(--success);margin-top:4px;">' + fmtMoney(l.valor_venal_num) + '</div>' : '') +
         fotoChip +
       '</div>' +
       '<span class="badge ' + esc(status) + '">' + statusLabel(status) + '</span>' +
+      '<span class="badge ' + (completo ? 'aprovado' : 'pendente') + '" style="margin-left:4px;">' + (completo ? 'Completo' : 'Incompleto') + '</span>' +
       '<div class="lote-actions">' +
         '<button class="action-btn" data-action="view" title="Ver ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
         '<button class="action-btn" data-action="edit" title="Editar ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
@@ -1995,7 +2387,10 @@ const SVG_ICONS = {
   cam:   '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
   info:  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
   edit:  '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
-  filter:'<line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>'
+  filter:'<line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  rotate:   '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
+  printer:  '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>'
 };
 
 function dItem(label, value, opts){
@@ -2022,11 +2417,111 @@ function chipReadonly(label, on){
 }
 
 /* ============================================================
+   EDITOR DE IMAGEM PARA A4 (rotação + proporção)
+   ============================================================ */
+Pages.registros.openA4Editor = async function(id){
+  const r = State.registros.find(function(x){ return x.id === id; });
+  if(!r) return;
+  if(!r.foto_base64){ toast('Esta ficha não possui foto anexada.', 'warning'); return; }
+
+  const dataUrl = fotoDataUrl(r);
+  let img;
+  try {
+    img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload  = () => resolve(i);
+      i.onerror = reject;
+      i.src = dataUrl;
+    });
+  } catch(e){
+    toast('Falha ao carregar a foto.', 'error');
+    return;
+  }
+
+  const state = { rotation: 0, fitMode: 'contain' };
+
+  const body =
+    '<div class="img-editor-preview"><canvas id="a4PreviewCanvas"></canvas></div>' +
+    '<div class="img-editor-controls">' +
+      '<div class="control-group">' +
+        '<label>Rotação</label>' +
+        '<div class="rotate-btns" id="rotateBtns">' +
+          '<button type="button" data-rot="0" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="1"/></svg>0°</button>' +
+          '<button type="button" data-rot="90"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="1"/></svg>90°</button>' +
+          '<button type="button" data-rot="180"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="1"/></svg>180°</button>' +
+          '<button type="button" data-rot="270"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="1"/></svg>270°</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="control-group">' +
+        '<label>Ajuste da imagem</label>' +
+        '<div class="fit-btns" id="fitBtns">' +
+          '<label class="checked"><input type="radio" name="fitMode" value="contain" checked><span>Conter</span><span class="fit-desc">Encaixa inteira</span></label>' +
+          '<label><input type="radio" name="fitMode" value="cover"><span>Preencher</span><span class="fit-desc">Pode recortar</span></label>' +
+          '<label><input type="radio" name="fitMode" value="stretch"><span>Esticar</span><span class="fit-desc">Distorce</span></label>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  Modal.open({
+    title: 'Ajustar imagem para A4',
+    subtitle: (r.nome || '—') + ' · ' + (r.bairro_imovel || '—') +
+              ' Q' + (r.quadra_imovel || '—') + ' L' + (r.lote_letra || '—'),
+    size: 'lg',
+    confirmText: 'Baixar imagem A4',
+    cancelText: 'Cancelar',
+    body: body,
+    onConfirm: async function(){
+      await baixarFotoA4(r, state);
+    }
+  });
+
+  setTimeout(async function(){
+    const canvas = document.getElementById('a4PreviewCanvas');
+    if(!canvas) return;
+
+    let rendering = false;
+    let pending = false;
+
+    async function refresh(){
+      if(rendering){ pending = true; return; }
+      rendering = true;
+      try { await renderA4Preview(canvas, r, img, state); }
+      catch(e){ console.error('[a4 previa]', e); }
+      rendering = false;
+      if(pending){ pending = false; refresh(); }
+    }
+
+    document.querySelectorAll('#rotateBtns button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.rotation = Number(btn.dataset.rot) || 0;
+        document.querySelectorAll('#rotateBtns button').forEach(function(b){
+          b.classList.toggle('active', b === btn);
+        });
+        refresh();
+      });
+    });
+
+    document.querySelectorAll('#fitBtns input[name="fitMode"]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        state.fitMode = inp.value;
+        document.querySelectorAll('#fitBtns label').forEach(function(l){
+          l.classList.toggle('checked', l.querySelector('input').checked);
+        });
+        refresh();
+      });
+    });
+
+    await refresh();
+  }, 80);
+};
+
+/* ============================================================
    FICHA — VISUALIZAÇÃO (abas)
    ============================================================ */
 Pages.registros.view = function(id){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   const st = getStatusFromReg(r);
+  const completo = fichaCompleta(r);
   const dataUrl = fotoDataUrl(r);
   const tipoLabel = /webp/i.test(r.foto_tipo || '') ? 'WebP' : 'JPEG';
   const tamanhoLabel = r.foto_tamanho_bytes
@@ -2074,12 +2569,6 @@ Pages.registros.view = function(id){
       dItem('Cidade', r.cidade_imovel) +
       dItem('Estado (UF)', r.uf_imovel) +
     '</div>' +
-    dSection('Valor Venal', SVG_ICONS.ruler) +
-    '<div class="detail-grid">' +
-      dItem('Área do terreno usada', r.area_terreno ? (r.area_terreno + ' m²') : '') +
-      dItem('Valor do m² do bairro', r.valor_m2_bairro ? ('R$ ' + Number(r.valor_m2_bairro).toLocaleString('pt-BR', {minimumFractionDigits:2,maximumFractionDigits:2})) : '') +
-      dItem('Valor venal calculado', r.valor_venal ? ('R$ ' + r.valor_venal) : '') +
-    '</div>' +
     dSection('Foto do Imóvel', SVG_ICONS.cam) +
     (dataUrl
       ? '<div class="ficha-photo-frame" id="photoFrame">' +
@@ -2091,6 +2580,12 @@ Pages.registros.view = function(id){
               'Toque para ampliar' +
             '</span>' +
           '</div>' +
+        '</div>' +
+        '<div class="ficha-photo-actions">' +
+          '<button type="button" class="btn btn-primary btn-sm" id="btnAjustarA4" title="Ajustar rotação/proporção e baixar em A4">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.download + '</svg>' +
+            'Ajustar e baixar A4' +
+          '</button>' +
         '</div>'
       : '<div class="ficha-photo-empty">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/><line x1="3" y1="3" x2="21" y2="21"/></svg>' +
@@ -2134,7 +2629,10 @@ Pages.registros.view = function(id){
 
   /* ABA 5: TERRENO */
   const tabTerreno =
-    dSection('Características do Terreno', SVG_ICONS.ground) +
+    dSection('Características do Terreno' + (completo ? '' : ' — INCOMPLETO'), SVG_ICONS.ground) +
+    (!completo
+      ? '<div style="font-size:12px;color:#b45309;background:var(--warning-bg);border:1px solid #fde68a;border-radius:8px;padding:8px 12px;margin:-4px 0 12px;">Alguns campos da aba Terreno/Edificação não foram preenchidos.</div>'
+      : '') +
     '<div class="detail-grid">' +
       dItem('01 — Situação', labelFromOptions('situacao', r.situacao)) +
       dItem('02 — Topografia', labelFromOptions('topografia', r.topografia)) +
@@ -2169,6 +2667,7 @@ Pages.registros.view = function(id){
       dItem('Responsável pelo preenchimento', r.responsavel) +
       dItem('Data de Emissão', r.data_registro) +
       dItem('Status atual', statusLabel(st)) +
+      dItem('Completude (Terreno/Edif.)', completo ? 'Completo' : 'Incompleto') +
       dItem('Origem', r.origem) +
     '</div>' +
     dSection('Auditoria', SVG_ICONS.info) +
@@ -2185,7 +2684,7 @@ Pages.registros.view = function(id){
       '<button type="button" class="ficha-tab" data-ftab="imovel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.home + '</svg>Imóvel' + (dataUrl ? '<span class="tcount">foto</span>' : '') + '</button>' +
       '<button type="button" class="ficha-tab" data-ftab="medidas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.ruler + '</svg>Medidas</button>' +
       '<button type="button" class="ficha-tab" data-ftab="logradouro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.road + '</svg>Logradouro<span class="tcount">' + logMarcados + '/' + LOG_ITEMS.length + '</span></button>' +
-      '<button type="button" class="ficha-tab" data-ftab="terreno"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.ground + '</svg>Terreno</button>' +
+      '<button type="button" class="ficha-tab" data-ftab="terreno"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.ground + '</svg>Terreno' + (!completo ? '<span class="tcount">!</span>' : '') + '</button>' +
       '<button type="button" class="ficha-tab" data-ftab="edif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.build + '</svg>Edificação</button>' +
       '<button type="button" class="ficha-tab" data-ftab="registro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.info + '</svg>Registro</button>' +
     '</div>' +
@@ -2199,16 +2698,21 @@ Pages.registros.view = function(id){
       '<div class="ficha-panel" data-fpanel="registro">' + tabReg + '</div>' +
     '</div>';
 
-  /* Botão "Editar ficha" no header */
+  /* Header do modal: badges + botões Editar + Imprimir */
   const headerExtra =
     '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
       '<span class="badge ' + esc(st) + '">' + statusLabel(st) + '</span>' +
+      '<span class="badge ' + (completo ? 'aprovado' : 'pendente') + '">' + (completo ? 'Completo' : 'Incompleto') + '</span>' +
       (r.origem === 'mobile' ? '<span class="badge" style="background:var(--purple-bg);color:#6d28d9;border-color:#ddd6fe;">Mobile</span>' : '') +
       (dataUrl ? '<span class="badge" style="background:var(--primary-light);color:var(--primary);border-color:#c7d9f0;">Foto anexada</span>' : '') +
       (r.criado_por_email ? '<span class="badge" style="background:var(--info-bg);color:#1d4ed8;border-color:#bfdbfe;">' + esc(r.criado_por_email) + '</span>' : '') +
       '<button type="button" class="btn btn-primary btn-sm" id="btnEditarFicha" style="margin-left:8px;">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.edit + '</svg>' +
         'Editar ficha' +
+      '</button>' +
+      '<button type="button" class="btn btn-soft btn-sm" id="btnImprimirPDF" title="Imprimir ou salvar em PDF a ficha completa">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.printer + '</svg>' +
+        'Imprimir / Salvar PDF' +
       '</button>' +
     '</div>';
 
@@ -2243,6 +2747,22 @@ Pages.registros.view = function(id){
     btnEdit.addEventListener('click', function(){
       Modal.close();
       setTimeout(function(){ Pages.registros.edit(id); }, 80);
+    });
+  }
+
+  /* Botão Imprimir / Salvar PDF (agora no header) */
+  const btnPdf = document.getElementById('btnImprimirPDF');
+  if(btnPdf){
+    btnPdf.addEventListener('click', function(){
+      Pages.registros.imprimirPDF(id);
+    });
+  }
+
+  /* Botão Ajustar + baixar A4 */
+  const btnAjustar = document.getElementById('btnAjustarA4');
+  if(btnAjustar){
+    btnAjustar.addEventListener('click', function(){
+      Pages.registros.openA4Editor(id);
     });
   }
 
@@ -2373,7 +2893,6 @@ function getOptionsForEdit(optKey, currentVal){
   } else {
     opts = (SELECT_OPTIONS[optKey] || []).slice();
   }
-  /* Garante que o valor atual apareça mesmo fora das listas */
   if(currentVal && !opts.some(function(o){ return String(o.v) === String(currentVal); })){
     opts = [{ v:currentVal, l:currentVal + ' (não listado)' }].concat(opts);
   }
@@ -2439,7 +2958,6 @@ function ePhoto(values){
 Pages.registros.edit = function(id){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
 
-  /* Cópia local com os valores em edição (a foto vive aqui) */
   const values = Object.assign({}, r);
   let fotoChanged = false;
 
@@ -2497,7 +3015,6 @@ Pages.registros.edit = function(id){
     headerExtra: headerExtra,
     body: tabsHTML,
     onConfirm: async function(modal){
-      /* Coleta todos os campos de edição visíveis no modal */
       const updates = {};
       modal.querySelectorAll('[data-edit-field]').forEach(function(el){
         const name = el.dataset.editField;
@@ -2505,14 +3022,13 @@ Pages.registros.edit = function(id){
         else updates[name] = el.value;
       });
 
-      /* Aplica alterações da foto, se houver */
       if(fotoChanged){
         updates.foto_base64 = values.foto_base64 || '';
         updates.foto_tipo = values.foto_tipo || '';
         updates.foto_tamanho_bytes = values.foto_tamanho_bytes || 0;
       }
 
-      /* Recalcula campos derivados */
+      /* Recalcula campos derivados (áreas) */
       const ft = parseDecimalSafe(updates.frente_terreno);
       const fu = parseDecimalSafe(updates.fundo_terreno);
       const fe = parseDecimalSafe(updates.frente_edif);
@@ -2529,13 +3045,6 @@ Pages.registros.edit = function(id){
       updates.area_terreno_num = areaT;
       updates.area_edificada_num = areaE;
       updates.area_total_edificada_num = areaTE;
-
-      const bairroInfo = (State.listas.grupos.bairros || []).find(function(o){ return o.label === updates.bairro_imovel; });
-      const m2 = bairroInfo ? Number(bairroInfo.valor_m2) || 0 : 0;
-      updates.valor_m2_bairro = m2;
-      const vv = areaT * m2;
-      updates.valor_venal = vv > 0 ? formatArea(vv) : '';
-      updates.valor_venal_num = vv;
 
       /* Inscrição anterior recalculada */
       if(updates.bairro_imovel && updates.quadra_imovel && updates.lote_letra){
@@ -2563,9 +3072,7 @@ Pages.registros.edit = function(id){
     }
   });
 
-  /* Após o modal abrir, liga os handlers */
   setTimeout(function(){
-    /* Troca de abas */
     const tabsEl = document.getElementById('editTabs');
     if(tabsEl){
       tabsEl.querySelectorAll('.ficha-tab').forEach(function(btn){
@@ -2581,7 +3088,6 @@ Pages.registros.edit = function(id){
       });
     }
 
-    /* Chips do logradouro: alterna visual no clique */
     document.querySelectorAll('.edit-chip').forEach(function(chip){
       const input = chip.querySelector('input[type="checkbox"]');
       if(!input) return;
@@ -2596,7 +3102,6 @@ Pages.registros.edit = function(id){
       });
     });
 
-    /* Foto */
     const fotoInput  = document.getElementById('editFotoInput');
     const fotoBtn    = document.getElementById('editFotoBtn');
 
@@ -2640,7 +3145,6 @@ Pages.registros.edit = function(id){
           values.foto_tamanho_bytes = res.tamanho;
           fotoChanged = true;
 
-          /* Atualiza a UI */
           const imgEl = document.getElementById('editFotoImg');
           const empty = document.getElementById('editFotoEmpty');
           const newSrc = 'data:' + res.tipo + ';base64,' + res.base64;
@@ -2648,7 +3152,6 @@ Pages.registros.edit = function(id){
           else if(empty){
             empty.outerHTML = '<div class="edit-photo-frame" id="editFotoFrame"><img id="editFotoImg" src="' + newSrc + '" alt=""></div>';
           }
-          /* Atualiza texto do botão e cria botão remover */
           fotoBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.cam + '</svg>Trocar foto';
           if(!document.getElementById('editFotoRemove')){
             const rmBtn = document.createElement('button');
@@ -2704,12 +3207,303 @@ Pages.registros.remove = function(id){
 };
 
 /* ============================================================
+   IMPRESSÃO / PDF — Ficha Completa em A4
+   ============================================================ */
+function getPrintCSS(){
+  return `
+    @page { size: A4; margin: 12mm 14mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #0f172a; background: #fff; font-size: 10pt; line-height: 1.35;
+    }
+    .doc-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 16px; padding-bottom: 10px;
+      border-bottom: 2.5px solid #0d5cab; margin-bottom: 14px;
+    }
+    .doc-org {
+      font-size: 8.5pt; font-weight: 700; color: #0d5cab;
+      text-transform: uppercase; letter-spacing: .8px;
+    }
+    .doc-head h1 {
+      font-size: 16pt; font-weight: 800; color: #0f172a;
+      letter-spacing: -.4px; margin: 2px 0 4px;
+    }
+    .doc-sub { font-size: 10pt; color: #475569; }
+    .doc-sub strong { color: #0f172a; }
+    .doc-meta {
+      text-align: right; font-size: 9pt; color: #475569;
+      display: flex; flex-direction: column; gap: 3px; flex: 0 0 auto;
+    }
+    .doc-meta span {
+      color: #94a3b8; font-weight: 700; text-transform: uppercase;
+      font-size: 8pt; letter-spacing: .5px; margin-right: 4px;
+    }
+    .doc-meta strong { color: #0f172a; }
+    .badge-aprovado { color: #047857 !important; }
+    .badge-pendente { color: #b45309 !important; }
+
+    .section {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 9.5pt; font-weight: 800; text-transform: uppercase;
+      color: #0d5cab; letter-spacing: .6px;
+      margin: 12px 0 6px; padding-bottom: 4px;
+      border-bottom: 1.5px solid #c7d9f0;
+      page-break-after: avoid; break-after: avoid;
+    }
+    .section svg { width: 13px; height: 13px; flex: 0 0 auto; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0 14px;
+    }
+    .item {
+      padding: 5px 0 6px;
+      border-bottom: 1px dashed #e2e8f0;
+      min-width: 0;
+      page-break-inside: avoid;
+    }
+    .item .lbl {
+      font-size: 7.5pt; text-transform: uppercase; letter-spacing: .5px;
+      color: #64748b; font-weight: 700;
+    }
+    .item .val {
+      font-size: 10pt; font-weight: 600; color: #0f172a;
+      margin-top: 1px; word-break: break-word;
+    }
+    .item.mono .val { font-family: ui-monospace, Menlo, monospace; font-size: 9pt; }
+
+    .chips-print { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+    .chips-print + .chips-print { margin-top: 8px; }
+    .chips-print .chip {
+      display: inline-block; padding: 2px 8px; border-radius: 99px;
+      font-size: 8.5pt; font-weight: 700;
+    }
+    .chips-print .chip.on { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    .chips-print .chip.off { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; text-decoration: line-through; }
+
+    .photo { margin-top: 6px; text-align: center; page-break-inside: avoid; }
+    .photo img {
+      max-width: 100%; max-height: 110mm; object-fit: contain;
+      border: 1px solid #e2e8f0; border-radius: 4px;
+    }
+    .photo-empty {
+      padding: 20px; text-align: center; color: #94a3b8; font-size: 9.5pt;
+      background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 6px;
+    }
+
+    .doc-foot {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      gap: 20px; margin-top: 22px; padding-top: 14px;
+      border-top: 1px solid #e2e8f0; page-break-inside: avoid;
+    }
+    .sign { flex: 1 1 auto; max-width: 65%; }
+    .sign-line { border-bottom: 1px solid #0f172a; margin-bottom: 4px; }
+    .sign-label {
+      font-size: 8.5pt; color: #64748b; text-transform: uppercase;
+      font-weight: 700; letter-spacing: .5px;
+    }
+    .sign-name { font-size: 10pt; font-weight: 700; color: #0f172a; margin-top: 2px; }
+    .doc-id { font-size: 8pt; color: #94a3b8; text-align: right; }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .doc-head { break-inside: avoid; }
+    }
+  `;
+}
+
+function montarHTMLFichaParaImpressao(r){
+  const st = getStatusFromReg(r);
+  const completo = fichaCompleta(r);
+  const dataUrl = fotoDataUrl(r);
+  const dt = new Date();
+  const dataEmissao = r.data_registro ? (function(){
+    const p = String(r.data_registro).split('-');
+    return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : r.data_registro;
+  })() : dt.toLocaleDateString('pt-BR');
+
+  const logPresentes = LOG_ITEMS.filter(function(x){ return !!r[x[0]]; }).map(function(x){ return x[1]; });
+  const logAusentes  = LOG_ITEMS.filter(function(x){ return !r[x[0]]; }).map(function(x){ return x[1]; });
+
+  function row(label, value, mono){
+    const v = (value === undefined || value === null || value === '') ? '—' : String(value);
+    return '<div class="item' + (mono ? ' mono' : '') + '">' +
+      '<div class="lbl">' + esc(label) + '</div>' +
+      '<div class="val">' + esc(v) + '</div>' +
+    '</div>';
+  }
+  function section(title, svg){
+    return '<h2 class="section">' +
+      (svg ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + svg + '</svg>' : '') +
+      esc(title) + '</h2>';
+  }
+
+  const fotoBloco = dataUrl
+    ? '<figure class="photo"><img src="' + dataUrl + '" alt="Foto do imóvel"></figure>'
+    : '<div class="photo-empty">Nenhuma foto anexada a esta ficha.</div>';
+
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
+    '<title>Ficha de Cadastro Imobiliário · ' + esc(r.nome || 'Sem nome') + '</title>' +
+    '<style>' + getPrintCSS() + '</style>' +
+    '</head><body>' +
+
+    '<header class="doc-head">' +
+      '<div>' +
+        '<div class="doc-org">Prefeitura Municipal de Careiro</div>' +
+        '<h1>Ficha de Cadastro Imobiliário</h1>' +
+        '<div class="doc-sub">Inscrição: <strong>' + esc(r.inscricao_anterior || '—') + '</strong></div>' +
+      '</div>' +
+      '<div class="doc-meta">' +
+        '<div><span>Status</span><strong class="badge-' + esc(st) + '">' + esc(statusLabel(st)) + '</strong></div>' +
+        '<div><span>Completude</span><strong>' + (completo ? 'Completo' : 'Incompleto') + '</strong></div>' +
+        '<div><span>Emissão</span><strong>' + esc(dataEmissao) + '</strong></div>' +
+        '<div><span>Responsável</span><strong>' + esc(r.responsavel || '—') + '</strong></div>' +
+      '</div>' +
+    '</header>' +
+
+    section('1. Proprietário', SVG_ICONS.user) +
+    '<div class="grid">' +
+      row('Nome completo', r.nome) +
+      row('CPF / CNPJ', r.cpf_cnpj, true) +
+      row('Nascimento', r.nascimento) +
+      row('Telefone', r.telefone) +
+      row('Sexo', labelFromOptions('sexo', r.sexo)) +
+      row('Estado civil', labelFromOptions('estado_civil', r.estado_civil)) +
+    '</div>' +
+
+    section('2. Endereço do Proprietário / Lote', SVG_ICONS.home) +
+    '<div class="grid">' +
+      row('Bairro', r.bairro_prop) +
+      row('Quadra', r.quadra_prop) +
+      row('Lote', r.lote_prop) +
+      row('Unidade', r.unidade_prop) +
+      row('Nº', r.numero_prop) +
+      row('Logradouro', r.logradouro_prop) +
+      row('Complemento', r.complemento_prop) +
+      row('CEP', r.cep, true) +
+      row('Cidade', r.cidade) +
+      row('UF', r.uf) +
+    '</div>' +
+
+    section('3. Identificação do Imóvel', SVG_ICONS.home) +
+    '<div class="grid">' +
+      row('Inscrição', r.inscricao_anterior, true) +
+      row('Bairro', r.bairro_imovel) +
+      row('Quadra', r.quadra_imovel) +
+      row('Lote', r.lote_letra) +
+      row('Unidade', r.unidade_imovel) +
+      row('Nº', r.numero_imovel) +
+      row('Logradouro', r.logradouro_imovel) +
+      row('Complemento', r.complemento_imovel) +
+      row('CEP', r.cep_imovel, true) +
+      row('Cidade', r.cidade_imovel) +
+      row('UF', r.uf_imovel) +
+    '</div>' +
+
+    section('4. Medidas do Terreno', SVG_ICONS.ruler) +
+    '<div class="grid">' +
+      row('Frente (m)', r.frente_terreno) +
+      row('Fundo (m)', r.fundo_terreno) +
+      row('Lado Direito (m)', r.lado_dir_terreno) +
+      row('Lado Esquerdo (m)', r.lado_esq_terreno) +
+      row('Área do Terreno (m²)', r.area_terreno) +
+    '</div>' +
+
+    section('5. Medidas da Edificação', SVG_ICONS.build) +
+    '<div class="grid">' +
+      row('Frente (m)', r.frente_edif) +
+      row('Fundo (m)', r.fundo_edif) +
+      row('Lado Direito (m)', r.lado_dir_edif) +
+      row('Lado Esquerdo (m)', r.lado_esq_edif) +
+      row('Nº de Frentes', r.num_frentes) +
+      row('Nº de Andares', r.num_andares) +
+      row('Área Edificada (m²)', r.area_edificada) +
+      row('Área Total Edif. (m²)', r.area_total_edificada) +
+      row('Ano de Construção', r.ano_construcao) +
+    '</div>' +
+
+    section('6. Características do Terreno', SVG_ICONS.ground) +
+    '<div class="grid">' +
+      row('01 — Situação', labelFromOptions('situacao', r.situacao)) +
+      row('02 — Topografia', labelFromOptions('topografia', r.topografia)) +
+      row('03 — Pedologia', labelFromOptions('pedologia', r.pedologia)) +
+      row('04 — Ocupação', labelFromOptions('ocupacao', r.ocupacao)) +
+      row('05 — Patrimônio', labelFromOptions('patrimonio', r.patrimonio)) +
+    '</div>' +
+
+    section('7. Características da Edificação', SVG_ICONS.build) +
+    '<div class="grid">' +
+      row('Alinhamento', labelFromOptions('alinhamento', r.alinhamento)) +
+      row('Posicionamento', labelFromOptions('posicionamento', r.posicionamento)) +
+      row('Situação Unid. Construída', labelFromOptions('situacao_unid', r.situacao_unid)) +
+      row('Estrutura', labelFromOptions('estrutura', r.estrutura)) +
+      row('Cobertura', labelFromOptions('cobertura', r.cobertura)) +
+      row('Paredes', labelFromOptions('paredes', r.paredes)) +
+      row('Forro', labelFromOptions('forro', r.forro)) +
+      row('Revestimento da Fachada', labelFromOptions('revest_fachada', r.revest_fachada)) +
+      row('Uso Principal', labelFromOptions('uso_principal', r.uso_principal)) +
+      row('Instalação Sanitária', labelFromOptions('instal_sanitaria', r.instal_sanitaria)) +
+      row('Instalação Elétrica', labelFromOptions('instal_eletrica', r.instal_eletrica)) +
+      row('Piso', labelFromOptions('piso', r.piso)) +
+      row('Estado de Conservação', labelFromOptions('conservacao', r.conservacao)) +
+    '</div>' +
+
+    section('8. Itens Presentes no Logradouro', SVG_ICONS.road) +
+    '<div class="chips-print">' +
+      (logPresentes.length
+        ? logPresentes.map(function(l){ return '<span class="chip on">' + esc(l) + '</span>'; }).join('')
+        : '<em style="font-size:9.5pt;color:#64748b;">Nenhum item marcado.</em>') +
+    '</div>' +
+    (logAusentes.length
+      ? '<div class="chips-print"><span style="font-size:9pt;color:#64748b;width:100%;margin-bottom:4px;">Ausentes:</span>' +
+        logAusentes.map(function(l){ return '<span class="chip off">' + esc(l) + '</span>'; }).join('') + '</div>'
+      : '') +
+
+    section('9. Foto do Imóvel', SVG_ICONS.cam) +
+    fotoBloco +
+
+    '<footer class="doc-foot">' +
+      '<div class="sign">' +
+        '<div class="sign-line"></div>' +
+        '<div class="sign-label">Assinatura do Responsável</div>' +
+        '<div class="sign-name">' + esc(r.responsavel || '—') + '</div>' +
+      '</div>' +
+      '<div class="doc-id">' +
+        'Documento gerado em ' + esc(dt.toLocaleString('pt-BR')) +
+        '<br>ID: ' + esc(r.id || '—') +
+      '</div>' +
+    '</footer>' +
+
+    '<script>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},500);});<\/script>' +
+    '</body></html>';
+}
+
+Pages.registros.imprimirPDF = function(id){
+  const r = State.registros.find(function(x){ return x.id === id; });
+  if(!r) return;
+
+  const html = montarHTMLFichaParaImpressao(r);
+
+  const w = window.open('', '_blank');
+  if(!w){ toast('Permita popups para imprimir / salvar em PDF.', 'warning'); return; }
+
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+
+  toast('Preparando impressão…', 'info');
+};
+
+/* ============================================================
    DADOS & BACKUP
    ============================================================ */
 const Data = {
   exportJSON(){
     const payload = {
-      exported_at: new Date().toISOString(), version:'3.4',
+      exported_at: new Date().toISOString(), version:'3.6',
       fichas: State.registros,
       listas: State.listas,
       quadras: State.quadras,
@@ -2765,9 +3559,11 @@ function renderStorageInfo(){
     if(r.bairro_imovel && r.quadra_imovel) qSet.add(norm(r.bairro_imovel)+'|'+norm(r.quadra_imovel));
   });
   const comFoto = State.registros.filter(function(r){ return !!r.foto_base64; }).length;
+  const completas = State.registros.filter(function(r){ return fichaCompleta(r); }).length;
   const info = [
     ['Fonte oficial', 'Firebase Firestore'],
     ['Total de Fichas', State.registros.length],
+    ['Fichas completas', completas],
     ['Fichas com foto', comFoto],
     ['Bairros (fichas)', bSet.size],
     ['Quadras (fichas)', qSet.size],
@@ -2818,6 +3614,7 @@ function bindEvents(){
       document.getElementById('hierContent').innerHTML = matches.length
         ? '<div class="lote-list">' + matches.slice(0, 80).map(function(l){
             const status = getStatusFromReg(l);
+            const comp = fichaCompleta(l);
             const fotoChip = l.foto_base64
               ? '<div><span class="lc-photo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Foto anexada</span></div>'
               : '';
@@ -2827,6 +3624,7 @@ function bindEvents(){
               '<div class="lc-sub">' + esc(l.bairro_imovel||'') + ' · Q ' + esc(l.quadra_imovel||'') + ' · ' + esc(l.logradouro_imovel||'—') + (l.unidade_imovel ? ' · Unid. ' + esc(l.unidade_imovel) : '') + '</div>' +
               fotoChip + '</div>' +
               '<span class="badge ' + esc(status) + '">' + statusLabel(status) + '</span>' +
+              '<span class="badge ' + (comp ? 'aprovado' : 'pendente') + '" style="margin-left:4px;">' + (comp ? 'Completo' : 'Incompleto') + '</span>' +
               '<div class="lote-actions">' +
                 '<button class="action-btn" data-action="view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
                 '<button class="action-btn" data-action="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
@@ -2862,7 +3660,7 @@ function bootApp(){
   escutarFichas();
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[Admin v3.4 — filtros + edição] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[Admin v3.6 — A4 + PDF + Filtro Completude + Lote em Faixa] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){
@@ -2912,6 +3710,8 @@ onAuthStateChanged(auth, async function(user){
 
 window.Pages = Pages; window.Modal = Modal; window.Data = Data;
 window.State = State; window.toast = toast; window.Lightbox = Lightbox;
+window.baixarFotoA4 = baixarFotoA4;
+window.montarHTMLFichaParaImpressao = montarHTMLFichaParaImpressao;
 </script>
 </body>
 </html>

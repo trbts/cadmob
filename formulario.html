@@ -347,40 +347,43 @@ body{
       </div>
     </section>
 
-    <!-- ============ ETAPA 2 ============ -->
+    <!-- ============ ETAPA 2 (opcional) ============ -->
     <section class="step-panel" data-step="2">
       <div class="card"><div class="card-body">
+        <p class="sub-note">Etapa <strong>opcional</strong>. Você pode preencher as medidas agora ou deixar em branco e seguir para a próxima etapa.</p>
+
         <p class="sub-head">Terreno</p>
         <div class="row row-2">
-          <div class="field"><label for="frente_terreno">Frente (m)</label><input type="text" id="frente_terreno" name="frente_terreno" required inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="fundo_terreno">Fundo (m)</label><input type="text" id="fundo_terreno" name="fundo_terreno" required inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="frente_terreno">Frente (m)</label><input type="text" id="frente_terreno" name="frente_terreno" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="fundo_terreno">Fundo (m)</label><input type="text" id="fundo_terreno" name="fundo_terreno" inputmode="decimal" placeholder="0,00"></div>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="lado_dir_terreno">Lado Direito (m)</label><input type="text" id="lado_dir_terreno" name="lado_dir_terreno" required inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="lado_esq_terreno">Lado Esquerdo (m)</label><input type="text" id="lado_esq_terreno" name="lado_esq_terreno" required inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_dir_terreno">Lado Direito (m)</label><input type="text" id="lado_dir_terreno" name="lado_dir_terreno" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_esq_terreno">Lado Esquerdo (m)</label><input type="text" id="lado_esq_terreno" name="lado_esq_terreno" inputmode="decimal" placeholder="0,00"></div>
         </div>
         <div class="field"><label for="area_terreno">Área Terreno (m²)</label><input type="text" id="area_terreno" name="area_terreno" readonly placeholder="cálculo automático"></div>
         <p class="sub-note">Área do terreno: <strong>Frente × Fundo</strong>.</p>
+
         <p class="sub-head">Edificação</p>
         <div class="row row-2">
-          <div class="field"><label for="frente_edif">Frente (m)</label><input type="text" id="frente_edif" name="frente_edif" required inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="fundo_edif">Fundo (m)</label><input type="text" id="fundo_edif" name="fundo_edif" required inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="frente_edif">Frente (m)</label><input type="text" id="frente_edif" name="frente_edif" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="fundo_edif">Fundo (m)</label><input type="text" id="fundo_edif" name="fundo_edif" inputmode="decimal" placeholder="0,00"></div>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="lado_dir_edif">Lado Direito (m)</label><input type="text" id="lado_dir_edif" name="lado_dir_edif" required inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="lado_esq_edif">Lado Esquerdo (m)</label><input type="text" id="lado_esq_edif" name="lado_esq_edif" required inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_dir_edif">Lado Direito (m)</label><input type="text" id="lado_dir_edif" name="lado_dir_edif" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_esq_edif">Lado Esquerdo (m)</label><input type="text" id="lado_esq_edif" name="lado_esq_edif" inputmode="decimal" placeholder="0,00"></div>
         </div>
         <div class="row row-2">
           <div class="field"><label for="num_frentes">N° de Frentes</label>
-            <select id="num_frentes" name="num_frentes" required><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+            <select id="num_frentes" name="num_frentes"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
           <div class="field"><label for="num_andares">N° de Andares</label>
-            <select id="num_andares" name="num_andares" required><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+            <select id="num_andares" name="num_andares"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
         </div>
         <div class="row row-2">
           <div class="field"><label for="area_edificada">Área Edificada (m²)</label><input type="text" id="area_edificada" name="area_edificada" readonly placeholder="cálculo automático"></div>
           <div class="field"><label for="area_total_edificada">Área Total Edif. (m²)</label><input type="text" id="area_total_edificada" name="area_total_edificada" readonly placeholder="cálculo automático"></div>
         </div>
-        <div class="field"><label for="ano_construcao">Ano Construção</label><input type="text" id="ano_construcao" name="ano_construcao" required inputmode="numeric" maxlength="4" placeholder="AAAA"></div>
+        <div class="field"><label for="ano_construcao">Ano Construção</label><input type="text" id="ano_construcao" name="ano_construcao" inputmode="numeric" maxlength="4" placeholder="AAAA"></div>
         <p class="sub-note">Área Edificada = <strong>Frente × Fundo</strong> · Área Total = <strong>Área Edificada × Andares</strong>.</p>
       </div></div>
     </section>
@@ -411,11 +414,6 @@ body{
           <div class="field"><label for="cep_imovel">CEP</label><input type="text" id="cep_imovel" name="cep_imovel" inputmode="numeric" data-mask="cep" placeholder="00000-000"></div>
           <div class="field"><label for="cidade_imovel">Cidade</label><input type="text" id="cidade_imovel" name="cidade_imovel" maxlength="50" placeholder="Cidade"></div>
           <div class="field"><label for="uf_imovel">UF</label><input type="text" id="uf_imovel" name="uf_imovel" maxlength="2" placeholder="UF" style="text-transform:uppercase"></div>
-        </div>
-        <div class="field">
-          <label for="valor_venal">Valor Venal (R$) — cálculo automático</label>
-          <input type="text" id="valor_venal" name="valor_venal" readonly placeholder="Área do terreno × R$/m² do bairro">
-          <div class="hint" id="valorVenalHint">Selecione o bairro e informe as medidas do terreno (etapa 2).</div>
         </div>
 
         <p class="sub-head">Foto do Imóvel <span class="req">*</span></p>
@@ -474,7 +472,7 @@ body{
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 5 — TERRENO ============ -->
+    <!-- ============ ETAPA 5 — TERRENO (obrigatória) ============ -->
     <section class="step-panel" data-step="5">
       <div class="card"><div class="card-body">
         <div class="field"><label for="situacao">01 — Situação</label>
@@ -504,7 +502,7 @@ body{
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 6 — EDIFICAÇÃO ============ -->
+    <!-- ============ ETAPA 6 — EDIFICAÇÃO (obrigatória) ============ -->
     <section class="step-panel" data-step="6">
       <div class="card"><div class="card-body">
         <div class="row row-2">
@@ -628,13 +626,6 @@ const auth = getAuth(app);
 
 /* ============================================================
    WORKER (Cloudflare) — validação + gravação das fichas
-   ------------------------------------------------------------
-   O front-end NÃO grava mais fichas direto no Firestore.
-   Ele envia os dados para o Worker (com o ID Token do usuário
-   logado no Firebase Auth); o Worker valida a permissão (role),
-   valida os dados e só então grava no Firestore usando uma
-   Service Account (Admin), com privilégios que ignoram as
-   regras de segurança do cliente.
    ============================================================ */
 const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
 
@@ -732,7 +723,6 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // OK — libera acesso e inicializa o formulário
   gateHide();
 
   if(!booted){
@@ -742,7 +732,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /* ============================================================
-   FORMULÁRIO — todo o código original
+   FORMULÁRIO
    ============================================================ */
 function initFormulario(){
 (function () {
@@ -784,8 +774,7 @@ function initFormulario(){
   function getBairros(){
     return grupoAtivo('bairros').map((o, i) => ({
       nome: o.label,
-      numero: String(o.numero != null ? o.numero : (i + 1)).padStart(3,'0'),
-      valor_m2: Number(o.valor_m2) || 0
+      numero: String(o.numero != null ? o.numero : (i + 1)).padStart(3,'0')
     }));
   }
   function getRuas(){ return grupoAtivo('ruas').map(o => o.label); }
@@ -1092,15 +1081,6 @@ function initFormulario(){
       'Este lote ainda não possui cadastro.';
   }
 
-  function imovelEstaBloqueado(){
-    const bairro = document.getElementById('bairro_imovel').value;
-    const quadra = document.getElementById('quadra_imovel').value;
-    const lote   = document.getElementById('lote_letra').value;
-    const unidade= document.getElementById('unidade_imovel').value;
-    if(!bairro || !quadra || !lote) return false;
-    return fichasComChave(bairro, quadra, lote, unidade).length > 0;
-  }
-
   /* ============================================================
      LISTENERS DO FIREBASE
      ============================================================ */
@@ -1113,7 +1093,6 @@ function initFormulario(){
         ruas:         Array.isArray(data.ruas)         ? data.ruas         : []
       };
       popularResponsaveis(); popularBairros(); popularRuas();
-      calcularValorVenal();
     });
   }
   function escutarQuadras(){
@@ -1180,12 +1159,12 @@ function initFormulario(){
   });
 
   /* ============================================================
-     FOTO DO IMÓVEL — captura, compressão (~150KB) e base64
+     FOTO DO IMÓVEL
      ============================================================ */
   let fotoBase64 = '';
   let fotoTipo   = '';
   let fotoTamanhoBytes = 0;
-  let fotoGeo = null; // { lat, lng, precisao, horario }
+  let fotoGeo = null;
 
   const photoInput   = document.getElementById('foto_input');
   const photoBlock   = document.getElementById('photoBlock');
@@ -1208,8 +1187,6 @@ function initFormulario(){
     photoEmpty.style.display   = on ? 'none' : (fotoBase64 ? 'none' : '');
     photoPreview.style.display = on ? 'none' : (fotoBase64 ? '' : 'none');
   }
-  // Atualiza o texto do indicador de carregamento da foto sem perder o spinner.
-  // Ex.: setFotoLoadingTexto('Localizando… precisão atual 12 m')
   function setFotoLoadingTexto(txt){
     if(!photoLoading) return;
     photoLoading.innerHTML = '<span class="spinner"></span> ' + esc(String(txt || ''));
@@ -1233,7 +1210,6 @@ function initFormulario(){
     toast('Foto removida.', 'success');
   });
 
-  /* -------- Helpers de imagem -------- */
   function loadImageFromFile(file){
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(file);
@@ -1272,14 +1248,6 @@ function initFormulario(){
     } catch(e){ return false; }
   }
 
-  /* -------- Geolocalização de alta precisão (watchPosition) --------
-     Em vez de aceitar a primeira leitura do GPS (que costuma chegar
-     com erro de 30–80 m), observamos a posição continuamente e
-     guardamos SEMPRE a amostra com menor `coords.accuracy` (melhor
-     precisão). O watch é encerrado assim que a precisão atinge o
-     alvo (≤ alvoPrecisao) ou quando o tempo limite estoura — nesse
-     caso devolvemos a melhor amostra obtida até ali. Em ambos os
-     caminhos chamamos clearWatch() para liberar o sensor.        */
   function obterLocalizacaoPrecisa(opts){
     const cfg          = opts || {};
     const timeoutMs    = Number(cfg.timeoutMs)    > 0 ? Number(cfg.timeoutMs)    : 8000;
@@ -1289,7 +1257,7 @@ function initFormulario(){
     return new Promise(resolve => {
       if(!('geolocation' in navigator)){ resolve(null); return; }
 
-      let melhor    = null;   // melhor amostra (menor accuracy)
+      let melhor    = null;
       let watchId   = null;
       let encerrado = false;
       const inicio  = Date.now();
@@ -1319,24 +1287,21 @@ function initFormulario(){
               horario: pos.timestamp || Date.now()
             };
 
-            // Guarda sempre a melhor (menor accuracy)
             if(melhor === null
                || (amostra.precisao != null &&
                    (melhor.precisao == null || amostra.precisao < melhor.precisao))){
               melhor = amostra;
             }
 
-            // Notifica o chamador (UI) sobre a precisão corrente
             if(onUpdate){
               try { onUpdate(melhor, Date.now() - inicio); } catch(e){}
             }
 
-            // Atingiu o alvo? Encerra imediatamente.
             if(melhor && melhor.precisao != null && melhor.precisao <= alvoPrecisao){
               finalizar();
             }
           },
-          () => { finalizar(); }, // erro (permissão/SO) → devolve o que tiver
+          () => { finalizar(); },
           {
             enableHighAccuracy: true,
             maximumAge: 0,
@@ -1349,7 +1314,6 @@ function initFormulario(){
     });
   }
 
-  /* -------- Carimbo de localização/data na própria imagem -------- */
   function carimbarLocalizacao(ctx, w, h, geo){
     if(!geo) return;
     const barH = Math.max(30, Math.round(h * 0.085));
@@ -1377,7 +1341,6 @@ function initFormulario(){
     ctx.restore();
   }
 
-  /* -------- Compressão principal -------- */
   async function comprimirImagemParaBase64(file, maxBytes, geo){
     const alvo = maxBytes || (150 * 1024);
     const img = await loadImageFromFile(file);
@@ -1397,7 +1360,6 @@ function initFormulario(){
 
     let melhorBlob = null;
 
-    // Fase 1: varia qualidade no tamanho atual
     const qualidades = [0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.28, 0.22];
     for(const q of qualidades){
       const canvas = desenharEmCanvas(img, w, h, geo);
@@ -1408,7 +1370,6 @@ function initFormulario(){
       if(blob.size <= alvo){ melhorBlob = blob; break; }
     }
 
-    // Fase 2: se ainda passa do alvo, diminui dimensões
     let tentativas = 0;
     while(melhorBlob && melhorBlob.size > alvo && tentativas < 6){
       tentativas++;
@@ -1431,7 +1392,6 @@ function initFormulario(){
     return { base64, tipo: tipoReal, tamanho: melhorBlob.size, width: w, height: h };
   }
 
-  /* -------- Evento do input file -------- */
   photoInput?.addEventListener('change', async () => {
     const file = photoInput.files && photoInput.files[0];
     if(!file) return;
@@ -1444,7 +1404,6 @@ function initFormulario(){
     setFotoLoading(true);
     setFotoLoadingTexto('Localizando… buscando sinal de GPS');
 
-    // Coleta de GPS com watchPosition: pega sempre a MELHOR amostra.
     const geo = await obterLocalizacaoPrecisa({
       timeoutMs: 8000,
       alvoPrecisao: 8,
@@ -1540,7 +1499,6 @@ function initFormulario(){
     if(v.indexOf(',') >= 0) return Number(v.replace(/\./g,'').replace(',','.')) || 0;
     return Number(v) || 0;
   }
-  function formatMoney(n){ return (Number(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function formatArea(n){ return (Number(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
   /* ============================================================
@@ -1607,7 +1565,7 @@ function initFormulario(){
   }
 
   /* ============================================================
-     CÁLCULOS
+     CÁLCULOS (áreas)
      ============================================================ */
   function calcAreas(){
     const g = id => document.getElementById(id);
@@ -1624,35 +1582,6 @@ function initFormulario(){
     const andares = Number(g('num_andares') ? g('num_andares').value : 0) || 0;
     const areaTotal = (areaEdif > 0 && andares > 0) ? areaEdif * andares : 0;
     if(g('area_total_edificada')) g('area_total_edificada').value = areaTotal > 0 ? formatArea(areaTotal) : '';
-
-    calcularValorVenal();
-  }
-  function calcularValorVenal(){
-    const bairroEl = document.getElementById('bairro_imovel');
-    const areaEl   = document.getElementById('area_terreno');
-    const valorEl  = document.getElementById('valor_venal');
-    const hintEl   = document.getElementById('valorVenalHint');
-    if(!bairroEl || !areaEl || !valorEl) return;
-
-    const bairroNome = bairroEl.value;
-    const area = parseDecimal(areaEl.value);
-    const info = bairroNome ? getBairroInfo(bairroNome) : null;
-    const m2 = info ? Number(info.valor_m2) || 0 : 0;
-    const total = area * m2;
-
-    if(total > 0){
-      valorEl.value = formatMoney(total);
-      if(hintEl) hintEl.innerHTML = '<strong>' + formatArea(area) + ' m²</strong> × <strong>R$ ' + formatMoney(m2) + '/m²</strong> (' + esc(bairroNome) + ') = <strong>R$ ' + formatMoney(total) + '</strong>';
-    } else {
-      valorEl.value = '';
-      if(hintEl){
-        if(!bairroNome) hintEl.textContent = 'Selecione o bairro e informe as medidas do terreno (etapa 2).';
-        else if(!info) hintEl.textContent = 'Bairro não encontrado nas listas.';
-        else if(m2 <= 0) hintEl.textContent = 'Este bairro não possui R$/m² cadastrado.';
-        else hintEl.textContent = 'Informe Frente e Fundo do terreno (etapa 2).';
-      }
-    }
-    updateProgress();
   }
 
   /* ============================================================
@@ -1689,7 +1618,7 @@ function initFormulario(){
     });
   }
   bindCep('cep','cidade','uf', null, 'logradouro_prop', () => { calcAreas(); });
-  bindCep('cep_imovel','cidade_imovel','uf_imovel', 'bairro_imovel', 'logradouro_imovel', () => { gerarInscricao(); calcularValorVenal(); });
+  bindCep('cep_imovel','cidade_imovel','uf_imovel', 'bairro_imovel', 'logradouro_imovel', () => { gerarInscricao(); });
 
   /* ============================================================
      DATA
@@ -1849,14 +1778,10 @@ function initFormulario(){
       else if(el.type === 'radio'){ if(el.checked) data[el.name] = el.value; }
       else data[el.name] = el.value;
     });
-    const info = getBairroInfo(document.getElementById('bairro_imovel').value);
-    data.valor_m2_bairro = info ? Number(info.valor_m2) || 0 : 0;
     data.area_terreno_num = parseDecimal(document.getElementById('area_terreno').value);
     data.area_edificada_num = parseDecimal(document.getElementById('area_edificada').value);
     data.area_total_edificada_num = parseDecimal(document.getElementById('area_total_edificada').value);
-    data.valor_venal_num = parseDecimal(document.getElementById('valor_venal').value);
 
-    // Foto do imóvel (base64) — só quando NÃO é rascunho
     if(includePhoto !== false && fotoBase64){
       data.foto_base64        = fotoBase64;
       data.foto_tipo          = fotoTipo;
@@ -1876,7 +1801,6 @@ function initFormulario(){
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.field.invalid,.field.valid').forEach(f => f.classList.remove('invalid','valid'));
     document.getElementById('inscricao_anterior').value = '';
-    document.getElementById('valor_venal').value = '';
     popularResponsaveis(); popularBairros(); popularRuas();
     atualizarQuadras('prop'); atualizarQuadras('imovel');
     atualizarCampoSenha();
@@ -1966,7 +1890,7 @@ function initFormulario(){
       }
 
       const photoBlock = document.getElementById('photoBlock');
-      const PRECISAO_MAX_M = 30; // teto aceitável no cliente
+      const PRECISAO_MAX_M = 30;
 
       if(!fotoBase64){
         if(photoBlock) photoBlock.classList.add('invalid');
@@ -1977,8 +1901,6 @@ function initFormulario(){
       } else if(photoBlock){
         photoBlock.classList.remove('invalid');
 
-        // Sanidade de precisão: se a melhor amostra ficou acima do teto,
-        // orienta o funcionário a se deslocar e tentar novamente.
         if(fotoGeo && fotoGeo.precisao != null && fotoGeo.precisao > PRECISAO_MAX_M){
           photoBlock.classList.add('invalid');
           invalidos.push({
@@ -2028,7 +1950,7 @@ function initFormulario(){
   }
 
   /* ============================================================
-     SALVAR — Firebase
+     SALVAR
      ============================================================ */
   document.getElementById('btnSave').addEventListener('click', async function () {
     let primeiroErro = null;
@@ -2061,8 +1983,6 @@ function initFormulario(){
 
     try {
       const payload = collect();
-      // criado_em / origem / criado_por_* agora são definidos pelo
-      // Worker no servidor — não confiamos mais nesses valores vindos do cliente.
       await enviarFichaViaWorker(payload);
       toast('Ficha enviada para a nuvem!', 'success');
       try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
@@ -2115,7 +2035,7 @@ function initFormulario(){
 
   document.getElementById('bairro_imovel').addEventListener('change', function(){
     atualizarQuadras('imovel');
-    gerarInscricao(); calcularValorVenal();
+    gerarInscricao();
   });
   document.getElementById('quadra_imovel').addEventListener('change', function(){
     atualizarLotes('imovel');
@@ -2130,13 +2050,8 @@ function initFormulario(){
   });
 
   /* ============================================================
-     OUTROS EVENTOS
+     OUTROS EVENTOS (cálculo de áreas)
      ============================================================ */
-  ['bairro_imovel','area_terreno'].forEach(id => {
-    const el = document.getElementById(id); if(!el) return;
-    el.addEventListener('input', calcularValorVenal);
-    el.addEventListener('change', calcularValorVenal);
-  });
   ['frente_terreno','fundo_terreno','frente_edif','fundo_edif','num_andares'].forEach(id => {
     const el = document.getElementById(id); if(!el) return;
     el.addEventListener('input', calcAreas);

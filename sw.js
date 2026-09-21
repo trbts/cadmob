@@ -21,7 +21,7 @@
  * ------------------------------------------------------------------
  */
 
-const CACHE_NAME = 'cadmob-form-v1';
+const CACHE_NAME = 'cadmob-form-v2';
 
 const APP_SHELL = [
   './index.html',
