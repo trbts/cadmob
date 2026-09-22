@@ -63,8 +63,7 @@ ul{ list-style:none; }
 .nav-item.active{ background:linear-gradient(135deg, var(--primary), var(--primary-dark)); color:#fff; box-shadow:0 8px 18px rgba(79,70,229,.35); }
 .nav-item .ico{ flex:0 0 auto; width:20px; height:20px; display:grid; place-items:center; }
 .nav-item .ico svg{ width:18px; height:18px; }
-.nav-item .badge-count{ margin-left:auto; background:rgba(255,255,255,.16); color:#fff; font-size:11px; font-weight:700; padding:1px 7px; border-radius:99px; }
-.sidebar.collapsed .nav-item > span:not(.ico):not(.badge-count){ display:none; }
+.sidebar.collapsed .nav-item > span:not(.ico){ display:none; }
 .main{ flex:1 1 auto; display:flex; flex-direction:column; height:100vh; overflow:hidden; min-width:0; }
 .topbar{ flex:0 0 auto; height:var(--topbar-h); background:var(--card); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; padding:0 26px; box-shadow:var(--shadow-sm); z-index:10; }
 .icon-btn{ width:40px; height:40px; border-radius:10px; display:grid; place-items:center; color:var(--muted); }
@@ -244,12 +243,6 @@ ul{ list-style:none; }
   transition:background .14s, color .14s, border-color .14s;
 }
 .ficha-tab svg{ width:15px; height:15px; flex:0 0 auto; }
-.ficha-tab .tcount{
-  font-size:10px; font-weight:800;
-  background:var(--bg); color:var(--muted);
-  padding:1px 6px; border-radius:99px;
-  border:1px solid var(--border);
-}
 .ficha-tab:hover{ background:var(--bg); color:var(--text); }
 .ficha-tab.active{
   background:#fff; color:var(--primary);
@@ -257,7 +250,6 @@ ul{ list-style:none; }
   border-bottom-color:#fff;
   box-shadow:0 -2px 0 var(--primary) inset;
 }
-.ficha-tab.active .tcount{ background:var(--primary-light); color:var(--primary); border-color:#c7d9f0; }
 
 .ficha-content{ padding:22px; }
 .ficha-panel{ display:none; }
@@ -636,7 +628,7 @@ ul{ list-style:none; }
 }
 @media (max-width:960px){
   .sidebar{ width:76px; flex-basis:76px; }
-  .sidebar .brand-text, .sidebar .nav-label, .sidebar .nav-item > span:not(.ico):not(.badge-count){ display:none; }
+  .sidebar .brand-text, .sidebar .nav-label, .sidebar .nav-item > span:not(.ico){ display:none; }
   .topbar-search{ width:200px; }
   .form-grid{ grid-template-columns:1fr; }
 }
@@ -966,31 +958,31 @@ function getListasGroup(id){
 }
 
 /* ============================================================
-   OPÇÕES / RÓTULOS DE SELECTS
+   OPÇÕES / RÓTULOS DE SELECTS — TODOS EM MAIÚSCULAS
    ============================================================ */
 const SELECT_OPTIONS = {
-  sexo:             [{v:'M',l:'Masculino'},{v:'F',l:'Feminino'},{v:'NI',l:'Não informado'}],
-  estado_civil:     [{v:'solteiro',l:'Solteiro(a)'},{v:'casado',l:'Casado(a)'},{v:'divorciado',l:'Divorciado(a)'},{v:'viuvo',l:'Viúvo(a)'},{v:'uniao',l:'União Estável'}],
+  sexo:             [{v:'M',l:'MASCULINO'},{v:'F',l:'FEMININO'},{v:'NI',l:'NÃO INFORMADO'}],
+  estado_civil:     [{v:'solteiro',l:'SOLTEIRO(A)'},{v:'casado',l:'CASADO(A)'},{v:'divorciado',l:'DIVORCIADO(A)'},{v:'viuvo',l:'VIÚVO(A)'},{v:'uniao',l:'UNIÃO ESTÁVEL'}],
   num_frentes:      [{v:'1',l:'1'},{v:'2',l:'2'},{v:'3',l:'3'},{v:'4',l:'4'},{v:'5',l:'5'}],
   num_andares:      [{v:'1',l:'1'},{v:'2',l:'2'},{v:'3',l:'3'},{v:'4',l:'4'},{v:'5',l:'5'}],
-  situacao:         [{v:'1',l:'1 - Livre'},{v:'2',l:'2 - Ocupado'},{v:'3',l:'3 - Alugado'},{v:'4',l:'4 - Cedido'},{v:'5',l:'5 - Invadido'}],
-  topografia:       [{v:'1',l:'1 - Plano'},{v:'2',l:'2 - Aclive'},{v:'3',l:'3 - Declive'},{v:'4',l:'4 - Irregular'},{v:'5',l:'5 - Montanhoso'}],
-  pedologia:        [{v:'1',l:'1 - Firme'},{v:'2',l:'2 - Alagadiço'},{v:'3',l:'3 - Arenoso'},{v:'4',l:'4 - Rochoso'},{v:'5',l:'5 - Argiloso'}],
-  ocupacao:         [{v:'1',l:'1 - Ocupado'},{v:'2',l:'2 - Desocupado'},{v:'3',l:'3 - Em construção'}],
-  patrimonio:       [{v:'1',l:'1 - Particular'},{v:'2',l:'2 - Público Federal'},{v:'3',l:'3 - Público Estadual'},{v:'4',l:'4 - Público Municipal'}],
-  alinhamento:      [{v:'1',l:'1 - Alinhado'},{v:'2',l:'2 - Recuado'},{v:'3',l:'3 - Esquina'}],
-  posicionamento:   [{v:'1',l:'1 - Frente'},{v:'2',l:'2 - Fundos'},{v:'3',l:'3 - Lateral Direita'},{v:'4',l:'4 - Lateral Esquerda'}],
-  situacao_unid:    [{v:'1',l:'1 - Própria'},{v:'2',l:'2 - Alugada'},{v:'3',l:'3 - Cedida'},{v:'4',l:'4 - Invadida'}],
-  estrutura:        [{v:'1',l:'1 - Alvenaria'},{v:'2',l:'2 - Madeira'},{v:'3',l:'3 - Mista'},{v:'4',l:'4 - Metálica'},{v:'5',l:'5 - Concreto'}],
-  cobertura:        [{v:'1',l:'1 - Telha de Barro'},{v:'2',l:'2 - Fibrocimento'},{v:'3',l:'3 - Laje'},{v:'4',l:'4 - Zinco'},{v:'5',l:'5 - Palha'}],
-  paredes:          [{v:'1',l:'1 - Alvenaria'},{v:'2',l:'2 - Madeira'},{v:'3',l:'3 - Mista'},{v:'4',l:'4 - Taipa'}],
-  forro:            [{v:'1',l:'1 - Laje'},{v:'2',l:'2 - Madeira'},{v:'3',l:'3 - PVC'},{v:'4',l:'4 - Gesso'},{v:'5',l:'5 - Sem forro'}],
-  revest_fachada:   [{v:'1',l:'1 - Reboco'},{v:'2',l:'2 - Cerâmica'},{v:'3',l:'3 - Pintura'},{v:'4',l:'4 - Sem revestimento'}],
-  uso_principal:    [{v:'1',l:'1 - Residencial'},{v:'2',l:'2 - Comercial'},{v:'3',l:'3 - Misto'},{v:'4',l:'4 - Industrial'}],
-  instal_sanitaria: [{v:'1',l:'1 - Rede Pública'},{v:'2',l:'2 - Fossa Séptica'},{v:'3',l:'3 - Fossa Rudimentar'},{v:'4',l:'4 - Inexistente'}],
-  instal_eletrica:  [{v:'1',l:'1 - Rede Pública'},{v:'2',l:'2 - Própria'},{v:'3',l:'3 - Inexistente'}],
-  piso:             [{v:'1',l:'1 - Cerâmica'},{v:'2',l:'2 - Cimento'},{v:'3',l:'3 - Madeira'},{v:'4',l:'4 - Porcelanato'},{v:'5',l:'5 - Terra Batida'}],
-  conservacao:      [{v:'1',l:'1 - Ótimo'},{v:'2',l:'2 - Bom'},{v:'3',l:'3 - Regular'},{v:'4',l:'4 - Ruim'},{v:'5',l:'5 - Péssimo'}]
+  situacao:         [{v:'1',l:'1 - LIVRE'},{v:'2',l:'2 - OCUPADO'},{v:'3',l:'3 - ALUGADO'},{v:'4',l:'4 - CEDIDO'},{v:'5',l:'5 - INVADIDO'}],
+  topografia:       [{v:'1',l:'1 - PLANO'},{v:'2',l:'2 - ACLIVE'},{v:'3',l:'3 - DECLIVE'},{v:'4',l:'4 - IRREGULAR'},{v:'5',l:'5 - MONTANHOSO'}],
+  pedologia:        [{v:'1',l:'1 - FIRME'},{v:'2',l:'2 - ALAGADIÇO'},{v:'3',l:'3 - ARENOSO'},{v:'4',l:'4 - ROCHOSO'},{v:'5',l:'5 - ARGILOSO'}],
+  ocupacao:         [{v:'1',l:'1 - OCUPADO'},{v:'2',l:'2 - DESOCUPADO'},{v:'3',l:'3 - EM CONSTRUÇÃO'}],
+  patrimonio:       [{v:'1',l:'1 - PARTICULAR'},{v:'2',l:'2 - PÚBLICO FEDERAL'},{v:'3',l:'3 - PÚBLICO ESTADUAL'},{v:'4',l:'4 - PÚBLICO MUNICIPAL'}],
+  alinhamento:      [{v:'1',l:'1 - ALINHADO'},{v:'2',l:'2 - RECUADO'},{v:'3',l:'3 - ESQUINA'}],
+  posicionamento:   [{v:'1',l:'1 - FRENTE'},{v:'2',l:'2 - FUNDOS'},{v:'3',l:'3 - LATERAL DIREITA'},{v:'4',l:'4 - LATERAL ESQUERDA'}],
+  situacao_unid:    [{v:'1',l:'1 - PRÓPRIA'},{v:'2',l:'2 - ALUGADA'},{v:'3',l:'3 - CEDIDA'},{v:'4',l:'4 - INVADIDA'}],
+  estrutura:        [{v:'1',l:'1 - ALVENARIA'},{v:'2',l:'2 - MADEIRA'},{v:'3',l:'3 - MISTA'},{v:'4',l:'4 - METÁLICA'},{v:'5',l:'5 - CONCRETO'}],
+  cobertura:        [{v:'1',l:'1 - TELHA DE BARRO'},{v:'2',l:'2 - FIBROCIMENTO'},{v:'3',l:'3 - LAJE'},{v:'4',l:'4 - ZINCO'},{v:'5',l:'5 - PALHA'}],
+  paredes:          [{v:'1',l:'1 - ALVENARIA'},{v:'2',l:'2 - MADEIRA'},{v:'3',l:'3 - MISTA'},{v:'4',l:'4 - TAIPA'}],
+  forro:            [{v:'1',l:'1 - LAJE'},{v:'2',l:'2 - MADEIRA'},{v:'3',l:'3 - PVC'},{v:'4',l:'4 - GESSO'},{v:'5',l:'5 - SEM FORRO'}],
+  revest_fachada:   [{v:'1',l:'1 - REBOCO'},{v:'2',l:'2 - CERÂMICA'},{v:'3',l:'3 - PINTURA'},{v:'4',l:'4 - SEM REVESTIMENTO'}],
+  uso_principal:    [{v:'1',l:'1 - RESIDENCIAL'},{v:'2',l:'2 - COMERCIAL'},{v:'3',l:'3 - MISTO'},{v:'4',l:'4 - INDUSTRIAL'}],
+  instal_sanitaria: [{v:'1',l:'1 - REDE PÚBLICA'},{v:'2',l:'2 - FOSSA SÉPTICA'},{v:'3',l:'3 - FOSSA RUDIMENTAR'},{v:'4',l:'4 - INEXISTENTE'}],
+  instal_eletrica:  [{v:'1',l:'1 - REDE PÚBLICA'},{v:'2',l:'2 - PRÓPRIA'},{v:'3',l:'3 - INEXISTENTE'}],
+  piso:             [{v:'1',l:'1 - CERÂMICA'},{v:'2',l:'2 - CIMENTO'},{v:'3',l:'3 - MADEIRA'},{v:'4',l:'4 - PORCELANATO'},{v:'5',l:'5 - TERRA BATIDA'}],
+  conservacao:      [{v:'1',l:'1 - ÓTIMO'},{v:'2',l:'2 - BOM'},{v:'3',l:'3 - REGULAR'},{v:'4',l:'4 - RUIM'},{v:'5',l:'5 - PÉSSIMO'}]
 };
 
 function labelFromOptions(optKey, val){
@@ -1000,39 +992,45 @@ function labelFromOptions(optKey, val){
   return hit ? hit.l : String(val);
 }
 
+/* LOG_ITEMS — rótulos em MAIÚSCULAS */
 const LOG_ITEMS = [
-  ['log_pavimentado',     'Pavimentado'],
-  ['log_coleta_lixo',     'Coleta de Lixo'],
-  ['log_rede_agua',       'Rede de Água'],
-  ['log_iluminacao',      'Iluminação'],
-  ['log_cabine_policial', 'Cabine Policial'],
-  ['log_arborizacao',     'Arborização'],
-  ['log_meio_fio',        'Meio Fio'],
-  ['log_varricao',        'Varrição'],
-  ['log_rede_publica',    'Rede Pública'],
-  ['log_banca_jornal',    'Banca de Jornal'],
-  ['log_rede_telefonica', 'Rede Telefônica'],
-  ['log_rede_eletrica',   'Rede Elétrica'],
-  ['log_galeria_pluvial', 'Galeria Pluvial'],
-  ['log_esgoto',          'Esgoto'],
-  ['log_ponto_onibus',    'Ponto de Ônibus'],
-  ['log_correio',         'Correio']
+  ['log_pavimentado',     'PAVIMENTADO'],
+  ['log_coleta_lixo',     'COLETA DE LIXO'],
+  ['log_rede_agua',       'REDE DE ÁGUA'],
+  ['log_iluminacao',      'ILUMINAÇÃO'],
+  ['log_cabine_policial', 'CABINE POLICIAL'],
+  ['log_arborizacao',     'ARBORIZAÇÃO'],
+  ['log_meio_fio',        'MEIO FIO'],
+  ['log_varricao',        'VARRIÇÃO'],
+  ['log_rede_publica',    'REDE PÚBLICA'],
+  ['log_banca_jornal',    'BANCA DE JORNAL'],
+  ['log_rede_telefonica', 'REDE TELEFÔNICA'],
+  ['log_rede_eletrica',   'REDE ELÉTRICA'],
+  ['log_galeria_pluvial', 'GALERIA PLUVIAL'],
+  ['log_esgoto',          'ESGOTO'],
+  ['log_ponto_onibus',    'PONTO DE ÔNIBUS'],
+  ['log_correio',         'CORREIO']
 ];
 
-/* Campos OBRIGATÓRIOS do formulário mobile (Etapas 5 e 6).
-   Como o app só permite salvar se todos estiverem preenchidos, uma
-   ficha vinda do formulário SEMPRE estará "completa" nesse aspecto.
-   O check serve apenas como salvaguarda para fichas editadas
-   manualmente em que algum desses campos tenha sido apagado. */
-const CAMPOS_OBRIGATORIOS_TERRENO_EDIF = [
-  'situacao','topografia','pedologia','ocupacao','patrimonio',
-  'alinhamento','posicionamento','situacao_unid','estrutura','cobertura',
-  'paredes','forro','revest_fachada','uso_principal','instal_sanitaria',
-  'instal_eletrica','piso','conservacao'
+/* ============================================================
+   COMPLETUDE DA FICHA — critério: ETAPA 2 (Terreno / Edificação)
+
+   A ficha é considerada COMPLETA somente quando TODOS os 11 campos
+   de medida abaixo estão preenchidos. Se faltar pelo menos 1, retorna
+   INCOMPLETO.
+
+   Os campos "area_*" são calculados automaticamente e por isso NÃO
+   entram no check (senão o critério nunca fecharia em fichas válidas).
+   As Etapas 5 e 6 são IGNORADAS aqui, conforme solicitado.
+   ============================================================ */
+const CAMPOS_ETAPA2 = [
+  'frente_terreno','fundo_terreno','lado_dir_terreno','lado_esq_terreno',
+  'frente_edif','fundo_edif','lado_dir_edif','lado_esq_edif',
+  'num_frentes','num_andares','ano_construcao'
 ];
 
 function fichaCompleta(r){
-  return CAMPOS_OBRIGATORIOS_TERRENO_EDIF.every(function(f){
+  return CAMPOS_ETAPA2.every(function(f){
     return String(r[f] || '').trim() !== '';
   });
 }
@@ -1438,7 +1436,6 @@ function escutarListas(){
       },
       updated_at: d.updated_at || null
     };
-    updateNavCounts();
     if(State.page === 'listas' && hasAccess('listas')) renderListas();
     if(State.page === 'estrutura' && hasAccess('estrutura')) renderEstrutura();
   });
@@ -1446,12 +1443,10 @@ function escutarListas(){
 function escutarEstrutura(){
   onSnapshot(doc(db,'config','quadras'), function(snap){
     State.quadras = snap.exists() && Array.isArray(snap.data().items) ? snap.data().items : [];
-    updateNavCounts();
     if(State.page === 'estrutura' && hasAccess('estrutura')) renderEstrutura();
   });
   onSnapshot(doc(db,'config','lotes'), function(snap){
     State.lotes = snap.exists() && Array.isArray(snap.data().items) ? snap.data().items : [];
-    updateNavCounts();
     if(State.page === 'estrutura' && hasAccess('estrutura')) renderEstrutura();
     if(State.page === 'registros' && hasAccess('registros')) renderRegistros();
   });
@@ -1462,7 +1457,6 @@ function escutarFichas(){
     const arr = [];
     snap.forEach(function(d){ arr.push(Object.assign({ id:d.id }, d.data())); });
     State.registros = arr;
-    updateNavCounts();
     if(State.page === 'dashboard' && hasAccess('dashboard')) renderDashboard();
     if(State.page === 'registros' && hasAccess('registros')) renderRegistros();
     if(State.page === 'estrutura' && hasAccess('estrutura')) renderEstrutura();
@@ -1473,7 +1467,7 @@ function escutarFichas(){
 /* ============================================================
    DASHBOARD
    ============================================================ */
-const STATUS_OPTS = [{ v:'pendente', l:'Pendente' }, { v:'aprovado', l:'Aprovado' }];
+const STATUS_OPTS = [{ v:'pendente', l:'PENDENTE' }, { v:'aprovado', l:'APROVADO' }];
 function statusLabel(s){ const o = STATUS_OPTS.find(function(x){ return x.v === s; }); return o ? o.l : (s || '—'); }
 function normalizeStatus(s){ return (s === 'aprovado') ? 'aprovado' : 'pendente'; }
 function getStatusFromReg(r){ return normalizeStatus(r.status); }
@@ -1497,7 +1491,7 @@ function renderDashboard(){
       svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' },
     { ico:'i3', label:'Pendentes', value: pend, trend: pend>0?'Aguardando análise':'Tudo em dia', down: pend>0,
       svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' },
-    { ico:'i4', label:'Fichas Completas', value: completas, trend: total ? Math.round(completas/total*100)+'% com Terreno/Edif. preenchidos' : '—',
+    { ico:'i4', label:'Fichas Completas', value: completas, trend: total ? Math.round(completas/total*100)+'% com medidas da Etapa 2' : '—',
       svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' }
   ].map(function(s){
     return '<div class="stat"><div class="stat-ico ' + s.ico + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + s.svg + '</svg></div>' +
@@ -1644,7 +1638,7 @@ Pages.listas.addOption = function(gid){
   let bodyHTML =
     '<div class="field"><label>Rótulo exibido <span class="req">*</span></label>' +
       '<input type="text" id="o_lbl" placeholder="ex.: ' +
-        (isBairros ? 'Centro' : (isFuncs ? 'João Silva' : 'Rua das Flores')) + '">' +
+        (isBairros ? 'CENTRO' : (isFuncs ? 'JOÃO SILVA' : 'RUA DAS FLORES')) + '">' +
     '</div>';
 
   if(isRuas){
@@ -2064,7 +2058,7 @@ Pages.estrutura.novaQuadra = function(){
         if(existentes.some(function(q){ return q.numero === num; })){
           toast('Já existe uma quadra com este número neste bairro.', 'error'); return false;
         }
-        novas.push({ id: uid(), bairro: bairro, numero: num, label: lbl || ('Quadra ' + num) });
+        novas.push({ id: uid(), bairro: bairro, numero: num, label: lbl || ('QUADRA ' + num) });
       } else {
         const de  = modal.querySelector('#q_de').value.trim();
         const ate = modal.querySelector('#q_ate').value.trim();
@@ -2085,7 +2079,7 @@ Pages.estrutura.novaQuadra = function(){
           const num = String(i).padStart(pad, '0');
           if(existentes.some(function(q){ return q.numero === num; })) continue;
           if(novas.some(function(q){ return q.numero === num; })) continue;
-          novas.push({ id: uid(), bairro: bairro, numero: num, label: 'Quadra ' + num });
+          novas.push({ id: uid(), bairro: bairro, numero: num, label: 'QUADRA ' + num });
         }
         if(!novas.length){
           toast('Nenhuma quadra nova para criar (todas já existem).', 'warning'); return false;
@@ -2130,7 +2124,7 @@ Pages.estrutura.editLote = function(lid){
         toast('Já existe outro lote com este número nesta quadra.', 'error'); return false;
       }
       l.numero = num;
-      l.label = lbl || ('Lote ' + num);
+      l.label = lbl || ('LOTE ' + num);
       await salvarEstrutura();
       renderEstrutura();
       toast('Lote atualizado.', 'success', 'Lote ' + num);
@@ -2192,7 +2186,7 @@ Pages.estrutura.novoLote = function(){
         if(existentes.some(function(l){ return l.numero === num; })){
           toast('Já existe um lote com este número nesta quadra.', 'error'); return false;
         }
-        novos.push({ id: uid(), bairro: bairro, quadra: quadra, numero: num, label: lbl || ('Lote ' + num) });
+        novos.push({ id: uid(), bairro: bairro, quadra: quadra, numero: num, label: lbl || ('LOTE ' + num) });
       } else {
         const de  = modal.querySelector('#l_de').value.trim();
         const ate = modal.querySelector('#l_ate').value.trim();
@@ -2213,7 +2207,7 @@ Pages.estrutura.novoLote = function(){
           const num = String(i).padStart(pad, '0');
           if(existentes.some(function(l){ return l.numero === num; })) continue;
           if(novos.some(function(l){ return l.numero === num; })) continue;
-          novos.push({ id: uid(), bairro: bairro, quadra: quadra, numero: num, label: 'Lote ' + num });
+          novos.push({ id: uid(), bairro: bairro, quadra: quadra, numero: num, label: 'LOTE ' + num });
         }
         if(!novos.length){
           toast('Nenhum lote novo para criar (todos já existem).', 'warning'); return false;
@@ -2461,11 +2455,11 @@ function renderLotesView(){
         '<option value="aprovado"'  + (State.hier.filterStatus === 'aprovado'  ? ' selected' : '') + '>Aprovado</option>' +
       '</select>';
 
-  /* Filtro de completude */
+  /* Filtro de completude (Etapa 2) */
   extraHTML +=
       '<label>' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
-        'Terreno/Edif.:' +
+        'Etapa 2:' +
       '</label>' +
       '<select id="filterCompletude">' +
         '<option value=""'           + (State.hier.filterCompletude === ''           ? ' selected' : '') + '>Todos</option>' +
@@ -2767,7 +2761,7 @@ Pages.registros.view = function(id){
     );
 
   const tabMedidas =
-    dSection('Terreno — Medidas', SVG_ICONS.ruler) +
+    dSection('Terreno — Medidas (Etapa 2)', SVG_ICONS.ruler) +
     '<div class="detail-grid">' +
       dItem('Frente (m)', r.frente_terreno) +
       dItem('Fundo (m)', r.fundo_terreno) +
@@ -2775,7 +2769,7 @@ Pages.registros.view = function(id){
       dItem('Lado Esquerdo (m)', r.lado_esq_terreno) +
       dItem('Área do Terreno (m²)', r.area_terreno) +
     '</div>' +
-    dSection('Edificação — Medidas', SVG_ICONS.build) +
+    dSection('Edificação — Medidas (Etapa 2)', SVG_ICONS.build) +
     '<div class="detail-grid">' +
       dItem('Frente (m)', r.frente_edif) +
       dItem('Fundo (m)', r.fundo_edif) +
@@ -2832,7 +2826,7 @@ Pages.registros.view = function(id){
       dItem('Responsável pelo preenchimento', r.responsavel) +
       dItem('Data de Emissão', r.data_registro) +
       dItem('Status atual', statusLabel(st)) +
-      dItem('Completude (Terreno/Edif.)', completo ? 'Completo' : 'Incompleto') +
+      dItem('Completude (Etapa 2)', completo ? 'Completo' : 'Incompleto') +
       dItem('Origem', r.origem) +
     '</div>' +
     dSection('Auditoria', SVG_ICONS.info) +
@@ -2982,14 +2976,14 @@ const EDIT_SCHEMA = {
     { section:'Foto do Imóvel', icon:SVG_ICONS.cam, custom:'photo' }
   ],
   medidas: [
-    { section:'Terreno — Medidas', icon:SVG_ICONS.ruler, fields: [
+    { section:'Terreno — Medidas (Etapa 2)', icon:SVG_ICONS.ruler, fields: [
       { n:'frente_terreno', l:'Frente (m)', t:'text' },
       { n:'fundo_terreno', l:'Fundo (m)', t:'text' },
       { n:'lado_dir_terreno', l:'Lado Direito (m)', t:'text' },
       { n:'lado_esq_terreno', l:'Lado Esquerdo (m)', t:'text' },
       { n:'area_terreno', l:'Área Terreno (m²) — auto', t:'text' }
     ]},
-    { section:'Edificação — Medidas', icon:SVG_ICONS.build, fields: [
+    { section:'Edificação — Medidas (Etapa 2)', icon:SVG_ICONS.build, fields: [
       { n:'frente_edif', l:'Frente (m)', t:'text' },
       { n:'fundo_edif', l:'Fundo (m)', t:'text' },
       { n:'lado_dir_edif', l:'Lado Direito (m)', t:'text' },
@@ -3412,7 +3406,7 @@ Pages.registros.remove = function(id){
 };
 
 /* ============================================================
-   IMPRESSÃO / PDF — Ficha Completa em A4
+   IMPRESSÃO / PDF — Ficha Completa em A4 (SEM ASSINATURA)
    ============================================================ */
 function getPrintCSS(){
   return `
@@ -3696,7 +3690,7 @@ Pages.registros.imprimirPDF = function(id){
 const Data = {
   exportJSON(){
     const payload = {
-      exported_at: new Date().toISOString(), version:'3.8',
+      exported_at: new Date().toISOString(), version:'3.9',
       fichas: State.registros,
       listas: State.listas,
       quadras: State.quadras,
@@ -3756,7 +3750,7 @@ function renderStorageInfo(){
   const info = [
     ['Fonte oficial', 'Firebase Firestore'],
     ['Total de Fichas', State.registros.length],
-    ['Fichas completas', completas],
+    ['Fichas completas (Etapa 2)', completas],
     ['Fichas com foto', comFoto],
     ['Bairros (fichas)', bSet.size],
     ['Quadras (fichas)', qSet.size],
@@ -3780,19 +3774,6 @@ function refreshCurrentPage(){
   if(State.page === 'dados'     && hasAccess('dados'))     renderStorageInfo();
 }
 
-function updateNavCounts(){
-  const r = document.getElementById('navCountRegistros');
-  const l = document.getElementById('navCountListas');
-  const e = document.getElementById('navCountEstrutura');
-  if(r) r.textContent = State.registros.length;
-  if(l){
-    const totalOpts = FORM_GROUPS.reduce(function(s,g){
-      return s + (State.listas.grupos[g.id] ? State.listas.grupos[g.id].length : 0);
-    }, 0);
-    l.textContent = totalOpts;
-  }
-  if(e) e.textContent = State.quadras.length + State.lotes.length;
-}
 function bindEvents(){
   document.querySelectorAll('.nav-item').forEach(function(n){
     n.addEventListener('click', function(){ navigate(n.dataset.page); });
@@ -3868,7 +3849,7 @@ function bootApp(){
   escutarFichas();
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[Admin v3.8 — Uppercase + Status Filter + Sem Assinatura] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[Admin v3.9 — Tudo MAIÚSCULO + Etapa 2 como critério de completude] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){

@@ -84,7 +84,7 @@ body{
 .field > label{ font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); }
 .field > label .req{ color:var(--danger); margin-left:2px; }
 .field input, .field select, .field textarea{ width:100%; min-height:48px; padding:12px 13px; font-family:inherit; font-size:16px; color:var(--text); background:#fbfcfe; border:1.5px solid var(--border); border-radius:12px; outline:none; transition:all .18s; -webkit-appearance:none; appearance:none; text-overflow:ellipsis; }
-.field select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; padding-right:38px; white-space:nowrap; overflow:hidden; }
+.field select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; padding-right:38px; white-space:nowrap; overflow:hidden; text-transform:uppercase; }
 .field input:focus, .field select:focus{ border-color:var(--primary); background:#fff; box-shadow:0 0 0 3.5px rgba(13,92,171,.12); }
 
 /* ===== Força maiúsculas nos campos de texto ===== */
@@ -130,7 +130,7 @@ body{
 .chip input{ position:absolute; opacity:0; width:0; height:0; pointer-events:none; }
 .chip-box{ flex:0 0 auto; width:21px; height:21px; border-radius:7px; border:2px solid #c6d2e0; background:#fff; display:grid; place-items:center; transition:background .16s, border-color .16s; pointer-events:none; }
 .chip-box::after{ content:""; width:5px; height:9px; border:2px solid #fff; border-top:0; border-left:0; transform:rotate(45deg) translate(-1px,-1px) scale(0); transition:transform .16s; }
-.chip-text{ font-size:12.5px; font-weight:600; color:#41536a; line-height:1.25; pointer-events:none; }
+.chip-text{ font-size:12.5px; font-weight:600; color:#41536a; line-height:1.25; pointer-events:none; text-transform:uppercase; }
 .chip.active{ border-color:var(--primary); background:var(--primary-light); }
 .chip.active .chip-box{ background:var(--primary); border-color:var(--primary); }
 .chip.active .chip-box::after{ transform:rotate(45deg) translate(-1px,-1px) scale(1); }
@@ -246,9 +246,6 @@ body{
 </head>
 <body>
 
-<!-- ============================================================
-     AUTH GATE — bloqueia todo o app até validar role 'funcionario'
-     ============================================================ -->
 <div class="auth-gate" id="authGate">
   <div class="auth-gate-inner">
     <div class="gate-spinner" id="gateSpinner"></div>
@@ -258,9 +255,6 @@ body{
   </div>
 </div>
 
-<!-- ============================================================
-     APP (só aparece após auth validar role=funcionario)
-     ============================================================ -->
 <div id="appShell" style="display:none;">
 
 <header class="app-header">
@@ -343,12 +337,12 @@ body{
           <div class="row row-2">
             <div class="field"><label for="sexo">Sexo</label>
               <select id="sexo" name="sexo" required>
-                <option value="">Selecione</option><option value="M">Masculino</option><option value="F">Feminino</option><option value="NI">Não informado</option>
+                <option value="">SELECIONE</option><option value="M">MASCULINO</option><option value="F">FEMININO</option><option value="NI">NÃO INFORMADO</option>
               </select></div>
             <div class="field"><label for="estado_civil">Estado Civil</label>
               <select id="estado_civil" name="estado_civil" required>
-                <option value="">Selecione</option><option value="solteiro">Solteiro(a)</option><option value="casado">Casado(a)</option>
-                <option value="divorciado">Divorciado(a)</option><option value="viuvo">Viúvo(a)</option><option value="uniao">União Estável</option>
+                <option value="">SELECIONE</option><option value="solteiro">SOLTEIRO(A)</option><option value="casado">CASADO(A)</option>
+                <option value="divorciado">DIVORCIADO(A)</option><option value="viuvo">VIÚVO(A)</option><option value="uniao">UNIÃO ESTÁVEL</option>
               </select></div>
           </div>
           <div class="field" id="wrap_cpf">
@@ -464,114 +458,114 @@ body{
       <div class="card"><div class="card-body">
         <p class="sub-note">Toque nos itens que existem no logradouro do imóvel.</p>
         <div class="chips" id="chipsLogradouro">
-          <div class="chip"><input type="checkbox" name="log_pavimentado"><span class="chip-box"></span><span class="chip-text">Pavimentado</span></div>
-          <div class="chip"><input type="checkbox" name="log_coleta_lixo"><span class="chip-box"></span><span class="chip-text">Coleta de Lixo</span></div>
-          <div class="chip"><input type="checkbox" name="log_rede_agua"><span class="chip-box"></span><span class="chip-text">Rede de Água</span></div>
-          <div class="chip"><input type="checkbox" name="log_iluminacao"><span class="chip-box"></span><span class="chip-text">Iluminação</span></div>
-          <div class="chip"><input type="checkbox" name="log_cabine_policial"><span class="chip-box"></span><span class="chip-text">Cabine Policial</span></div>
-          <div class="chip"><input type="checkbox" name="log_arborizacao"><span class="chip-box"></span><span class="chip-text">Arborização</span></div>
-          <div class="chip"><input type="checkbox" name="log_meio_fio"><span class="chip-box"></span><span class="chip-text">Meio Fio</span></div>
-          <div class="chip"><input type="checkbox" name="log_varricao"><span class="chip-box"></span><span class="chip-text">Varrição</span></div>
-          <div class="chip"><input type="checkbox" name="log_rede_publica"><span class="chip-box"></span><span class="chip-text">Rede Pública</span></div>
-          <div class="chip"><input type="checkbox" name="log_banca_jornal"><span class="chip-box"></span><span class="chip-text">Banca de Jornal</span></div>
-          <div class="chip"><input type="checkbox" name="log_rede_telefonica"><span class="chip-box"></span><span class="chip-text">Rede Telefônica</span></div>
-          <div class="chip"><input type="checkbox" name="log_rede_eletrica"><span class="chip-box"></span><span class="chip-text">Rede Elétrica</span></div>
-          <div class="chip"><input type="checkbox" name="log_galeria_pluvial"><span class="chip-box"></span><span class="chip-text">Galeria Pluvial</span></div>
-          <div class="chip"><input type="checkbox" name="log_esgoto"><span class="chip-box"></span><span class="chip-text">Esgoto</span></div>
-          <div class="chip"><input type="checkbox" name="log_ponto_onibus"><span class="chip-box"></span><span class="chip-text">Ponto de Ônibus</span></div>
-          <div class="chip"><input type="checkbox" name="log_correio"><span class="chip-box"></span><span class="chip-text">Correio</span></div>
+          <div class="chip"><input type="checkbox" name="log_pavimentado"><span class="chip-box"></span><span class="chip-text">PAVIMENTADO</span></div>
+          <div class="chip"><input type="checkbox" name="log_coleta_lixo"><span class="chip-box"></span><span class="chip-text">COLETA DE LIXO</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_agua"><span class="chip-box"></span><span class="chip-text">REDE DE ÁGUA</span></div>
+          <div class="chip"><input type="checkbox" name="log_iluminacao"><span class="chip-box"></span><span class="chip-text">ILUMINAÇÃO</span></div>
+          <div class="chip"><input type="checkbox" name="log_cabine_policial"><span class="chip-box"></span><span class="chip-text">CABINE POLICIAL</span></div>
+          <div class="chip"><input type="checkbox" name="log_arborizacao"><span class="chip-box"></span><span class="chip-text">ARBORIZAÇÃO</span></div>
+          <div class="chip"><input type="checkbox" name="log_meio_fio"><span class="chip-box"></span><span class="chip-text">MEIO FIO</span></div>
+          <div class="chip"><input type="checkbox" name="log_varricao"><span class="chip-box"></span><span class="chip-text">VARRIÇÃO</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_publica"><span class="chip-box"></span><span class="chip-text">REDE PÚBLICA</span></div>
+          <div class="chip"><input type="checkbox" name="log_banca_jornal"><span class="chip-box"></span><span class="chip-text">BANCA DE JORNAL</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_telefonica"><span class="chip-box"></span><span class="chip-text">REDE TELEFÔNICA</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_eletrica"><span class="chip-box"></span><span class="chip-text">REDE ELÉTRICA</span></div>
+          <div class="chip"><input type="checkbox" name="log_galeria_pluvial"><span class="chip-box"></span><span class="chip-text">GALERIA PLUVIAL</span></div>
+          <div class="chip"><input type="checkbox" name="log_esgoto"><span class="chip-box"></span><span class="chip-text">ESGOTO</span></div>
+          <div class="chip"><input type="checkbox" name="log_ponto_onibus"><span class="chip-box"></span><span class="chip-text">PONTO DE ÔNIBUS</span></div>
+          <div class="chip"><input type="checkbox" name="log_correio"><span class="chip-box"></span><span class="chip-text">CORREIO</span></div>
         </div>
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 5 — TERRENO (obrigatória) ============ -->
+    <!-- ============ ETAPA 5 — TERRENO ============ -->
     <section class="step-panel" data-step="5">
       <div class="card"><div class="card-body">
         <div class="field"><label for="situacao">01 — Situação</label>
-          <select id="situacao" name="situacao" required><option value="">Selecione</option>
-            <option value="1">1 - Livre</option><option value="2">2 - Ocupado</option><option value="3">3 - Alugado</option>
-            <option value="4">4 - Cedido</option><option value="5">5 - Invadido</option></select></div>
+          <select id="situacao" name="situacao" required><option value="">SELECIONE</option>
+            <option value="1">1 - LIVRE</option><option value="2">2 - OCUPADO</option><option value="3">3 - ALUGADO</option>
+            <option value="4">4 - CEDIDO</option><option value="5">5 - INVADIDO</option></select></div>
 
         <div class="field"><label for="topografia">02 — Topografia</label>
-          <select id="topografia" name="topografia" required><option value="">Selecione</option>
-            <option value="1">1 - Plano</option><option value="2">2 - Aclive</option><option value="3">3 - Declive</option>
-            <option value="4">4 - Irregular</option><option value="5">5 - Montanhoso</option></select></div>
+          <select id="topografia" name="topografia" required><option value="">SELECIONE</option>
+            <option value="1">1 - PLANO</option><option value="2">2 - ACLIVE</option><option value="3">3 - DECLIVE</option>
+            <option value="4">4 - IRREGULAR</option><option value="5">5 - MONTANHOSO</option></select></div>
 
         <div class="field"><label for="pedologia">03 — Pedologia</label>
-          <select id="pedologia" name="pedologia" required><option value="">Selecione</option>
-            <option value="1">1 - Firme</option><option value="2">2 - Alagadiço</option><option value="3">3 - Arenoso</option>
-            <option value="4">4 - Rochoso</option><option value="5">5 - Argiloso</option></select></div>
+          <select id="pedologia" name="pedologia" required><option value="">SELECIONE</option>
+            <option value="1">1 - FIRME</option><option value="2">2 - ALAGADIÇO</option><option value="3">3 - ARENOSO</option>
+            <option value="4">4 - ROCHOSO</option><option value="5">5 - ARGILOSO</option></select></div>
 
         <div class="field"><label for="ocupacao">04 — Ocupação</label>
-          <select id="ocupacao" name="ocupacao" required><option value="">Selecione</option>
-            <option value="1">1 - Ocupado</option><option value="2">2 - Desocupado</option>
-            <option value="3">3 - Em construção</option></select></div>
+          <select id="ocupacao" name="ocupacao" required><option value="">SELECIONE</option>
+            <option value="1">1 - OCUPADO</option><option value="2">2 - DESOCUPADO</option>
+            <option value="3">3 - EM CONSTRUÇÃO</option></select></div>
 
         <div class="field"><label for="patrimonio">05 — Patrimônio</label>
-          <select id="patrimonio" name="patrimonio" required><option value="">Selecione</option>
-            <option value="1">1 - Particular</option><option value="2">2 - Público Federal</option>
-            <option value="3">3 - Público Estadual</option><option value="4">4 - Público Municipal</option></select></div>
+          <select id="patrimonio" name="patrimonio" required><option value="">SELECIONE</option>
+            <option value="1">1 - PARTICULAR</option><option value="2">2 - PÚBLICO FEDERAL</option>
+            <option value="3">3 - PÚBLICO ESTADUAL</option><option value="4">4 - PÚBLICO MUNICIPAL</option></select></div>
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 6 — EDIFICAÇÃO (obrigatória) ============ -->
+    <!-- ============ ETAPA 6 — EDIFICAÇÃO ============ -->
     <section class="step-panel" data-step="6">
       <div class="card"><div class="card-body">
         <div class="row row-2">
           <div class="field"><label for="alinhamento">Alinhamento</label>
-            <select id="alinhamento" name="alinhamento" required><option value="">Selecione</option>
-              <option value="1">1 - Alinhado</option><option value="2">2 - Recuado</option><option value="3">3 - Esquina</option></select></div>
+            <select id="alinhamento" name="alinhamento" required><option value="">SELECIONE</option>
+              <option value="1">1 - ALINHADO</option><option value="2">2 - RECUADO</option><option value="3">3 - ESQUINA</option></select></div>
           <div class="field"><label for="posicionamento">Posicionamento</label>
-            <select id="posicionamento" name="posicionamento" required><option value="">Selecione</option>
-              <option value="1">1 - Frente</option><option value="2">2 - Fundos</option>
-              <option value="3">3 - Lateral Direita</option><option value="4">4 - Lateral Esquerda</option></select></div>
+            <select id="posicionamento" name="posicionamento" required><option value="">SELECIONE</option>
+              <option value="1">1 - FRENTE</option><option value="2">2 - FUNDOS</option>
+              <option value="3">3 - LATERAL DIREITA</option><option value="4">4 - LATERAL ESQUERDA</option></select></div>
         </div>
         <div class="field"><label for="situacao_unid">Situação Unid. Constru.</label>
-          <select id="situacao_unid" name="situacao_unid" required><option value="">Selecione</option>
-            <option value="1">1 - Própria</option><option value="2">2 - Alugada</option><option value="3">3 - Cedida</option><option value="4">4 - Invadida</option></select></div>
+          <select id="situacao_unid" name="situacao_unid" required><option value="">SELECIONE</option>
+            <option value="1">1 - PRÓPRIA</option><option value="2">2 - ALUGADA</option><option value="3">3 - CEDIDA</option><option value="4">4 - INVADIDA</option></select></div>
         <div class="row row-2">
           <div class="field"><label for="estrutura">Estrutura</label>
-            <select id="estrutura" name="estrutura" required><option value="">Selecione</option>
-              <option value="1">1 - Alvenaria</option><option value="2">2 - Madeira</option><option value="3">3 - Mista</option>
-              <option value="4">4 - Metálica</option><option value="5">5 - Concreto</option></select></div>
+            <select id="estrutura" name="estrutura" required><option value="">SELECIONE</option>
+              <option value="1">1 - ALVENARIA</option><option value="2">2 - MADEIRA</option><option value="3">3 - MISTA</option>
+              <option value="4">4 - METÁLICA</option><option value="5">5 - CONCRETO</option></select></div>
           <div class="field"><label for="cobertura">Cobertura</label>
-            <select id="cobertura" name="cobertura" required><option value="">Selecione</option>
-              <option value="1">1 - Telha de Barro</option><option value="2">2 - Fibrocimento</option><option value="3">3 - Laje</option>
-              <option value="4">4 - Zinco</option><option value="5">5 - Palha</option></select></div>
+            <select id="cobertura" name="cobertura" required><option value="">SELECIONE</option>
+              <option value="1">1 - TELHA DE BARRO</option><option value="2">2 - FIBROCIMENTO</option><option value="3">3 - LAJE</option>
+              <option value="4">4 - ZINCO</option><option value="5">5 - PALHA</option></select></div>
         </div>
         <div class="row row-2">
           <div class="field"><label for="paredes">Paredes</label>
-            <select id="paredes" name="paredes" required><option value="">Selecione</option>
-              <option value="1">1 - Alvenaria</option><option value="2">2 - Madeira</option><option value="3">3 - Mista</option><option value="4">4 - Taipa</option></select></div>
+            <select id="paredes" name="paredes" required><option value="">SELECIONE</option>
+              <option value="1">1 - ALVENARIA</option><option value="2">2 - MADEIRA</option><option value="3">3 - MISTA</option><option value="4">4 - TAIPA</option></select></div>
           <div class="field"><label for="forro">Forro</label>
-            <select id="forro" name="forro" required><option value="">Selecione</option>
-              <option value="1">1 - Laje</option><option value="2">2 - Madeira</option><option value="3">3 - PVC</option>
-              <option value="4">4 - Gesso</option><option value="5">5 - Sem forro</option></select></div>
+            <select id="forro" name="forro" required><option value="">SELECIONE</option>
+              <option value="1">1 - LAJE</option><option value="2">2 - MADEIRA</option><option value="3">3 - PVC</option>
+              <option value="4">4 - GESSO</option><option value="5">5 - SEM FORRO</option></select></div>
         </div>
         <div class="field"><label for="revest_fachada">Revestimento da Fachada</label>
-          <select id="revest_fachada" name="revest_fachada" required><option value="">Selecione</option>
-            <option value="1">1 - Reboco</option><option value="2">2 - Cerâmica</option><option value="3">3 - Pintura</option><option value="4">4 - Sem revestimento</option></select></div>
+          <select id="revest_fachada" name="revest_fachada" required><option value="">SELECIONE</option>
+            <option value="1">1 - REBOCO</option><option value="2">2 - CERÂMICA</option><option value="3">3 - PINTURA</option><option value="4">4 - SEM REVESTIMENTO</option></select></div>
         <div class="field"><label for="uso_principal">Uso Principal</label>
-          <select id="uso_principal" name="uso_principal" required><option value="">Selecione</option>
-            <option value="1">1 - Residencial</option><option value="2">2 - Comercial</option><option value="3">3 - Misto</option><option value="4">4 - Industrial</option></select></div>
+          <select id="uso_principal" name="uso_principal" required><option value="">SELECIONE</option>
+            <option value="1">1 - RESIDENCIAL</option><option value="2">2 - COMERCIAL</option><option value="3">3 - MISTO</option><option value="4">4 - INDUSTRIAL</option></select></div>
         <div class="row row-2">
           <div class="field"><label for="instal_sanitaria">Instal. Sanitária</label>
-            <select id="instal_sanitaria" name="instal_sanitaria" required><option value="">Selecione</option>
-              <option value="1">1 - Rede Pública</option><option value="2">2 - Fossa Séptica</option>
-              <option value="3">3 - Fossa Rudimentar</option><option value="4">4 - Inexistente</option></select></div>
+            <select id="instal_sanitaria" name="instal_sanitaria" required><option value="">SELECIONE</option>
+              <option value="1">1 - REDE PÚBLICA</option><option value="2">2 - FOSSA SÉPTICA</option>
+              <option value="3">3 - FOSSA RUDIMENTAR</option><option value="4">4 - INEXISTENTE</option></select></div>
           <div class="field"><label for="instal_eletrica">Instal. Elétrica</label>
-            <select id="instal_eletrica" name="instal_eletrica" required><option value="">Selecione</option>
-              <option value="1">1 - Rede Pública</option><option value="2">2 - Própria</option><option value="3">3 - Inexistente</option></select></div>
+            <select id="instal_eletrica" name="instal_eletrica" required><option value="">SELECIONE</option>
+              <option value="1">1 - REDE PÚBLICA</option><option value="2">2 - PRÓPRIA</option><option value="3">3 - INEXISTENTE</option></select></div>
         </div>
         <div class="row row-2">
           <div class="field"><label for="piso">Piso</label>
-            <select id="piso" name="piso" required><option value="">Selecione</option>
-              <option value="1">1 - Cerâmica</option><option value="2">2 - Cimento</option><option value="3">3 - Madeira</option>
-              <option value="4">4 - Porcelanato</option><option value="5">5 - Terra Batida</option></select></div>
+            <select id="piso" name="piso" required><option value="">SELECIONE</option>
+              <option value="1">1 - CERÂMICA</option><option value="2">2 - CIMENTO</option><option value="3">3 - MADEIRA</option>
+              <option value="4">4 - PORCELANATO</option><option value="5">5 - TERRA BATIDA</option></select></div>
           <div class="field"><label for="conservacao">Est. de Conservação</label>
-            <select id="conservacao" name="conservacao" required><option value="">Selecione</option>
-              <option value="1">1 - Ótimo</option><option value="2">2 - Bom</option><option value="3">3 - Regular</option>
-              <option value="4">4 - Ruim</option><option value="5">5 - Péssimo</option></select></div>
+            <select id="conservacao" name="conservacao" required><option value="">SELECIONE</option>
+              <option value="1">1 - ÓTIMO</option><option value="2">2 - BOM</option><option value="3">3 - REGULAR</option>
+              <option value="4">4 - RUIM</option><option value="5">5 - PÉSSIMO</option></select></div>
         </div>
       </div></div>
     </section>
@@ -636,9 +630,6 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-/* ============================================================
-   WORKER (Cloudflare) — validação + gravação das fichas
-   ============================================================ */
 const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
 
 async function enviarFichaViaWorker(payload){
@@ -673,9 +664,6 @@ async function enviarFichaViaWorker(payload){
   return data;
 }
 
-/* ============================================================
-   AUTH GATE — valida role 'funcionario' (ou superior)
-   ============================================================ */
 const FORM_ROLES = ['funcionario', 'admin', 'superadmin'];
 
 function gateShow(opts){
@@ -743,9 +731,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* ============================================================
-   FORMULÁRIO
-   ============================================================ */
 function initFormulario(){
 (function () {
   'use strict';
@@ -755,9 +740,6 @@ function initFormulario(){
   const DRAFT_KEY = 'careiro_ficha_draft_v3';
   const RESP_LOGIN_KEY = 'careiro_responsavel_logado_v1';
 
-  /* ============================================================
-     LOGIN PERSISTENTE DO RESPONSÁVEL (etapa 7)
-     ============================================================ */
   function getResponsavelLogado(){
     try { return localStorage.getItem(RESP_LOGIN_KEY) || ''; } catch(e){ return ''; }
   }
@@ -768,9 +750,6 @@ function initFormulario(){
     try { localStorage.removeItem(RESP_LOGIN_KEY); } catch(e){}
   }
 
-  /* ============================================================
-     ESTADO
-     ============================================================ */
   let LISTAS = { funcionarios: [], bairros: [], ruas: [] };
   let QUADRAS = [];
   let LOTES = [];
@@ -789,7 +768,6 @@ function initFormulario(){
       numero: String(o.numero != null ? o.numero : (i + 1)).padStart(3,'0')
     }));
   }
-  /* Cada logradouro traz o bairro vinculado. */
   function getRuas(){
     return grupoAtivo('ruas').map(o => ({
       label: o.label,
@@ -852,9 +830,6 @@ function initFormulario(){
     }
   }
 
-  /* ============================================================
-     POPULAR SELECTS BÁSICOS
-     ============================================================ */
   function popularResponsaveis(){
     const sel = document.getElementById('responsavel'); if(!sel) return;
     const atual = sel.value;
@@ -879,10 +854,6 @@ function initFormulario(){
     });
   }
 
-  /* Popular logradouros FILTRADOS pelo bairro atual.
-     - Sem bairro: mostra apenas "Selecione o bairro primeiro".
-     - Com bairro: mostra apenas as ruas vinculadas àquele bairro.
-     O valor antigo só é preservado se a opção continuar existindo. */
   function popularLogradouros(sufixo){
     const bairroId = sufixo === 'prop' ? 'bairro_prop' : 'bairro_imovel';
     const selectId = sufixo === 'prop' ? 'logradouro_prop' : 'logradouro_imovel';
@@ -914,9 +885,6 @@ function initFormulario(){
 
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  /* ============================================================
-     TOOLTIP DE TEXTO COMPLETO
-     ============================================================ */
   function syncTitle(el){
     if(!el) return;
     if(el.tagName === 'SELECT'){
@@ -930,9 +898,6 @@ function initFormulario(){
     form.querySelectorAll('select, input[readonly]').forEach(syncTitle);
   }
 
-  /* ============================================================
-     QUADRAS E LOTES DINÂMICOS
-     ============================================================ */
   function atualizarQuadras(sufixo){
     const bairro = document.getElementById('bairro_' + sufixo).value;
     const selQ = document.getElementById('quadra_' + sufixo);
@@ -998,9 +963,6 @@ function initFormulario(){
     if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
   }
 
-  /* ============================================================
-     ALERTA DE DUPLICIDADE — PROPRIETÁRIO
-     ============================================================ */
   function atualizarAlertaProprietario(){
     const el = document.getElementById('proprietarioAlerta');
     if(!el) return;
@@ -1060,9 +1022,6 @@ function initFormulario(){
       'Este lote está livre para cadastro.';
   }
 
-  /* ============================================================
-     ALERTA DE DUPLICIDADE — IMÓVEL
-     ============================================================ */
   function atualizarAlertaImovel(){
     const el = document.getElementById('imovelAlerta');
     if(!el) return;
@@ -1122,9 +1081,6 @@ function initFormulario(){
       'Este lote ainda não possui cadastro.';
   }
 
-  /* ============================================================
-     LISTENERS DO FIREBASE
-     ============================================================ */
   function escutarListas(){
     onSnapshot(doc(db,'config','listas'), snap => {
       const data = snap.exists() ? (snap.data().grupos || {}) : {};
@@ -1167,9 +1123,6 @@ function initFormulario(){
     });
   }
 
-  /* ============================================================
-     MÁSCARAS
-     ============================================================ */
   function onlyDigits(v){ return v.replace(/\D+/g, ''); }
   const masks = {
     cep: v => { v = onlyDigits(v).slice(0,8); return v.length > 5 ? v.slice(0,5) + '-' + v.slice(5) : v; },
@@ -1199,9 +1152,6 @@ function initFormulario(){
     });
   });
 
-  /* ============================================================
-     FOTO DO IMÓVEL
-     ============================================================ */
   let fotoBase64 = '';
   let fotoTipo   = '';
   let fotoTamanhoBytes = 0;
@@ -1497,9 +1447,6 @@ function initFormulario(){
     }
   });
 
-  /* ============================================================
-     CHIPS DE LOGRADOURO
-     ============================================================ */
   function configurarChips(){
     document.querySelectorAll('.chip').forEach(function(chip){
       const input = chip.querySelector('input[type="checkbox"]');
@@ -1531,9 +1478,6 @@ function initFormulario(){
     });
   }
 
-  /* ============================================================
-     HELPERS
-     ============================================================ */
   function parseDecimal(v){
     v = String(v == null ? '' : v).replace(/[^\d,.-]/g,'');
     if(!v) return 0;
@@ -1542,9 +1486,6 @@ function initFormulario(){
   }
   function formatArea(n){ return (Number(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
-  /* ============================================================
-     CPF / CNPJ
-     ============================================================ */
   function validarCPF(cpf){
     cpf = String(cpf).replace(/\D/g,'');
     if(cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
@@ -1590,9 +1531,6 @@ function initFormulario(){
   cpfInput.addEventListener('input', checarCpfVisual);
   cpfInput.addEventListener('blur',  checarCpfVisual);
 
-  /* ============================================================
-     INSCRIÇÃO ANTERIOR
-     ============================================================ */
   function getBairroInfo(nome){ return getBairros().find(x => x.nome === nome) || null; }
   function gerarInscricao(){
     const bairro = document.getElementById('bairro_imovel').value;
@@ -1605,9 +1543,6 @@ function initFormulario(){
     insc.value = '00.00.' + String(quadra).padStart(3,'0') + '.' + String(lote).padStart(3,'0') + '.' + b;
   }
 
-  /* ============================================================
-     CÁLCULOS (áreas)
-     ============================================================ */
   function calcAreas(){
     const g = id => document.getElementById(id);
     const num = id => { const el = g(id); return el ? parseDecimal(el.value) : 0; };
@@ -1625,10 +1560,6 @@ function initFormulario(){
     if(g('area_total_edificada')) g('area_total_edificada').value = areaTotal > 0 ? formatArea(areaTotal) : '';
   }
 
-  /* ============================================================
-     CEP → ViaCEP
-     Ordem: bairro primeiro (para refiltrar logradouros), depois logradouro.
-     ============================================================ */
   function bindCep(cepId, cidadeId, ufId, bairroTargetId, logradouroTargetId, extra){
     const cepEl = document.getElementById(cepId); if(!cepEl) return;
     let timer = null, ultimo = '';
@@ -1670,9 +1601,6 @@ function initFormulario(){
   bindCep('cep','cidade','uf', null, 'logradouro_prop', () => { calcAreas(); });
   bindCep('cep_imovel','cidade_imovel','uf_imovel', 'bairro_imovel', 'logradouro_imovel', () => { gerarInscricao(); });
 
-  /* ============================================================
-     DATA
-     ============================================================ */
   function preencherDataEmissao(){
     const dr = document.getElementById('data_registro'); if(!dr) return;
     const hoje = new Date();
@@ -1689,9 +1617,6 @@ function initFormulario(){
     });
   })();
 
-  /* ============================================================
-     SENHA DO RESPONSÁVEL
-     ============================================================ */
   function atualizarCampoSenha(){
     const respEl     = document.getElementById('responsavel');
     const wrap       = document.getElementById('wrap_senha_resp');
@@ -1737,9 +1662,6 @@ function initFormulario(){
     if(senhaEl) setTimeout(() => { try { senhaEl.focus(); } catch(err){} }, 50);
   });
 
-  /* ============================================================
-     STEPPER
-     ============================================================ */
   const TOTAL_STEPS = 7;
   const STEP_TITLES = ['Dados do Proprietário','Terreno / Edificação','Dados do Imóvel','Dados do Logradouro','Dados do Terreno','Dados da Edificação','Responsável e Data'];
   let currentStep = 1;
@@ -1803,9 +1725,6 @@ function initFormulario(){
   document.getElementById('btnNext').addEventListener('click', async () => { await goToStep(currentStep + 1); });
   document.getElementById('btnPrev').addEventListener('click', async () => { await goToStep(currentStep - 1, true); });
 
-  /* ============================================================
-     PROGRESSO
-     ============================================================ */
   function getFields(){
     return [...form.querySelectorAll('input[required]:not([type="checkbox"]):not([type="radio"]):not([readonly]), select[required]')].filter(el => !!el.name);
   }
@@ -1817,9 +1736,6 @@ function initFormulario(){
     if(el) el.textContent = pct + '%';
   }
 
-  /* ============================================================
-     COLETA / LIMPEZA
-     ============================================================ */
   function collect(includePhoto){
     const data = {};
     const IGNORAR_UPPER = ['senha_responsavel','nascimento','data_registro'];
@@ -1872,9 +1788,6 @@ function initFormulario(){
     try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
   }
 
-  /* ============================================================
-     TOAST
-     ============================================================ */
   let toastTimer = null;
   function toast(msg, type){
     toastEl.textContent = msg;
@@ -1883,9 +1796,6 @@ function initFormulario(){
     toastTimer = setTimeout(() => { toastEl.className = 'toast' + (type ? ' ' + type : ''); }, 3000);
   }
 
-  /* ============================================================
-     VALIDAÇÃO POR ETAPA
-     ============================================================ */
   async function validarEtapa(stepNum){
     const panel = document.querySelector('.step-panel[data-step="' + stepNum + '"]');
     if(!panel) return [];
@@ -2005,9 +1915,6 @@ function initFormulario(){
     return invalidos;
   }
 
-  /* ============================================================
-     SALVAR
-     ============================================================ */
   document.getElementById('btnSave').addEventListener('click', async function () {
     let primeiroErro = null;
     for(let s = 1; s <= TOTAL_STEPS; s++){
@@ -2059,9 +1966,6 @@ function initFormulario(){
     window.scrollTo({ top:0, behavior:'smooth' });
   });
 
-  /* ============================================================
-     AUTOSAVE
-     ============================================================ */
   let saveTimer = null;
   function agendarRascunho(){
     updateProgress();
@@ -2073,9 +1977,6 @@ function initFormulario(){
   form.addEventListener('input',  function(){ refreshTitles(); agendarRascunho(); });
   form.addEventListener('change', function(){ gerarInscricao(); refreshTitles(); agendarRascunho(); });
 
-  /* ============================================================
-     EVENTOS — BAIRRO / QUADRA / LOTE / UNIDADE
-     ============================================================ */
   document.getElementById('bairro_prop').addEventListener('change', function(){
     atualizarQuadras('prop');
     popularLogradouros('prop');
@@ -2107,18 +2008,12 @@ function initFormulario(){
     atualizarAlertaImovel();
   });
 
-  /* ============================================================
-     OUTROS EVENTOS (cálculo de áreas)
-     ============================================================ */
   ['frente_terreno','fundo_terreno','frente_edif','fundo_edif','num_andares'].forEach(id => {
     const el = document.getElementById(id); if(!el) return;
     el.addEventListener('input', calcAreas);
     el.addEventListener('change', calcAreas);
   });
 
-  /* ============================================================
-     INIT
-     ============================================================ */
   (function init(){
     configurarChips();
 
@@ -2184,7 +2079,7 @@ function initFormulario(){
   })();
 
 })();
-} /* /initFormulario */
+}
 </script>
 <script>
 if ('serviceWorker' in navigator) {
