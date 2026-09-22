@@ -1467,7 +1467,7 @@ function escutarFichas(){
 /* ============================================================
    DASHBOARD
    ============================================================ */
-const STATUS_OPTS = [{ v:'pendente', l:'PENDENTE' }, { v:'aprovado', l:'APROVADO' }];
+const STATUS_OPTS = [{ v:'pendente', l:'Pendente' }, { v:'aprovado', l:'Aprovado' }];
 function statusLabel(s){ const o = STATUS_OPTS.find(function(x){ return x.v === s; }); return o ? o.l : (s || '—'); }
 function normalizeStatus(s){ return (s === 'aprovado') ? 'aprovado' : 'pendente'; }
 function getStatusFromReg(r){ return normalizeStatus(r.status); }
@@ -3493,13 +3493,6 @@ function getPrintCSS(){
       background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 6px;
     }
 
-    .doc-foot {
-      display: flex; justify-content: flex-end; align-items: flex-end;
-      margin-top: 22px; padding-top: 14px;
-      border-top: 1px solid #e2e8f0; page-break-inside: avoid;
-    }
-    .doc-id { font-size: 8pt; color: #94a3b8; text-align: right; }
-
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .doc-head { break-inside: avoid; }
@@ -3518,7 +3511,6 @@ function montarHTMLFichaParaImpressao(r){
   })() : dt.toLocaleDateString('pt-BR');
 
   const logPresentes = LOG_ITEMS.filter(function(x){ return !!r[x[0]]; }).map(function(x){ return x[1]; });
-  const logAusentes  = LOG_ITEMS.filter(function(x){ return !r[x[0]]; }).map(function(x){ return x[1]; });
 
   function row(label, value, mono){
     const v = (value === undefined || value === null || value === '') ? '—' : String(value);
@@ -3649,20 +3641,9 @@ function montarHTMLFichaParaImpressao(r){
         ? logPresentes.map(function(l){ return '<span class="chip on">' + esc(l) + '</span>'; }).join('')
         : '<em style="font-size:9.5pt;color:#64748b;">Nenhum item marcado.</em>') +
     '</div>' +
-    (logAusentes.length
-      ? '<div class="chips-print"><span style="font-size:9pt;color:#64748b;width:100%;margin-bottom:4px;">Ausentes:</span>' +
-        logAusentes.map(function(l){ return '<span class="chip off">' + esc(l) + '</span>'; }).join('') + '</div>'
-      : '') +
 
     section('9. Foto do Imóvel', SVG_ICONS.cam) +
     fotoBloco +
-
-    '<footer class="doc-foot">' +
-      '<div class="doc-id">' +
-        'Documento gerado em ' + esc(dt.toLocaleString('pt-BR')) +
-        '<br>ID: ' + esc(r.id || '—') +
-      '</div>' +
-    '</footer>' +
 
     '<script>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},500);});<\/script>' +
     '</body></html>';
