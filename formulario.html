@@ -86,6 +86,18 @@ body{
 .field input, .field select, .field textarea{ width:100%; min-height:48px; padding:12px 13px; font-family:inherit; font-size:16px; color:var(--text); background:#fbfcfe; border:1.5px solid var(--border); border-radius:12px; outline:none; transition:all .18s; -webkit-appearance:none; appearance:none; text-overflow:ellipsis; }
 .field select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; padding-right:38px; white-space:nowrap; overflow:hidden; }
 .field input:focus, .field select:focus{ border-color:var(--primary); background:#fff; box-shadow:0 0 0 3.5px rgba(13,92,171,.12); }
+
+/* ===== Força maiúsculas nos campos de texto ===== */
+.field input[type="text"],
+.field input[type="tel"],
+.field input[type="search"],
+.field input:not([type]),
+.field textarea{ text-transform:uppercase; letter-spacing:.2px; }
+.field input[type="text"]::placeholder,
+.field input[type="tel"]::placeholder,
+.field input:not([type])::placeholder,
+.field textarea::placeholder{ text-transform:none; letter-spacing:0; }
+
 .field input::placeholder{ color:#a9b6c5; }
 .field.invalid input, .field.invalid select{ border-color:var(--danger); background:#fff6f6; }
 .field.valid input, .field.valid select{ border-color:var(--success); background:#f6fef9; }
@@ -777,7 +789,7 @@ function initFormulario(){
       numero: String(o.numero != null ? o.numero : (i + 1)).padStart(3,'0')
     }));
   }
-  /* Cada logradouro agora traz o bairro vinculado. */
+  /* Cada logradouro traz o bairro vinculado. */
   function getRuas(){
     return grupoAtivo('ruas').map(o => ({
       label: o.label,
@@ -870,8 +882,7 @@ function initFormulario(){
   /* Popular logradouros FILTRADOS pelo bairro atual.
      - Sem bairro: mostra apenas "Selecione o bairro primeiro".
      - Com bairro: mostra apenas as ruas vinculadas àquele bairro.
-     O valor antigo só é preservado se a opção continuar existindo
-     dentro do novo filtro. */
+     O valor antigo só é preservado se a opção continuar existindo. */
   function popularLogradouros(sufixo){
     const bairroId = sufixo === 'prop' ? 'bairro_prop' : 'bairro_imovel';
     const selectId = sufixo === 'prop' ? 'logradouro_prop' : 'logradouro_imovel';
@@ -1616,10 +1627,7 @@ function initFormulario(){
 
   /* ============================================================
      CEP → ViaCEP
-     ------------------------------------------------------------
-     Ordem de preenchimento ajustada: primeiro o bairro (para
-     refiltrar os logradouros), depois o logradouro — que já vai
-     consultar apenas as opções vinculadas ao bairro recém-setado.
+     Ordem: bairro primeiro (para refiltrar logradouros), depois logradouro.
      ============================================================ */
   function bindCep(cepId, cidadeId, ufId, bairroTargetId, logradouroTargetId, extra){
     const cepEl = document.getElementById(cepId); if(!cepEl) return;
@@ -1637,10 +1645,9 @@ function initFormulario(){
           const bEl = bairroTargetId ? document.getElementById(bairroTargetId) : null;
           const lEl = logradouroTargetId ? document.getElementById(logradouroTargetId) : null;
 
-          if(cid && !cid.value.trim()) cid.value = data.localidade || '';
+          if(cid && !cid.value.trim()) cid.value = (data.localidade || '').toUpperCase();
           if(uf  && !uf.value.trim())  uf.value  = (data.uf || '').toUpperCase();
 
-          // 1) Bairro primeiro — para refiltrar os logradouros vinculados
           if(bEl && !bEl.value && data.bairro){
             const opt = [...bEl.options].find(o => o.value.toLowerCase() === data.bairro.toLowerCase());
             if(opt){
@@ -1650,7 +1657,6 @@ function initFormulario(){
             }
           }
 
-          // 2) Agora sim, o logradouro — já filtrado pelo bairro escolhido
           if(lEl && !lEl.value && data.logradouro){
             const opt = [...lEl.options].find(o => o.value.toLowerCase() === data.logradouro.toLowerCase());
             if(opt) lEl.value = opt.value;
@@ -1816,11 +1822,17 @@ function initFormulario(){
      ============================================================ */
   function collect(includePhoto){
     const data = {};
+    const IGNORAR_UPPER = ['senha_responsavel','nascimento','data_registro'];
     form.querySelectorAll('[name]').forEach(el => {
       if(el.name === 'senha_responsavel') return;
-      if(el.type === 'checkbox') data[el.name] = el.checked;
-      else if(el.type === 'radio'){ if(el.checked) data[el.name] = el.value; }
-      else data[el.name] = el.value;
+      if(el.type === 'checkbox'){ data[el.name] = el.checked; return; }
+      if(el.type === 'radio'){ if(el.checked) data[el.name] = el.value; return; }
+
+      let v = el.value;
+      if(typeof v === 'string' && v && !IGNORAR_UPPER.includes(el.name)){
+        v = v.toUpperCase();
+      }
+      data[el.name] = v;
     });
     data.area_terreno_num = parseDecimal(document.getElementById('area_terreno').value);
     data.area_edificada_num = parseDecimal(document.getElementById('area_edificada').value);
@@ -2063,9 +2075,6 @@ function initFormulario(){
 
   /* ============================================================
      EVENTOS — BAIRRO / QUADRA / LOTE / UNIDADE
-     ------------------------------------------------------------
-     Ao trocar o bairro, os logradouros precisam ser refiltrados
-     para mostrar somente as ruas vinculadas àquele bairro.
      ============================================================ */
   document.getElementById('bairro_prop').addEventListener('change', function(){
     atualizarQuadras('prop');
@@ -2140,7 +2149,6 @@ function initFormulario(){
     setTimeout(() => {
       atualizarQuadras('prop');
       atualizarQuadras('imovel');
-      // Refiltra logradouros depois que as listas foram carregadas
       popularLogradouros('prop');
       popularLogradouros('imovel');
       if(draft){
