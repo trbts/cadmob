@@ -777,7 +777,13 @@ function initFormulario(){
       numero: String(o.numero != null ? o.numero : (i + 1)).padStart(3,'0')
     }));
   }
-  function getRuas(){ return grupoAtivo('ruas').map(o => o.label); }
+  /* Cada logradouro agora traz o bairro vinculado. */
+  function getRuas(){
+    return grupoAtivo('ruas').map(o => ({
+      label: o.label,
+      bairro: String(o.bairro || '')
+    }));
+  }
 
   function quadrasDoBairro(bairro){
     return QUADRAS.filter(q => q.bairro === bairro).sort((a,b) => a.numero.localeCompare(b.numero));
@@ -860,17 +866,41 @@ function initFormulario(){
       syncTitle(sel);
     });
   }
-  function popularRuas(){
-    const list = getRuas();
-    ['logradouro_prop','logradouro_imovel'].forEach(id => {
-      const sel = document.getElementById(id); if(!sel) return;
-      const atual = sel.value;
-      sel.innerHTML = '<option value="">' + (list.length ? 'Selecione a rua' : 'Nenhum logradouro cadastrado') + '</option>' +
-        list.map(r => '<option value="' + String(r).replace(/"/g,'&quot;') + '">' + esc(r) + '</option>').join('');
-      if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
-      syncTitle(sel);
-    });
+
+  /* Popular logradouros FILTRADOS pelo bairro atual.
+     - Sem bairro: mostra apenas "Selecione o bairro primeiro".
+     - Com bairro: mostra apenas as ruas vinculadas àquele bairro.
+     O valor antigo só é preservado se a opção continuar existindo
+     dentro do novo filtro. */
+  function popularLogradouros(sufixo){
+    const bairroId = sufixo === 'prop' ? 'bairro_prop' : 'bairro_imovel';
+    const selectId = sufixo === 'prop' ? 'logradouro_prop' : 'logradouro_imovel';
+    const bEl = document.getElementById(bairroId);
+    const sel = document.getElementById(selectId);
+    if(!sel) return;
+
+    const bairro = bEl ? bEl.value : '';
+    const atual  = sel.value;
+    const list   = getRuas().filter(r => r.bairro === bairro);
+
+    let placeholder;
+    if(!bairro)          placeholder = 'Selecione o bairro primeiro';
+    else if(list.length) placeholder = 'Selecione a rua';
+    else                 placeholder = 'Nenhum logradouro vinculado a este bairro';
+
+    sel.innerHTML = '<option value="">' + placeholder + '</option>' +
+      list.map(r => '<option value="' + String(r.label).replace(/"/g,'&quot;') + '">' + esc(r.label) + '</option>').join('');
+
+    if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
+    else sel.value = '';
+
+    syncTitle(sel);
   }
+  function popularRuas(){
+    popularLogradouros('prop');
+    popularLogradouros('imovel');
+  }
+
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   /* ============================================================
@@ -1586,6 +1616,10 @@ function initFormulario(){
 
   /* ============================================================
      CEP → ViaCEP
+     ------------------------------------------------------------
+     Ordem de preenchimento ajustada: primeiro o bairro (para
+     refiltrar os logradouros), depois o logradouro — que já vai
+     consultar apenas as opções vinculadas ao bairro recém-setado.
      ============================================================ */
   function bindCep(cepId, cidadeId, ufId, bairroTargetId, logradouroTargetId, extra){
     const cepEl = document.getElementById(cepId); if(!cepEl) return;
@@ -1602,16 +1636,26 @@ function initFormulario(){
           const uf  = document.getElementById(ufId);
           const bEl = bairroTargetId ? document.getElementById(bairroTargetId) : null;
           const lEl = logradouroTargetId ? document.getElementById(logradouroTargetId) : null;
+
           if(cid && !cid.value.trim()) cid.value = data.localidade || '';
           if(uf  && !uf.value.trim())  uf.value  = (data.uf || '').toUpperCase();
+
+          // 1) Bairro primeiro — para refiltrar os logradouros vinculados
+          if(bEl && !bEl.value && data.bairro){
+            const opt = [...bEl.options].find(o => o.value.toLowerCase() === data.bairro.toLowerCase());
+            if(opt){
+              bEl.value = opt.value;
+              if(bairroTargetId === 'bairro_imovel') popularLogradouros('imovel');
+              else if(bairroTargetId === 'bairro_prop') popularLogradouros('prop');
+            }
+          }
+
+          // 2) Agora sim, o logradouro — já filtrado pelo bairro escolhido
           if(lEl && !lEl.value && data.logradouro){
             const opt = [...lEl.options].find(o => o.value.toLowerCase() === data.logradouro.toLowerCase());
             if(opt) lEl.value = opt.value;
           }
-          if(bEl && !bEl.value && data.bairro){
-            const opt = [...bEl.options].find(o => o.value.toLowerCase() === data.bairro.toLowerCase());
-            if(opt) bEl.value = opt.value;
-          }
+
           if(typeof extra === 'function') extra();
         }).catch(()=>{});
       }, 600);
@@ -2019,9 +2063,13 @@ function initFormulario(){
 
   /* ============================================================
      EVENTOS — BAIRRO / QUADRA / LOTE / UNIDADE
+     ------------------------------------------------------------
+     Ao trocar o bairro, os logradouros precisam ser refiltrados
+     para mostrar somente as ruas vinculadas àquele bairro.
      ============================================================ */
   document.getElementById('bairro_prop').addEventListener('change', function(){
     atualizarQuadras('prop');
+    popularLogradouros('prop');
   });
   document.getElementById('quadra_prop').addEventListener('change', function(){
     atualizarLotes('prop');
@@ -2036,6 +2084,7 @@ function initFormulario(){
   document.getElementById('bairro_imovel').addEventListener('change', function(){
     atualizarQuadras('imovel');
     gerarInscricao();
+    popularLogradouros('imovel');
   });
   document.getElementById('quadra_imovel').addEventListener('change', function(){
     atualizarLotes('imovel');
@@ -2091,6 +2140,9 @@ function initFormulario(){
     setTimeout(() => {
       atualizarQuadras('prop');
       atualizarQuadras('imovel');
+      // Refiltra logradouros depois que as listas foram carregadas
+      popularLogradouros('prop');
+      popularLogradouros('imovel');
       if(draft){
         const qp = draft.quadra_prop, lp = draft.lote_prop;
         const qi = draft.quadra_imovel, li = draft.lote_letra;

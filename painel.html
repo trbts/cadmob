@@ -816,7 +816,7 @@ const db   = getFirestore(app);
 const FORM_GROUPS = [
   { id:'funcionarios', label:'Funcionários / Responsáveis', target:'responsavel', desc:'Responsáveis pelo preenchimento. Cada funcionário possui uma senha de acesso.', hasSenha:true, hasStatus:true },
   { id:'bairros',      label:'Bairros',                    target:'bairro',      desc:'Bairros do município.' },
-  { id:'ruas',         label:'Logradouros (Ruas)',         target:'logradouro',  desc:'Nomes de ruas / logradouros.' }
+  { id:'ruas',         label:'Logradouros (Ruas)',         target:'logradouro',  desc:'Nomes de ruas / logradouros vinculados a um bairro.', requiresBairro:true }
 ];
 
 const ROLE_LEVELS = { user:0, funcionario:1, admin:2, superadmin:3 };
@@ -1002,21 +1002,12 @@ const LOG_ITEMS = [
   ['log_correio',         'Correio']
 ];
 
-
-/* Medidas da Etapa 2 (Terreno / Edificação).
-   A ficha é considerada "Completa" somente quando TODAS as medidas
-   abaixo estão preenchidas. Como as Etapas 5 e 6 (características
-   do Terreno/Edificação) já são obrigatórias no formulário mobile,
-   não é preciso validá-las aqui. */
 const MEDIDAS_CAMPOS = [
   'frente_terreno','fundo_terreno','lado_dir_terreno','lado_esq_terreno',
   'frente_edif','fundo_edif','lado_dir_edif','lado_esq_edif',
   'num_frentes','num_andares','ano_construcao'
 ];
 
-/* Caminho alternativo de completude: se as medidas individuais não
-   foram preenchidas, mas as 3 áreas ("— auto") foram informadas
-   manualmente na edição do painel, a ficha já conta como completa. */
 const AREA_CAMPOS = ['area_terreno', 'area_edificada', 'area_total_edificada'];
 
 function fichaCompleta(r){
@@ -1137,9 +1128,6 @@ function fotoDataUrl(reg){
 /* ============================================================
    DOWNLOAD DA FOTO EM FORMATO A4
    ============================================================ */
-
-/* Rotaciona uma imagem em 0/90/180/270 e devolve HTMLCanvasElement
-   (ou a própria imagem, quando rotation = 0). */
 function rotateImageElement(img, rotation){
   const rot = ((Number(rotation) || 0) % 360 + 360) % 360;
   if(!rot) return img;
@@ -1158,44 +1146,33 @@ function rotateImageElement(img, rotation){
   return c;
 }
 
-/* Renderiza a página A4 completa em um canvas já existente.
-   ------------------------------------------------------------
-   A info do lote fica FIXA no canto superior esquerdo, com
-   escala reduzida automaticamente quando a imagem está na
-   horizontal (90°/270°). A imagem é desenhada abaixo desse
-   cabeçalho fixo. */
 async function renderA4Canvas(canvas, reg, img, state){
   const cfg      = state || {};
   const rotation = ((Number(cfg.rotation) || 0) % 360 + 360) % 360;
   const fitMode  = cfg.fitMode || 'contain';
 
-  // A4 retrato @ 150 DPI ≈ 1240 × 1754 px
   const A4_W     = 1240;
   const A4_H     = 1754;
   const MARGIN   = 40;
   const FOOTER   = 44;
-  const HEADER_H = 150;   // área reservada para o texto fixo (topo-esquerdo)
+  const HEADER_H = 150;
 
   canvas.width  = A4_W;
   canvas.height = A4_H;
   const ctx = canvas.getContext('2d');
 
-  // Fundo branco
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, A4_W, A4_H);
 
-  // Aplica rotação
   const src  = rotateImageElement(img, rotation);
   const srcW = src.naturalWidth  || src.width;
   const srcH = src.naturalHeight || src.height;
 
-  // Área útil da imagem (abaixo do cabeçalho fixo)
   const areaX = MARGIN;
   const areaY = MARGIN + HEADER_H;
   const areaW = A4_W - MARGIN * 2;
   const areaH = A4_H - MARGIN * 2 - FOOTER - HEADER_H;
 
-  // Cálculo do retângulo de desenho conforme o modo de ajuste
   let drawW, drawH, drawX, drawY;
   if(fitMode === 'stretch'){
     drawW = areaW; drawH = areaH;
@@ -1206,7 +1183,7 @@ async function renderA4Canvas(canvas, reg, img, state){
     drawH = Math.round(srcH * ratio);
     drawX = Math.round(areaX + (areaW - drawW) / 2);
     drawY = Math.round(areaY + (areaH - drawH) / 2);
-  } else { // contain
+  } else {
     const ratio = Math.min(areaW / srcW, areaH / srcH);
     drawW = Math.round(srcW * ratio);
     drawH = Math.round(srcH * ratio);
@@ -1214,7 +1191,6 @@ async function renderA4Canvas(canvas, reg, img, state){
     drawY = Math.round(areaY + (areaH - drawH) / 2);
   }
 
-  // Fundo com sombra
   ctx.save();
   ctx.shadowColor = 'rgba(15,23,42,.20)';
   ctx.shadowBlur = 18;
@@ -1223,7 +1199,6 @@ async function renderA4Canvas(canvas, reg, img, state){
   ctx.fillRect(drawX, drawY, drawW, drawH);
   ctx.restore();
 
-  // Imagem (com clip quando "cover")
   ctx.save();
   if(fitMode === 'cover'){
     ctx.beginPath();
@@ -1233,16 +1208,12 @@ async function renderA4Canvas(canvas, reg, img, state){
   ctx.drawImage(src, drawX, drawY, drawW, drawH);
   ctx.restore();
 
-  // Moldura fina
   ctx.save();
   ctx.strokeStyle = 'rgba(15,23,42,.22)';
   ctx.lineWidth = 1.5;
   ctx.strokeRect(drawX + .75, drawY + .75, drawW - 1.5, drawH - 1.5);
   ctx.restore();
 
-  /* ---------- INFO FIXA NO CANTO SUPERIOR ESQUERDO ----------
-     Ajusta automaticamente o tamanho da fonte quando a imagem
-     está na horizontal (90°/270°). */
   const isHorizontal = (rotation === 90 || rotation === 270);
   const escala = isHorizontal ? 0.82 : 1;
 
@@ -1286,7 +1257,6 @@ async function renderA4Canvas(canvas, reg, img, state){
     desenharLinha('Inscrição: ' + reg.inscricao_anterior, 18, false);
   }
 
-  // Rodapé da página A4
   ctx.fillStyle = '#475569';
   ctx.textBaseline = 'alphabetic';
   ctx.font = '600 16px -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
@@ -1296,7 +1266,6 @@ async function renderA4Canvas(canvas, reg, img, state){
   ctx.fillText(rodape, MARGIN, A4_H - 16);
 }
 
-/* Prévia em escala reduzida (para o editor). */
 async function renderA4Preview(canvas, reg, img, state){
   const off = document.createElement('canvas');
   await renderA4Canvas(off, reg, img, state);
@@ -1309,7 +1278,6 @@ async function renderA4Preview(canvas, reg, img, state){
   ctx.drawImage(off, 0, 0, W, H);
 }
 
-/* Baixa o arquivo A4 usando as opções fornecidas. */
 async function baixarFotoA4(reg, opts){
   if(!reg || !reg.foto_base64){
     toast('Esta ficha não possui foto anexada.', 'warning');
@@ -1580,6 +1548,12 @@ function renderListas(){
                 ? '<span class="opt-m2" style="background:var(--purple-bg);color:#6d28d9;border-color:#ddd6fe;">senha definida</span>'
                 : '<span class="opt-m2" style="background:#fef2f2;color:#b91c1c;border-color:#fecaca;">sem senha</span>')
             : '';
+          /* Badge com o bairro vinculado (para logradouros) */
+          const bairroBadge = fg.requiresBairro
+            ? (o.bairro
+                ? '<span class="opt-m2" style="background:var(--info-bg);color:#1d4ed8;border-color:#bfdbfe;">' + esc(o.bairro) + '</span>'
+                : '<span class="opt-m2" style="background:#fef2f2;color:#b91c1c;border-color:#fecaca;">sem bairro</span>')
+            : '';
           const statusCell = hasStatus
             ? '<div style="display:flex;align-items:center;gap:8px;">' +
                 '<label class="switch"><input type="checkbox"' + (o.ativo!==false?' checked':'') + ' onchange="Pages.listas.toggle(\'' + fg.id + '\',\'' + o.id + '\')"><span class="slider"></span></label>' +
@@ -1591,7 +1565,7 @@ function renderListas(){
               '<button class="' + (isFirst ? 'disabled' : '') + '" ' + (isFirst ? '' : 'onclick="Pages.listas.move(\'' + fg.id + '\',\'' + o.id + '\',-1)"') + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>' +
               '<button class="' + (isLast ? 'disabled' : '') + '" ' + (isLast ? '' : 'onclick="Pages.listas.move(\'' + fg.id + '\',\'' + o.id + '\',1)"') + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>' +
             '</div>' +
-            '<div class="opt-label">' + esc(o.label) + senhaBadge + '</div>' +
+            '<div class="opt-label">' + esc(o.label) + senhaBadge + bairroBadge + '</div>' +
             statusCell +
             '<div class="opt-actions">' +
               '<button class="action-btn" title="Editar" onclick="Pages.listas.editOption(\'' + fg.id + '\',\'' + o.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
@@ -1649,17 +1623,43 @@ Pages.listas.addOption = function(gid){
   const g = getListasGroup(gid);
   const isBairros = gid === 'bairros';
   const isFuncs   = gid === 'funcionarios';
+  const isRuas    = gid === 'ruas';
   const hasStatus = !!fg.hasStatus;
+
+  let bodyHTML =
+    '<div class="field"><label>Rótulo exibido <span class="req">*</span></label>' +
+      '<input type="text" id="o_lbl" placeholder="ex.: ' +
+        (isBairros ? 'Centro' : (isFuncs ? 'João Silva' : 'Rua das Flores')) + '">' +
+    '</div>';
+
+  if(isRuas){
+    const bairros = State.listas.grupos.bairros || [];
+    bodyHTML +=
+      '<div class="field"><label>Bairro vinculado <span class="req">*</span></label>' +
+        '<select id="o_bairro">' +
+          '<option value="">Selecione o bairro</option>' +
+          bairros.map(function(b){
+            return '<option value="' + esc(b.label) + '">' + esc(b.label) + '</option>';
+          }).join('') +
+        '</select>' +
+        (bairros.length ? ''
+          : '<div style="font-size:11.5px;color:#b91c1c;margin-top:4px;">Cadastre ao menos um bairro antes de criar logradouros.</div>') +
+      '</div>';
+  }
+
+  if(isFuncs){
+    bodyHTML += '<div class="field"><label>Senha de acesso <span class="req">*</span></label>' +
+      '<input type="password" id="o_senha" autocomplete="new-password" placeholder="Defina uma senha (mín. 4 caracteres)"></div>';
+  }
+
+  if(hasStatus){
+    bodyHTML += '<div class="field"><label>Status inicial</label>' +
+      '<select id="o_ativo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>';
+  }
+
   Modal.open({
     title:'Adicionar opção', subtitle: fg.label, size:'sm', confirmText:'Adicionar',
-    body:
-      '<div class="field"><label>Rótulo exibido <span class="req">*</span></label>' +
-        '<input type="text" id="o_lbl" placeholder="ex.: ' + (isBairros ? 'Centro' : (isFuncs ? 'João Silva' : 'Rua das Flores')) + '">' +
-      '</div>' +
-      (isFuncs ? '<div class="field"><label>Senha de acesso <span class="req">*</span></label>' +
-        '<input type="password" id="o_senha" autocomplete="new-password" placeholder="Defina uma senha (mín. 4 caracteres)"></div>' : '') +
-      (hasStatus ? '<div class="field"><label>Status inicial</label>' +
-        '<select id="o_ativo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>' : ''),
+    body: bodyHTML,
     onConfirm: async function(modal){
       const lbl = modal.querySelector('#o_lbl').value.trim();
       if(!lbl){ toast('Informe o rótulo.', 'warning'); return false; }
@@ -1668,13 +1668,16 @@ Pages.listas.addOption = function(gid){
       }
       const novo = { id: uid(), value: gerarChave(lbl, g.options), label: lbl };
       if(hasStatus){ novo.ativo = modal.querySelector('#o_ativo').value === 'true'; }
-      if(isBairros){
-        novo.numero = String(g.options.length + 1).padStart(3,'0');
-      }
+      if(isBairros){ novo.numero = String(g.options.length + 1).padStart(3,'0'); }
       if(isFuncs){
         const senha = modal.querySelector('#o_senha').value;
         if(!senha || senha.length < 4){ toast('A senha deve ter ao menos 4 caracteres.', 'warning'); return false; }
         novo.senha = senha;
+      }
+      if(isRuas){
+        const bairro = modal.querySelector('#o_bairro').value;
+        if(!bairro){ toast('Selecione o bairro vinculado ao logradouro.', 'warning'); return false; }
+        novo.bairro = bairro;
       }
       g.options.push(novo);
       await salvarListas();
@@ -1689,18 +1692,46 @@ Pages.listas.editOption = function(gid, oid){
   const o = g.options.find(function(x){ return x.id === oid; }); if(!o) return;
   const isBairros = gid === 'bairros';
   const isFuncs   = gid === 'funcionarios';
+  const isRuas    = gid === 'ruas';
   const hasStatus = !!fg.hasStatus;
+
+  let bodyHTML =
+    '<div class="field"><label>Rótulo exibido <span class="req">*</span></label>' +
+      '<input type="text" id="o_lbl" value="' + esc(o.label) + '"></div>';
+
+  if(isRuas){
+    const bairros = State.listas.grupos.bairros || [];
+    bodyHTML +=
+      '<div class="field"><label>Bairro vinculado <span class="req">*</span></label>' +
+        '<select id="o_bairro">' +
+          '<option value="">Selecione o bairro</option>' +
+          bairros.map(function(b){
+            return '<option value="' + esc(b.label) + '"' +
+              (b.label === o.bairro ? ' selected' : '') + '>' + esc(b.label) + '</option>';
+          }).join('') +
+        '</select>' +
+        (!o.bairro
+          ? '<div style="font-size:11.5px;color:#b91c1c;margin-top:4px;">Este logradouro ainda não está vinculado a nenhum bairro.</div>'
+          : '') +
+      '</div>';
+  }
+
+  if(isFuncs){
+    bodyHTML += '<div class="field"><label>Nova senha</label>' +
+      '<input type="password" id="o_senha" autocomplete="new-password" placeholder="' +
+        (o.senha ? 'Deixe em branco para manter a atual' : 'Defina uma senha') + '"></div>';
+  }
+
+  if(hasStatus){
+    bodyHTML += '<div class="field"><label>Status</label><select id="o_ativo">' +
+      '<option value="true"'  + (o.ativo!==false?' selected':'') + '>Ativo</option>' +
+      '<option value="false"' + (o.ativo===false?' selected':'') + '>Inativo</option>' +
+    '</select></div>';
+  }
+
   Modal.open({
     title:'Editar opção', subtitle: fg.label, size:'sm', confirmText:'Salvar',
-    body:
-      '<div class="field"><label>Rótulo exibido <span class="req">*</span></label>' +
-        '<input type="text" id="o_lbl" value="' + esc(o.label) + '"></div>' +
-      (isFuncs ? '<div class="field"><label>Nova senha</label>' +
-        '<input type="password" id="o_senha" autocomplete="new-password" placeholder="' + (o.senha ? 'Deixe em branco para manter a atual' : 'Defina uma senha') + '"></div>' : '') +
-      (hasStatus ? '<div class="field"><label>Status</label><select id="o_ativo">' +
-        '<option value="true"' + (o.ativo!==false?' selected':'') + '>Ativo</option>' +
-        '<option value="false"' + (o.ativo===false?' selected':'') + '>Inativo</option>' +
-      '</select></div>' : ''),
+    body: bodyHTML,
     onConfirm: async function(modal){
       const lbl = modal.querySelector('#o_lbl').value.trim();
       if(!lbl){ toast('Informe o rótulo.', 'warning'); return false; }
@@ -1717,6 +1748,11 @@ Pages.listas.editOption = function(gid, oid){
       }
       o.label = lbl;
       if(hasStatus){ o.ativo = modal.querySelector('#o_ativo').value === 'true'; }
+      if(isRuas){
+        const bairro = modal.querySelector('#o_bairro').value;
+        if(!bairro){ toast('Selecione o bairro vinculado ao logradouro.', 'warning'); return false; }
+        o.bairro = bairro;
+      }
       await salvarListas();
       if(isBairros && labelAnterior !== lbl){
         await propagarRenomeBairro(labelAnterior, lbl);
@@ -1732,15 +1768,30 @@ Pages.listas.remove = function(gid, oid){
   const isBairro = gid === 'bairros';
   const vinculosQ = isBairro ? State.quadras.filter(function(q){ return q.bairro === o.label; }).length : 0;
   const vinculosL = isBairro ? State.lotes.filter(function(l){ return l.bairro === o.label; }).length : 0;
-  const aviso = isBairro && (vinculosQ || vinculosL)
-    ? '"' + o.label + '" será excluída, junto com ' + vinculosQ + ' quadra(s) e ' + vinculosL + ' lote(s) vinculados.'
-    : '"' + o.label + '" será excluída permanentemente.';
+  const vinculosR = isBairro
+    ? (State.listas.grupos.ruas || []).filter(function(r){ return String(r.bairro||'') === o.label; }).length
+    : 0;
+
+  let aviso;
+  if(isBairro && (vinculosQ || vinculosL || vinculosR)){
+    const partes = [];
+    if(vinculosQ) partes.push(vinculosQ + ' quadra(s)');
+    if(vinculosL) partes.push(vinculosL + ' lote(s)');
+    if(vinculosR) partes.push(vinculosR + ' logradouro(s)');
+    aviso = '"' + o.label + '" será excluída, junto com ' + partes.join(', ') + ' vinculados.';
+  } else {
+    aviso = '"' + o.label + '" será excluída permanentemente.';
+  }
+
   Modal.confirm({
     title:'Remover opção?', message: aviso, confirmText:'Remover', danger:true,
     onConfirm: async function(){
       if(isBairro){
         State.quadras = State.quadras.filter(function(q){ return q.bairro !== o.label; });
         State.lotes   = State.lotes.filter(function(l){ return l.bairro !== o.label; });
+        State.listas.grupos.ruas = (State.listas.grupos.ruas || []).filter(function(r){
+          return String(r.bairro || '') !== o.label;
+        });
         await salvarEstrutura();
       }
       const i = g.options.findIndex(function(x){ return x.id === oid; });
@@ -1766,10 +1817,18 @@ Pages.listas.exportPreview = function(){
 };
 
 async function propagarRenomeBairro(antigo, novo){
-  let alterou = false;
-  State.quadras.forEach(function(q){ if(q.bairro === antigo){ q.bairro = novo; alterou = true; } });
-  State.lotes.forEach(function(l){ if(l.bairro === antigo){ l.bairro = novo; alterou = true; } });
-  if(alterou) await salvarEstrutura();
+  let alterouEstrutura = false;
+  let alterouListas = false;
+
+  State.quadras.forEach(function(q){ if(q.bairro === antigo){ q.bairro = novo; alterouEstrutura = true; } });
+  State.lotes.forEach(function(l){ if(l.bairro === antigo){ l.bairro = novo; alterouEstrutura = true; } });
+
+  (State.listas.grupos.ruas || []).forEach(function(r){
+    if(String(r.bairro || '') === antigo){ r.bairro = novo; alterouListas = true; }
+  });
+
+  if(alterouEstrutura) await salvarEstrutura();
+  if(alterouListas)    await salvarListas();
 }
 
 /* ============================================================
@@ -1986,9 +2045,6 @@ Pages.estrutura.novaQuadra = function(){
         const numRaw = modal.querySelector('#q_num').value.trim();
         const lbl = modal.querySelector('#q_lbl').value.trim();
         if(!numRaw){ toast('Informe o número da quadra.', 'warning'); return false; }
-        /* Padrão da quadra: 3 dígitos (ex.: 007), igual ao do lote.
-           Só aplica o zero à esquerda quando o valor digitado é
-           puramente numérico. */
         const num = /^\d+$/.test(numRaw) ? numRaw.padStart(3, '0') : numRaw;
         if(existentes.some(function(q){ return q.numero === num; })){
           toast('Já existe uma quadra com este número neste bairro.', 'error'); return false;
@@ -2009,8 +2065,6 @@ Pages.estrutura.novaQuadra = function(){
         const total = numAte - numDe + 1;
         if(total > 200){ toast('Máximo de 200 quadras por vez.', 'warning'); return false; }
 
-        /* Padrão da quadra: sempre no mínimo 3 dígitos (000), igual ao
-           padrão do lote — mesmo que "De"/"Até" tenham menos dígitos. */
         const pad = Math.max(3, String(numDe).length, String(numAte).length);
         for(let i = numDe; i <= numAte; i++){
           const num = String(i).padStart(pad, '0');
@@ -2030,7 +2084,6 @@ Pages.estrutura.novaQuadra = function(){
     }
   });
 
-  // Alterna visualmente os dois blocos (único / faixa)
   setTimeout(function(){
     const sel = document.getElementById('q_modo');
     const boxUnico = document.getElementById('q_unico_box');
@@ -2070,14 +2123,6 @@ Pages.estrutura.editLote = function(lid){
   });
 };
 
-/* ------------------------------------------------------------
-   NOVO LOTE — Modo único + modo FAIXA (criação em lote)
-   ------------------------------------------------------------
-   Modo "faixa": informa-se o número inicial e final (ex.: 001
-   a 010) e o sistema cria todos os lotes da faixa com zeros à
-   esquerda. Lotes já existentes são ignorados silenciosamente.
-   Limite: 200 lotes por vez.
-   ------------------------------------------------------------ */
 Pages.estrutura.novoLote = function(){
   const bairro = State.est.bairro, quadra = State.est.quadra;
   if(!bairro || !quadra) return;
@@ -2128,8 +2173,6 @@ Pages.estrutura.novoLote = function(){
         const numRaw = modal.querySelector('#l_num').value.trim();
         const lbl = modal.querySelector('#l_lbl').value.trim();
         if(!numRaw){ toast('Informe o número do lote.', 'warning'); return false; }
-        /* Padrão do lote: 3 dígitos (ex.: 007). Só aplica o zero à
-           esquerda quando o valor digitado é puramente numérico. */
         const num = /^\d+$/.test(numRaw) ? numRaw.padStart(3, '0') : numRaw;
         if(existentes.some(function(l){ return l.numero === num; })){
           toast('Já existe um lote com este número nesta quadra.', 'error'); return false;
@@ -2150,9 +2193,6 @@ Pages.estrutura.novoLote = function(){
         const total = numAte - numDe + 1;
         if(total > 200){ toast('Máximo de 200 lotes por vez.', 'warning'); return false; }
 
-        /* Padrão do lote: sempre no mínimo 3 dígitos (000), mesmo que
-           "De"/"Até" tenham sido digitados com menos dígitos (ex.: 1 a 10
-           agora vira 001 a 010, e não 01 a 10). */
         const pad = Math.max(3, String(numDe).length, String(numAte).length);
         for(let i = numDe; i <= numAte; i++){
           const num = String(i).padStart(pad, '0');
@@ -2172,7 +2212,6 @@ Pages.estrutura.novoLote = function(){
     }
   });
 
-  // Alterna visualmente os dois blocos (único / faixa)
   setTimeout(function(){
     const sel = document.getElementById('l_modo');
     const boxUnico = document.getElementById('l_unico_box');
@@ -2278,7 +2317,6 @@ function renderBairrosView(){
   });
 }
 
-/* ---------- QUADRAS (com filtro de ordenação) ---------- */
 function renderQuadrasView(){
   const bairro = State.hier.bairro;
   document.getElementById('hierTitle').textContent = 'Quadras · ' + bairro;
@@ -2334,7 +2372,6 @@ function renderQuadrasView(){
   });
 }
 
-/* ---------- LOTES (com filtros de rua, ordenação e completude) ---------- */
 function renderLotesView(){
   const bairro = State.hier.bairro, quadra = State.hier.quadra;
   document.getElementById('hierTitle').textContent = 'Lotes · Quadra ' + quadra;
@@ -2346,17 +2383,14 @@ function renderLotesView(){
 
   const ruas = [...new Set(lotes.map(function(l){ return norm(l.logradouro_imovel); }).filter(Boolean))].sort();
 
-  /* Filtro de rua */
   if(State.hier.rua) lotes = lotes.filter(function(l){ return norm(l.logradouro_imovel) === State.hier.rua; });
 
-  /* Filtro de completude (Terreno/Edificação) */
   if(State.hier.filterCompletude === 'completo'){
     lotes = lotes.filter(function(l){ return fichaCompleta(l); });
   } else if(State.hier.filterCompletude === 'incompleto'){
     lotes = lotes.filter(function(l){ return !fichaCompleta(l); });
   }
 
-  /* Ordenação */
   const sortL = State.hier.sortLotes || 'lote_asc';
   lotes.sort(function(a, b){
     switch(sortL){
@@ -2373,7 +2407,6 @@ function renderLotesView(){
     }
   });
 
-  /* Barra de filtros */
   const extraEl = document.getElementById('hierExtra');
   let extraHTML = '<div class="filters-bar">';
 
@@ -2396,7 +2429,6 @@ function renderLotesView(){
       '</select>';
   }
 
-  /* Filtro de completude */
   extraHTML +=
       '<label>' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
@@ -2408,7 +2440,6 @@ function renderLotesView(){
         '<option value="incompleto"' + (State.hier.filterCompletude === 'incompleto' ? ' selected' : '') + '>Incompletos</option>' +
       '</select>';
 
-  /* Ordenação */
   extraHTML +=
       '<label>' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>' +
@@ -2636,7 +2667,6 @@ Pages.registros.view = function(id){
     ? (r.foto_tamanho_bytes / 1024).toFixed(1) + ' KB'
     : '—';
 
-  /* ABA 1: PROPRIETÁRIO */
   const tabProp =
     dSection('Dados Pessoais', SVG_ICONS.user) +
     '<div class="detail-grid">' +
@@ -2661,7 +2691,6 @@ Pages.registros.view = function(id){
       dItem('UF', r.uf) +
     '</div>';
 
-  /* ABA 2: IMÓVEL */
   const tabImovel =
     dSection('Identificação do Imóvel', SVG_ICONS.home) +
     '<div class="detail-grid">' +
@@ -2701,7 +2730,6 @@ Pages.registros.view = function(id){
         '</div>'
     );
 
-  /* ABA 3: MEDIDAS */
   const tabMedidas =
     dSection('Terreno — Medidas', SVG_ICONS.ruler) +
     '<div class="detail-grid">' +
@@ -2724,7 +2752,6 @@ Pages.registros.view = function(id){
       dItem('Ano de Construção', r.ano_construcao) +
     '</div>';
 
-  /* ABA 4: LOGRADOURO */
   const logMarcados = LOG_ITEMS.filter(function(x){ return !!r[x[0]]; }).length;
   const tabLog =
     dSection('Itens Presentes no Logradouro', SVG_ICONS.road) +
@@ -2735,7 +2762,6 @@ Pages.registros.view = function(id){
       LOG_ITEMS.map(function(x){ return chipReadonly(x[1], !!r[x[0]]); }).join('') +
     '</div>';
 
-  /* ABA 5: TERRENO */
   const tabTerreno =
     dSection('Características do Terreno' + (completo ? '' : ' — INCOMPLETO'), SVG_ICONS.ground) +
     (!completo
@@ -2749,7 +2775,6 @@ Pages.registros.view = function(id){
       dItem('05 — Patrimônio', labelFromOptions('patrimonio', r.patrimonio)) +
     '</div>';
 
-  /* ABA 6: EDIFICAÇÃO */
   const tabEdif =
     dSection('Características da Edificação', SVG_ICONS.build) +
     '<div class="detail-grid">' +
@@ -2768,7 +2793,6 @@ Pages.registros.view = function(id){
       dItem('Estado de Conservação', labelFromOptions('conservacao', r.conservacao)) +
     '</div>';
 
-  /* ABA 7: REGISTRO */
   const tabReg =
     dSection('Registro da Ficha', SVG_ICONS.info) +
     '<div class="detail-grid">' +
@@ -2806,7 +2830,6 @@ Pages.registros.view = function(id){
       '<div class="ficha-panel" data-fpanel="registro">' + tabReg + '</div>' +
     '</div>';
 
-  /* Header do modal: badges + botões Editar + Imprimir */
   const headerExtra =
     '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
       '<span class="badge ' + esc(st) + '">' + statusLabel(st) + '</span>' +
@@ -2833,7 +2856,6 @@ Pages.registros.view = function(id){
     body: tabsHTML
   });
 
-  /* Troca de abas */
   const tabsEl = document.getElementById('fichaTabs');
   if(tabsEl){
     tabsEl.querySelectorAll('.ficha-tab').forEach(function(btn){
@@ -2849,7 +2871,6 @@ Pages.registros.view = function(id){
     });
   }
 
-  /* Botão Editar ficha */
   const btnEdit = document.getElementById('btnEditarFicha');
   if(btnEdit){
     btnEdit.addEventListener('click', function(){
@@ -2858,7 +2879,6 @@ Pages.registros.view = function(id){
     });
   }
 
-  /* Botão Imprimir / Salvar PDF (agora no header) */
   const btnPdf = document.getElementById('btnImprimirPDF');
   if(btnPdf){
     btnPdf.addEventListener('click', function(){
@@ -2866,7 +2886,6 @@ Pages.registros.view = function(id){
     });
   }
 
-  /* Botão Ajustar + baixar A4 */
   const btnAjustar = document.getElementById('btnAjustarA4');
   if(btnAjustar){
     btnAjustar.addEventListener('click', function(){
@@ -2874,7 +2893,6 @@ Pages.registros.view = function(id){
     });
   }
 
-  /* Foto — clique para ampliar */
   const frame = document.getElementById('photoFrame');
   if(frame && dataUrl){
     frame.addEventListener('click', function(){
@@ -2995,7 +3013,10 @@ function getOptionsForEdit(optKey, currentVal){
       return { v:o.label, l:String(o.numero != null ? o.numero : (i+1)).padStart(3,'0') + ' - ' + o.label };
     });
   } else if(optKey === 'ruas'){
-    opts = (State.listas.grupos.ruas || []).map(function(o){ return { v:o.label, l:o.label }; });
+    /* Mostra o bairro vinculado ao lado do nome do logradouro */
+    opts = (State.listas.grupos.ruas || []).map(function(o){
+      return { v:o.label, l: o.bairro ? (o.label + ' · ' + o.bairro) : o.label };
+    });
   } else if(optKey === 'status'){
     opts = STATUS_OPTS.map(function(o){ return { v:o.v, l:o.l }; });
   } else {
@@ -3136,7 +3157,6 @@ Pages.registros.edit = function(id){
         updates.foto_tamanho_bytes = values.foto_tamanho_bytes || 0;
       }
 
-      /* Recalcula campos derivados (áreas) */
       const ft = parseDecimalSafe(updates.frente_terreno);
       const fu = parseDecimalSafe(updates.fundo_terreno);
       const fe = parseDecimalSafe(updates.frente_edif);
@@ -3147,11 +3167,6 @@ Pages.registros.edit = function(id){
       const areaE = fe * fo;
       const areaTE = areaE * nAnd;
 
-      /* Os campos de área são calculados automaticamente a partir das
-         medidas acima. Porém, agora também podem ser preenchidos
-         manualmente no painel (ex.: quando as medidas individuais não
-         estão disponíveis). Nesse caso, o valor digitado é preservado
-         em vez de ser zerado pelo cálculo automático. */
       const areaTManual = String(updates.area_terreno || '').trim();
       const areaEManual = String(updates.area_edificada || '').trim();
       const areaTEManual = String(updates.area_total_edificada || '').trim();
@@ -3163,7 +3178,6 @@ Pages.registros.edit = function(id){
       updates.area_edificada_num = areaE > 0 ? areaE : (parseDecimalSafe(areaEManual) || 0);
       updates.area_total_edificada_num = areaTE > 0 ? areaTE : (parseDecimalSafe(areaTEManual) || 0);
 
-      /* Inscrição anterior recalculada */
       if(updates.bairro_imovel && updates.quadra_imovel && updates.lote_letra){
         const bi = (State.listas.grupos.bairros || []).find(function(o){ return o.label === updates.bairro_imovel; });
         const bNum = bi && bi.numero ? String(bi.numero).padStart(3,'0') : '000';
@@ -3172,7 +3186,6 @@ Pages.registros.edit = function(id){
           String(updates.lote_letra).padStart(3,'0') + '.' + bNum;
       }
 
-      /* Validações básicas */
       if(!String(updates.nome || '').trim()){ toast('Informe o nome do proprietário.', 'warning'); return false; }
       if(!String(updates.bairro_imovel || '').trim()){ toast('Informe o bairro do imóvel.', 'warning'); return false; }
       if(!String(updates.quadra_imovel || '').trim()){ toast('Informe a quadra.', 'warning'); return false; }
@@ -3218,6 +3231,42 @@ Pages.registros.edit = function(id){
         chip.classList.toggle('active', input.checked);
       });
     });
+
+    /* ----- Vincula bairro → logradouro dentro do modal de edição -----
+       Ao trocar o bairro, o select de logradouro passa a mostrar
+       somente as ruas vinculadas àquele bairro. Se o valor atual
+       não pertencer ao novo bairro, ele é limpo. */
+    function bindBairroRuas(bairroField, ruaField){
+      const bSel = document.querySelector('[data-edit-field="' + bairroField + '"]');
+      const rSel = document.querySelector('[data-edit-field="' + ruaField + '"]');
+      if(!bSel || !rSel) return;
+
+      function refresh(clearIfMissing){
+        const bairro = bSel.value;
+        const atual  = rSel.value;
+        const ruas   = (State.listas.grupos.ruas || []).filter(function(r){
+          return String(r.bairro || '') === bairro;
+        });
+
+        let html = '<option value="">—</option>' +
+          ruas.map(function(r){
+            return '<option value="' + esc(r.label) + '">' + esc(r.label) + '</option>';
+          }).join('');
+
+        if(!clearIfMissing && atual && !ruas.some(function(r){ return r.label === atual; })){
+          html += '<option value="' + esc(atual) + '">' + esc(atual) + ' (não vinculada a este bairro)</option>';
+        }
+
+        rSel.innerHTML = html;
+        if(atual && [...rSel.options].some(function(o){ return o.value === atual; })) rSel.value = atual;
+        else if(clearIfMissing) rSel.value = '';
+      }
+
+      bSel.addEventListener('change', function(){ refresh(true); });
+      refresh(false);
+    }
+    bindBairroRuas('bairro_prop',   'logradouro_prop');
+    bindBairroRuas('bairro_imovel', 'logradouro_imovel');
 
     const fotoInput  = document.getElementById('editFotoInput');
     const fotoBtn    = document.getElementById('editFotoBtn');
@@ -3624,7 +3673,7 @@ Pages.registros.imprimirPDF = function(id){
 const Data = {
   exportJSON(){
     const payload = {
-      exported_at: new Date().toISOString(), version:'3.6',
+      exported_at: new Date().toISOString(), version:'3.7',
       fichas: State.registros,
       listas: State.listas,
       quadras: State.quadras,
@@ -3781,7 +3830,7 @@ function bootApp(){
   escutarFichas();
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[Admin v3.6 — A4 + PDF + Filtro Completude + Lote em Faixa] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[Admin v3.7 — Logradouro vinculado ao Bairro] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){
