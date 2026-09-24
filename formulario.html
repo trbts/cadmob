@@ -1491,52 +1491,153 @@ function initFormulario(){
     return invalidos;
   }
 
+  /* ---------- HELPERS DE CONVERSÃO ---------- */
+  function toNum(v){
+    if(v === '' || v == null) return null;
+    const s = String(v).replace(/\s/g,'').replace(',', '.');
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+  function toInt(v){
+    const n = toNum(v);
+    return n == null ? null : Math.trunc(n);
+  }
+  function toDateOrNull(v){
+    const s = String(v == null ? '' : v).trim();
+    return s ? s : null;
+  }
+
   /* ---------- COLETA / LIMPEZA ---------- */
   function collect(){
+    const up = v => String(v == null ? '' : v).toUpperCase();
+    const g  = n => {
+      const el = form.querySelector('[name="' + n + '"]');
+      if(!el) return '';
+      return el.type === 'checkbox' ? el.checked : el.value;
+    };
+    const cepOnlyDigits = String(g('cep') || '').replace(/\D/g,'');
+
+    /* ---- MODELO PRINCIPAL ---- */
     const data = {};
-    const IGNORAR_UPPER = ['data_registro'];
-    form.querySelectorAll('[name]').forEach(el => {
-      if(el.type === 'checkbox'){ data[el.name] = el.checked; return; }
-      if(el.type === 'radio'){ if(el.checked) data[el.name] = el.value; return; }
-      let v = el.value;
-      if(typeof v === 'string' && v && !IGNORAR_UPPER.includes(el.name)) v = v.toUpperCase();
-      data[el.name] = v;
-    });
+
+    data.DadosGeraisImovel = {
+      inscricaoImobiliaria: up(g('inscricaoImobiliaria')),
+      tipoImovel:           toInt(g('tipoImovel')),
+      tpArquitetonico:      toInt(g('tpArquitetonico')),
+      destinacaoImovel:     toInt(g('destinacaoImovel')),
+      idParcela:            up(g('idParcela')),
+      areaTerreno:          toNum(g('areaTerreno')),
+      areaConstruida:       toNum(g('areaConstruida')),
+      bice:                 toInt(g('bice')),
+      anoConstrutivo:       toInt(g('anoConstrutivo')),
+      valorVenal:           toNum(g('valorVenal')),
+      dtUltimoValorVenal:   toDateOrNull(g('dtUltimoValorVenal')),
+      padraoConstrutivo:    toInt(g('padraoConstrutivo')),
+      qtdGaragem:           toInt(g('qtdGaragem')),
+      temPiscina:           !!g('temPiscina'),
+      valorRefMercado:      toNum(g('valorRefMercado')),
+      dataUltVlrMercado:    toDateOrNull(g('dataUltVlrMercado'))
+    };
+
+    data.AreaConstruidaCompl = {
+      areaPrivativa: toNum(g('areaPrivativa')),
+      areaComum:     toNum(g('areaComum')),
+      fraIdeal:      toNum(g('fraIdeal'))
+    };
+
+    data.EnderecoImovel = {
+      tipoLogradouro:  toInt(g('tipoLogradouro')),
+      nomeLogradouro:  up(g('nomeLogradouro')),
+      temBairro:       !!g('temBairro'),
+      bairro:          up(g('bairro')),
+      cep:             cepOnlyDigits,
+      numeroImovel:    up(g('numeroImovel')),
+      complNroImovel:  up(g('complNroImovel')),
+      complEndereco:   up(g('complEndereco'))
+    };
 
     data.Titular = [...document.querySelectorAll('#titulares .list-item')].map(r => ({
-      niTitular: r.querySelector('[name=niTitular]').value.toUpperCase(),
-      nomeTitular: r.querySelector('[name=nomeTitular]').value.toUpperCase(),
-      percTitularidade: r.querySelector('[name=percTitular]').value,
-      dtAquisicaoTitular: r.querySelector('[name=dtAquisicaoTitular]').value,
-      tipoTitularidade: r.querySelector('[name=tipoTitularidade]').value,
-      docTitularidade: r.querySelector('[name=docTitularidade]').value
-    }));
-    data.TransmitenteITBI = [...document.querySelectorAll('#transmitentes .list-item')].map(r => ({
-      nomeTransmitenteITBI: r.querySelector('[name=nomeTransmitenteITBI]').value.toUpperCase(),
-      idTransmitenteITBI: r.querySelector('[name=idTransmitenteITBI]').value.toUpperCase()
-    }));
-    data.AdquirenteITBI = [...document.querySelectorAll('#adquirentes .list-item')].map(r => ({
-      nomeAdquirenteITBI: r.querySelector('[name=nomeAdquirenteITBI]').value.toUpperCase(),
-      idAdquirenteITBI: r.querySelector('[name=idAdquirenteITBI]').value.toUpperCase(),
-      percTransacAdquirenteITBI: r.querySelector('[name=percTransacAdquirenteITBI]').value
+      niTitular:            up(r.querySelector('[name=niTitular]').value),
+      nomeTitular:          up(r.querySelector('[name=nomeTitular]').value),
+      percTitularidade:     toNum(r.querySelector('[name=percTitular]').value),
+      dtAquisicaoTitular:   toDateOrNull(r.querySelector('[name=dtAquisicaoTitular]').value),
+      tipoTitularidade:     toInt(r.querySelector('[name=tipoTitularidade]').value),
+      docTitularidade:      toInt(r.querySelector('[name=docTitularidade]').value)
     }));
 
-    data.areaTerreno_num = parseDecimal(document.getElementById('areaTerreno').value);
-    data.areaConstruida_num = parseDecimal(document.getElementById('areaConstruida').value);
-    data.status = 'pendente';
-    data.origem = 'sinter';
+    data.ServicoRegistroImovel = {
+      nomeServentiaRI:  up(g('nomeServentiaRI')),
+      cnsRI:            toInt(g('cnsRI')),
+      cnmRI:            toNum(g('cnmRI')),
+      numMatriculaRI:   up(g('numMatriculaRI')),
+      numUltimoAtoRI:   up(g('numUltimoAtoRI')),
+      lvCartRI:         up(g('lvCartRI')),
+      flCartRI:         up(g('flCartRI')),
+      dtUltAtualizacao: toDateOrNull(g('dtUltAtualizacao'))
+    };
 
-    if(fotoBase64){
-      data.foto_base64 = fotoBase64;
-      data.foto_tipo = fotoTipo;
-      data.foto_tamanho_bytes = fotoTamanhoBytes;
-      if(fotoGeo){
-        data.foto_latitude = fotoGeo.lat;
-        data.foto_longitude = fotoGeo.lng;
-        data.foto_precisao_m = fotoGeo.precisao;
-        data.foto_geo_horario = fotoGeo.horario;
-      }
-    }
+    data.CartorioNotas = {
+      nomeServentiaNotas: up(g('nomeServentiaNotas')),
+      cnsNotas:           toInt(g('cnsNotas')),
+      lvCartNotas:        up(g('lvCartNotas')),
+      flCartNotas:        up(g('flCartNotas'))
+    };
+
+    data.ITBI = {
+      baseCalculITBI:          toNum(g('baseCalculITBI')),
+      dtTransacaoITBI:         toDateOrNull(g('dtTransacaoITBI')),
+      tpTransacaoITBI:         toInt(g('tpTransacaoITBI')),
+      percTransacionadoITBI:   toNum(g('percTransacionadoITBI')),
+      TransmitenteITBI: [...document.querySelectorAll('#transmitentes .list-item')].map(r => ({
+        nomeTransmitenteITBI: up(r.querySelector('[name=nomeTransmitenteITBI]').value),
+        idTransmitenteITBI:   up(r.querySelector('[name=idTransmitenteITBI]').value)
+      })),
+      AdquirenteITBI: [...document.querySelectorAll('#adquirentes .list-item')].map(r => ({
+        nomeAdquirenteITBI:          up(r.querySelector('[name=nomeAdquirenteITBI]').value),
+        idAdquirenteITBI:            up(r.querySelector('[name=idAdquirenteITBI]').value),
+        percTransacAdquirenteITBI:   toNum(r.querySelector('[name=percTransacAdquirenteITBI]').value)
+      })),
+      valorRefITBI:            toNum(g('valorRefITBI'))
+    };
+
+    /* ---- COLEÇÃO À PARTE (campos que não constam no modelo) ---- */
+    data.DadosComplementares = {
+      localizacaoCadastral: {
+        bairro: up(g('bairro_imovel')),
+        quadra: up(g('quadra_imovel')),
+        lote:   up(g('lote_letra'))
+      },
+      medidasTerreno: {
+        frente:       toNum(g('frente_terreno')),
+        fundo:        toNum(g('fundo_terreno')),
+        ladoDireito:  toNum(g('lado_dir_terreno')),
+        ladoEsquerdo: toNum(g('lado_esq_terreno'))
+      },
+      medidasEdificacao: {
+        frente:       toNum(g('frente_edif')),
+        fundo:        toNum(g('fundo_edif')),
+        ladoDireito:  toNum(g('lado_dir_edif')),
+        ladoEsquerdo: toNum(g('lado_esq_edif'))
+      },
+      construcao: {
+        adicional:  toNum(g('adicional')),
+        numFrentes: toInt(g('num_frentes')),
+        numAndares: toInt(g('num_andares'))
+      },
+      foto: fotoBase64 ? {
+        base64:                 fotoBase64,
+        tipo:                   fotoTipo || null,
+        tamanhoBytes:           fotoTamanhoBytes || null,
+        latitude:               fotoGeo ? fotoGeo.lat : null,
+        longitude:              fotoGeo ? fotoGeo.lng : null,
+        precisaoM:              fotoGeo ? fotoGeo.precisao : null,
+        geolocalizacaoHorario:  fotoGeo ? fotoGeo.horario : null
+      } : null,
+      dataEmissao: g('data_registro') || null,
+      status: 'pendente',
+      origem: 'sinter'
+    };
+
     return data;
   }
 
