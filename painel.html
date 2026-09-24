@@ -625,11 +625,10 @@ function todayISO(){ const d = new Date(); return new Date(d.getTime()-d.timezon
 
 /* ============================================================
    NORMALIZAÇÃO — Converte o documento aninhado (dados_imovel.*)
-   para o formato flat que o painel já consome.
+   para o formato flat que o painel consome.
    ============================================================ */
 function normalizarFicha(raw){
   if(!raw || typeof raw !== 'object') return raw;
-  // Compatibilidade: se já veio flat (formato antigo) devolve como está.
   if(!raw.dados_imovel || typeof raw.dados_imovel !== 'object') return raw;
 
   const d    = raw.dados_imovel;
@@ -647,7 +646,6 @@ function normalizarFicha(raw){
   const ft   = dc.foto || null;
 
   return Object.assign({}, raw, {
-    // Espelho no topo (fallback do Worker caso ausente)
     bairro_imovel:     raw.bairro_imovel    || loc.bairro,
     quadra_imovel:     raw.quadra_imovel    || loc.quadra,
     lote_letra:        raw.lote_letra       || loc.lote,
@@ -659,7 +657,6 @@ function normalizarFicha(raw){
     criado_por_email:  raw.criado_por_email || dc.criado_por_email,
     responsavel:       raw.responsavel      || dc.responsavel,
 
-    // DadosGeraisImovel
     inscricaoImobiliaria: dg.inscricaoImobiliaria,
     tipoImovel:           dg.tipoImovel,
     tpArquitetonico:      dg.tpArquitetonico,
@@ -677,12 +674,10 @@ function normalizarFicha(raw){
     valorRefMercado:      dg.valorRefMercado,
     dataUltVlrMercado:    dg.dataUltVlrMercado,
 
-    // AreaConstruidaCompl
     areaPrivativa: ac.areaPrivativa,
     areaComum:     ac.areaComum,
     fraIdeal:      ac.fraIdeal,
 
-    // EnderecoImovel
     tipoLogradouro:  ei.tipoLogradouro,
     nomeLogradouro:  ei.nomeLogradouro,
     temBairro:       ei.temBairro,
@@ -692,10 +687,8 @@ function normalizarFicha(raw){
     complNroImovel:  ei.complNroImovel,
     complEndereco:   ei.complEndereco,
 
-    // Titular
     Titular: Array.isArray(d.Titular) ? d.Titular : [],
 
-    // ServicoRegistroImovel
     nomeServentiaRI:  sr.nomeServentiaRI,
     cnsRI:            sr.cnsRI,
     cnmRI:            sr.cnmRI,
@@ -705,13 +698,11 @@ function normalizarFicha(raw){
     flCartRI:         sr.flCartRI,
     dtUltAtualizacao: sr.dtUltAtualizacao,
 
-    // CartorioNotas
     nomeServentiaNotas: cn.nomeServentiaNotas,
     cnsNotas:           cn.cnsNotas,
     lvCartNotas:        cn.lvCartNotas,
     flCartNotas:        cn.flCartNotas,
 
-    // ITBI
     baseCalculITBI:        itbi.baseCalculITBI,
     valorRefITBI:          itbi.valorRefITBI,
     dtTransacaoITBI:       itbi.dtTransacaoITBI,
@@ -720,7 +711,6 @@ function normalizarFicha(raw){
     TransmitenteITBI: Array.isArray(itbi.TransmitenteITBI) ? itbi.TransmitenteITBI : [],
     AdquirenteITBI:   Array.isArray(itbi.AdquirenteITBI)   ? itbi.AdquirenteITBI   : [],
 
-    // DadosComplementares — medidas / construção
     frente_terreno:   mt.frente,
     fundo_terreno:    mt.fundo,
     lado_dir_terreno: mt.ladoDireito,
@@ -733,7 +723,6 @@ function normalizarFicha(raw){
     num_frentes:      co.numFrentes,
     num_andares:      co.numAndares,
 
-    // Foto
     foto_base64:        ft ? ft.base64               : undefined,
     foto_tipo:          ft ? ft.tipo                 : undefined,
     foto_tamanho_bytes: ft ? ft.tamanhoBytes         : undefined,
@@ -745,11 +734,10 @@ function normalizarFicha(raw){
 }
 
 /* ============================================================
-   MAPA FLAT → DOT-PATH — Para salvar edições no Firestore
-   preservando a estrutura aninhada do novo modelo.
+   MAPA FLAT → DOT-PATH — para gravar edições preservando
+   a estrutura aninhada do novo modelo.
    ============================================================ */
 const FIELD_PATHS = {
-  // DadosGeraisImovel
   inscricaoImobiliaria: 'dados_imovel.DadosGeraisImovel.inscricaoImobiliaria',
   tipoImovel:           'dados_imovel.DadosGeraisImovel.tipoImovel',
   tpArquitetonico:      'dados_imovel.DadosGeraisImovel.tpArquitetonico',
@@ -767,12 +755,10 @@ const FIELD_PATHS = {
   valorRefMercado:      'dados_imovel.DadosGeraisImovel.valorRefMercado',
   dataUltVlrMercado:    'dados_imovel.DadosGeraisImovel.dataUltVlrMercado',
 
-  // AreaConstruidaCompl
   areaPrivativa: 'dados_imovel.AreaConstruidaCompl.areaPrivativa',
   areaComum:     'dados_imovel.AreaConstruidaCompl.areaComum',
   fraIdeal:      'dados_imovel.AreaConstruidaCompl.fraIdeal',
 
-  // EnderecoImovel
   tipoLogradouro: 'dados_imovel.EnderecoImovel.tipoLogradouro',
   nomeLogradouro: 'dados_imovel.EnderecoImovel.nomeLogradouro',
   temBairro:      'dados_imovel.EnderecoImovel.temBairro',
@@ -782,7 +768,6 @@ const FIELD_PATHS = {
   complNroImovel: 'dados_imovel.EnderecoImovel.complNroImovel',
   complEndereco:  'dados_imovel.EnderecoImovel.complEndereco',
 
-  // ServicoRegistroImovel
   nomeServentiaRI:  'dados_imovel.ServicoRegistroImovel.nomeServentiaRI',
   cnsRI:            'dados_imovel.ServicoRegistroImovel.cnsRI',
   cnmRI:            'dados_imovel.ServicoRegistroImovel.cnmRI',
@@ -792,37 +777,31 @@ const FIELD_PATHS = {
   flCartRI:         'dados_imovel.ServicoRegistroImovel.flCartRI',
   dtUltAtualizacao: 'dados_imovel.ServicoRegistroImovel.dtUltAtualizacao',
 
-  // CartorioNotas
   nomeServentiaNotas: 'dados_imovel.CartorioNotas.nomeServentiaNotas',
   cnsNotas:           'dados_imovel.CartorioNotas.cnsNotas',
   lvCartNotas:        'dados_imovel.CartorioNotas.lvCartNotas',
   flCartNotas:        'dados_imovel.CartorioNotas.flCartNotas',
 
-  // ITBI
   baseCalculITBI:        'dados_imovel.ITBI.baseCalculITBI',
   valorRefITBI:          'dados_imovel.ITBI.valorRefITBI',
   dtTransacaoITBI:       'dados_imovel.ITBI.dtTransacaoITBI',
   tpTransacaoITBI:       'dados_imovel.ITBI.tpTransacaoITBI',
   percTransacionadoITBI: 'dados_imovel.ITBI.percTransacionadoITBI',
 
-  // DadosComplementares — medidas terreno
   frente_terreno:   'dados_imovel.DadosComplementares.medidasTerreno.frente',
   fundo_terreno:    'dados_imovel.DadosComplementares.medidasTerreno.fundo',
   lado_dir_terreno: 'dados_imovel.DadosComplementares.medidasTerreno.ladoDireito',
   lado_esq_terreno: 'dados_imovel.DadosComplementares.medidasTerreno.ladoEsquerdo',
 
-  // DadosComplementares — medidas edificação
   frente_edif:      'dados_imovel.DadosComplementares.medidasEdificacao.frente',
   fundo_edif:       'dados_imovel.DadosComplementares.medidasEdificacao.fundo',
   lado_dir_edif:    'dados_imovel.DadosComplementares.medidasEdificacao.ladoDireito',
   lado_esq_edif:    'dados_imovel.DadosComplementares.medidasEdificacao.ladoEsquerdo',
 
-  // DadosComplementares — construção
-  adicional:  'dados_imovel.DadosComplementares.construcao.adicional',
-  num_frentes:'dados_imovel.DadosComplementares.construcao.numFrentes',
-  num_andares:'dados_imovel.DadosComplementares.construcao.numAndares',
+  adicional:   'dados_imovel.DadosComplementares.construcao.adicional',
+  num_frentes: 'dados_imovel.DadosComplementares.construcao.numFrentes',
+  num_andares: 'dados_imovel.DadosComplementares.construcao.numAndares',
 
-  // Topo (espelho)
   bairro_imovel:  'bairro_imovel',
   quadra_imovel:  'quadra_imovel',
   lote_letra:     'lote_letra',
@@ -928,7 +907,7 @@ function normalizeStatus(s){ return (s === 'aprovado') ? 'aprovado' : 'pendente'
 function getStatusFromReg(r){ return normalizeStatus(r.status); }
 
 /* ============================================================
-   CRITÉRIO DE COMPLETUDE — Mesmos campos obrigatórios do form
+   CRITÉRIO DE COMPLETUDE
    ============================================================ */
 const CAMPOS_COMPLETOS = [
   'inscricaoImobiliaria',
@@ -1046,9 +1025,6 @@ const Modal = {
 
 /* ============================================================
    ESCUTA DE FICHAS — Firebase
-   ------------------------------------------------------------
-   Aplica normalizarFicha em cada doc para achatar o modelo
-   aninhado (dados_imovel.*) ao formato consumido pelo painel.
    ============================================================ */
 function escutarFichas(){
   const q = query(collection(db,'fichas'), orderBy('criado_em','desc'));
@@ -1900,7 +1876,6 @@ Pages.registros.edit = function(id){
         flatUpdates[name] = v;
       });
 
-      // Recalcula áreas
       const ft = Number(String(flatUpdates.frente_terreno||'').replace(',','.')) || 0;
       const fu = Number(String(flatUpdates.fundo_terreno||'').replace(',','.')) || 0;
       const fe = Number(String(flatUpdates.frente_edif||'').replace(',','.')) || 0;
@@ -1908,7 +1883,6 @@ Pages.registros.edit = function(id){
       if(ft > 0 && fu > 0) flatUpdates.areaTerreno = ft * fu;
       if(fe > 0 && fo > 0) flatUpdates.areaConstruida = fe * fo;
 
-      // Gera inscrição imobiliária se faltar
       if(!String(flatUpdates.inscricaoImobiliaria || '').trim()){
         const bi = (State.listas && State.listas.grupos && State.listas.grupos.bairros) || [];
         const biMap = bi.find(function(o){ return o.label === flatUpdates.bairro_imovel; });
@@ -1920,12 +1894,10 @@ Pages.registros.edit = function(id){
         }
       }
 
-      // Converte flat → dot-path para o Firestore
       const updates = {};
       for(const k in flatUpdates){
         if(FIELD_PATHS[k]) updates[FIELD_PATHS[k]] = flatUpdates[k];
       }
-      // Mantém espelho e nested em sincronia para localização
       if('bairro_imovel' in flatUpdates){
         updates['dados_imovel.DadosComplementares.localizacaoCadastral.bairro'] = flatUpdates.bairro_imovel;
       }
@@ -2223,46 +2195,202 @@ Pages.registros.imprimirPDF = function(id){
 };
 
 /* ============================================================
+   EXPORTAÇÃO — Converte a ficha normalizada (flat) para o
+   formato exato do modelo:
+     DadosGeraisImovel, AreaConstruidaCompl, EnderecoImovel,
+     Titular, ServicoRegistroImovel, CartorioNotas, ITBI.
+   Campos que não constam no modelo são descartados.
+   ============================================================ */
+function toExportModel(r){
+  if(!r || typeof r !== 'object') return null;
+
+  const str  = v => (v == null) ? '' : String(v);
+  const num  = v => {
+    if(v === '' || v == null) return null;
+    const n = Number(String(v).replace(',', '.'));
+    return Number.isFinite(n) ? n : null;
+  };
+  const int  = v => {
+    const n = num(v);
+    return n == null ? null : Math.trunc(n);
+  };
+  const bool = v => !!v;
+  const date = v => {
+    const s = str(v).trim();
+    return s || null;
+  };
+  const cep  = v => String(v || '').replace(/\D/g, '');
+
+  const titulares = Array.isArray(r.Titular)
+    ? r.Titular.map(t => ({
+        niTitular:          str(t.niTitular),
+        nomeTitular:        str(t.nomeTitular),
+        percTitularidade:   num(t.percTitularidade),
+        dtAquisicaoTitular: date(t.dtAquisicaoTitular),
+        tipoTitularidade:   int(t.tipoTitularidade),
+        docTitularidade:    int(t.docTitularidade)
+      }))
+    : [];
+
+  const transmitentes = Array.isArray(r.TransmitenteITBI)
+    ? r.TransmitenteITBI.map(t => ({
+        nomeTransmitenteITBI: str(t.nomeTransmitenteITBI),
+        idTransmitenteITBI:   str(t.idTransmitenteITBI)
+      }))
+    : [];
+
+  const adquirentes = Array.isArray(r.AdquirenteITBI)
+    ? r.AdquirenteITBI.map(a => ({
+        nomeAdquirenteITBI:        str(a.nomeAdquirenteITBI),
+        idAdquirenteITBI:          str(a.idAdquirenteITBI),
+        percTransacAdquirenteITBI: num(a.percTransacAdquirenteITBI)
+      }))
+    : [];
+
+  return {
+    DadosGeraisImovel: {
+      inscricaoImobiliaria: str(r.inscricaoImobiliaria),
+      tipoImovel:           int(r.tipoImovel),
+      tpArquitetonico:      int(r.tpArquitetonico),
+      destinacaoImovel:     int(r.destinacaoImovel),
+      idParcela:            str(r.idParcela),
+      areaTerreno:          num(r.areaTerreno),
+      areaConstruida:       num(r.areaConstruida),
+      bice:                 int(r.bice),
+      anoConstrutivo:       int(r.anoConstrutivo),
+      valorVenal:           num(r.valorVenal),
+      dtUltimoValorVenal:   date(r.dtUltimoValorVenal),
+      padraoConstrutivo:    int(r.padraoConstrutivo),
+      qtdGaragem:           int(r.qtdGaragem),
+      temPiscina:           bool(r.temPiscina),
+      valorRefMercado:      num(r.valorRefMercado),
+      dataUltVlrMercado:    date(r.dataUltVlrMercado)
+    },
+
+    AreaConstruidaCompl: {
+      areaPrivativa: num(r.areaPrivativa),
+      areaComum:     num(r.areaComum),
+      fraIdeal:      num(r.fraIdeal)
+    },
+
+    EnderecoImovel: {
+      tipoLogradouro: int(r.tipoLogradouro),
+      nomeLogradouro: str(r.nomeLogradouro),
+      temBairro:      bool(r.temBairro),
+      bairro:         str(r.bairro),
+      cep:            cep(r.cep),
+      numeroImovel:   str(r.numeroImovel),
+      complNroImovel: str(r.complNroImovel),
+      complEndereco:  str(r.complEndereco)
+    },
+
+    Titular: titulares,
+
+    ServicoRegistroImovel: {
+      nomeServentiaRI:  str(r.nomeServentiaRI),
+      cnsRI:            int(r.cnsRI),
+      cnmRI:            int(r.cnmRI),
+      numMatriculaRI:   str(r.numMatriculaRI),
+      numUltimoAtoRI:   str(r.numUltimoAtoRI),
+      lvCartRI:         str(r.lvCartRI),
+      flCartRI:         str(r.flCartRI),
+      dtUltAtualizacao: date(r.dtUltAtualizacao)
+    },
+
+    CartorioNotas: {
+      nomeServentiaNotas: str(r.nomeServentiaNotas),
+      cnsNotas:           int(r.cnsNotas),
+      lvCartNotas:        str(r.lvCartNotas),
+      flCartNotas:        str(r.flCartNotas)
+    },
+
+    ITBI: {
+      baseCalculITBI:        num(r.baseCalculITBI),
+      dtTransacaoITBI:       date(r.dtTransacaoITBI),
+      tpTransacaoITBI:       int(r.tpTransacaoITBI),
+      percTransacionadoITBI: num(r.percTransacionadoITBI),
+      TransmitenteITBI:      transmitentes,
+      AdquirenteITBI:        adquirentes,
+      valorRefITBI:          num(r.valorRefITBI)
+    }
+  };
+}
+
+/* ============================================================
    DADOS & BACKUP
    ============================================================ */
 const Data = {
   exportJSON(){
+    if(!State.registros.length){
+      toast('Nenhuma ficha para exportar.', 'warning');
+      return;
+    }
+
+    const fichas = State.registros
+      .map(toExportModel)
+      .filter(Boolean);
+
     const payload = {
       exported_at: new Date().toISOString(),
-      version: '4.0',
-      fichas: State.registros
+      total: fichas.length,
+      fichas
     };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'careiro-backup-' + todayISO() + '.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-    toast('Backup exportado.', 'success');
+
+    try {
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'careiro-backup-' + todayISO() + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+      toast('Backup exportado.', 'success', fichas.length + ' ficha(s)');
+    } catch(err){
+      console.error('[export] falha:', err);
+      toast('Não foi possível exportar o arquivo.', 'error');
+    }
   },
+
   importJSON(file){
     if(!file) return;
     const reader = new FileReader();
     reader.onload = function(e){
       try{
         const data = JSON.parse(e.target.result);
+        const lista = Array.isArray(data) ? data : (Array.isArray(data.fichas) ? data.fichas : []);
+        if(!lista.length){ toast('Arquivo sem fichas.', 'warning'); return; }
+
         Modal.confirm({
           title:'Importar dados?',
-          message:'As fichas serão gravadas no Firebase.',
+          message:'Serão gravadas ' + lista.length + ' ficha(s) no Firebase.',
           confirmText:'Importar',
           onConfirm: async function(){
-            if(Array.isArray(data.fichas)){
-              for(const f of data.fichas){
-                const rest = Object.assign({}, f);
-                delete rest.id;
-                await addDoc(collection(db,'fichas'), Object.assign(rest, { criado_em: serverTimestamp() }));
-              }
+            for(const f of lista){
+              const dadosImovel = f.dados_imovel ? f.dados_imovel : f;
+              const loc = (dadosImovel.DadosComplementares &&
+                           dadosImovel.DadosComplementares.localizacaoCadastral) || {};
+              const docToSave = {
+                dados_imovel: dadosImovel,
+                bairro_imovel:  loc.bairro  || '',
+                quadra_imovel:  loc.quadra  || '',
+                lote_letra:     loc.lote    || '',
+                unidade_imovel: loc.unidade || '',
+                status:  'pendente',
+                origem:  'import',
+                criado_em: serverTimestamp()
+              };
+              await addDoc(collection(db,'fichas'), docToSave);
             }
             toast('Importação concluída.', 'success');
           }
         });
-      }catch(err){ toast('Arquivo inválido.', 'error'); }
+      }catch(err){
+        console.error('[import]', err);
+        toast('Arquivo inválido.', 'error');
+      }
     };
     reader.readAsText(file);
   }
@@ -2386,7 +2514,7 @@ function bootApp(){
   escutarFichas();
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[Admin v4.1 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[Admin v4.2 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){
