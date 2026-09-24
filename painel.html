@@ -624,6 +624,215 @@ function fmtDateTime(s){
 function todayISO(){ const d = new Date(); return new Date(d.getTime()-d.timezoneOffset()*60000).toISOString().slice(0,10); }
 
 /* ============================================================
+   NORMALIZAÇÃO — Converte o documento aninhado (dados_imovel.*)
+   para o formato flat que o painel já consome.
+   ============================================================ */
+function normalizarFicha(raw){
+  if(!raw || typeof raw !== 'object') return raw;
+  // Compatibilidade: se já veio flat (formato antigo) devolve como está.
+  if(!raw.dados_imovel || typeof raw.dados_imovel !== 'object') return raw;
+
+  const d    = raw.dados_imovel;
+  const dg   = d.DadosGeraisImovel      || {};
+  const ac   = d.AreaConstruidaCompl    || {};
+  const ei   = d.EnderecoImovel         || {};
+  const sr   = d.ServicoRegistroImovel  || {};
+  const cn   = d.CartorioNotas          || {};
+  const itbi = d.ITBI                   || {};
+  const dc   = d.DadosComplementares    || {};
+  const loc  = dc.localizacaoCadastral  || {};
+  const mt   = dc.medidasTerreno        || {};
+  const me   = dc.medidasEdificacao     || {};
+  const co   = dc.construcao            || {};
+  const ft   = dc.foto || null;
+
+  return Object.assign({}, raw, {
+    // Espelho no topo (fallback do Worker caso ausente)
+    bairro_imovel:     raw.bairro_imovel    || loc.bairro,
+    quadra_imovel:     raw.quadra_imovel    || loc.quadra,
+    lote_letra:        raw.lote_letra       || loc.lote,
+    unidade_imovel:    raw.unidade_imovel   || loc.unidade || '',
+    status:            raw.status           || dc.status   || 'pendente',
+    origem:            raw.origem           || dc.origem   || 'sinter',
+    criado_em:         raw.criado_em        || dc.criado_em,
+    criado_por_uid:    raw.criado_por_uid   || dc.criado_por_uid,
+    criado_por_email:  raw.criado_por_email || dc.criado_por_email,
+    responsavel:       raw.responsavel      || dc.responsavel,
+
+    // DadosGeraisImovel
+    inscricaoImobiliaria: dg.inscricaoImobiliaria,
+    tipoImovel:           dg.tipoImovel,
+    tpArquitetonico:      dg.tpArquitetonico,
+    destinacaoImovel:     dg.destinacaoImovel,
+    idParcela:            dg.idParcela,
+    areaTerreno:          dg.areaTerreno,
+    areaConstruida:       dg.areaConstruida,
+    bice:                 dg.bice,
+    anoConstrutivo:       dg.anoConstrutivo,
+    valorVenal:           dg.valorVenal,
+    dtUltimoValorVenal:   dg.dtUltimoValorVenal,
+    padraoConstrutivo:    dg.padraoConstrutivo,
+    qtdGaragem:           dg.qtdGaragem,
+    temPiscina:           dg.temPiscina,
+    valorRefMercado:      dg.valorRefMercado,
+    dataUltVlrMercado:    dg.dataUltVlrMercado,
+
+    // AreaConstruidaCompl
+    areaPrivativa: ac.areaPrivativa,
+    areaComum:     ac.areaComum,
+    fraIdeal:      ac.fraIdeal,
+
+    // EnderecoImovel
+    tipoLogradouro:  ei.tipoLogradouro,
+    nomeLogradouro:  ei.nomeLogradouro,
+    temBairro:       ei.temBairro,
+    bairro:          ei.bairro,
+    cep:             ei.cep,
+    numeroImovel:    ei.numeroImovel,
+    complNroImovel:  ei.complNroImovel,
+    complEndereco:   ei.complEndereco,
+
+    // Titular
+    Titular: Array.isArray(d.Titular) ? d.Titular : [],
+
+    // ServicoRegistroImovel
+    nomeServentiaRI:  sr.nomeServentiaRI,
+    cnsRI:            sr.cnsRI,
+    cnmRI:            sr.cnmRI,
+    numMatriculaRI:   sr.numMatriculaRI,
+    numUltimoAtoRI:   sr.numUltimoAtoRI,
+    lvCartRI:         sr.lvCartRI,
+    flCartRI:         sr.flCartRI,
+    dtUltAtualizacao: sr.dtUltAtualizacao,
+
+    // CartorioNotas
+    nomeServentiaNotas: cn.nomeServentiaNotas,
+    cnsNotas:           cn.cnsNotas,
+    lvCartNotas:        cn.lvCartNotas,
+    flCartNotas:        cn.flCartNotas,
+
+    // ITBI
+    baseCalculITBI:        itbi.baseCalculITBI,
+    valorRefITBI:          itbi.valorRefITBI,
+    dtTransacaoITBI:       itbi.dtTransacaoITBI,
+    tpTransacaoITBI:       itbi.tpTransacaoITBI,
+    percTransacionadoITBI: itbi.percTransacionadoITBI,
+    TransmitenteITBI: Array.isArray(itbi.TransmitenteITBI) ? itbi.TransmitenteITBI : [],
+    AdquirenteITBI:   Array.isArray(itbi.AdquirenteITBI)   ? itbi.AdquirenteITBI   : [],
+
+    // DadosComplementares — medidas / construção
+    frente_terreno:   mt.frente,
+    fundo_terreno:    mt.fundo,
+    lado_dir_terreno: mt.ladoDireito,
+    lado_esq_terreno: mt.ladoEsquerdo,
+    frente_edif:      me.frente,
+    fundo_edif:       me.fundo,
+    lado_dir_edif:    me.ladoDireito,
+    lado_esq_edif:    me.ladoEsquerdo,
+    adicional:        co.adicional,
+    num_frentes:      co.numFrentes,
+    num_andares:      co.numAndares,
+
+    // Foto
+    foto_base64:        ft ? ft.base64               : undefined,
+    foto_tipo:          ft ? ft.tipo                 : undefined,
+    foto_tamanho_bytes: ft ? ft.tamanhoBytes         : undefined,
+    foto_latitude:      ft ? ft.latitude             : undefined,
+    foto_longitude:     ft ? ft.longitude            : undefined,
+    foto_precisao_m:    ft ? ft.precisaoM            : undefined,
+    foto_geo_horario:   ft ? ft.geolocalizacaoHorario: undefined
+  });
+}
+
+/* ============================================================
+   MAPA FLAT → DOT-PATH — Para salvar edições no Firestore
+   preservando a estrutura aninhada do novo modelo.
+   ============================================================ */
+const FIELD_PATHS = {
+  // DadosGeraisImovel
+  inscricaoImobiliaria: 'dados_imovel.DadosGeraisImovel.inscricaoImobiliaria',
+  tipoImovel:           'dados_imovel.DadosGeraisImovel.tipoImovel',
+  tpArquitetonico:      'dados_imovel.DadosGeraisImovel.tpArquitetonico',
+  destinacaoImovel:     'dados_imovel.DadosGeraisImovel.destinacaoImovel',
+  idParcela:            'dados_imovel.DadosGeraisImovel.idParcela',
+  areaTerreno:          'dados_imovel.DadosGeraisImovel.areaTerreno',
+  areaConstruida:       'dados_imovel.DadosGeraisImovel.areaConstruida',
+  bice:                 'dados_imovel.DadosGeraisImovel.bice',
+  anoConstrutivo:       'dados_imovel.DadosGeraisImovel.anoConstrutivo',
+  valorVenal:           'dados_imovel.DadosGeraisImovel.valorVenal',
+  dtUltimoValorVenal:   'dados_imovel.DadosGeraisImovel.dtUltimoValorVenal',
+  padraoConstrutivo:    'dados_imovel.DadosGeraisImovel.padraoConstrutivo',
+  qtdGaragem:           'dados_imovel.DadosGeraisImovel.qtdGaragem',
+  temPiscina:           'dados_imovel.DadosGeraisImovel.temPiscina',
+  valorRefMercado:      'dados_imovel.DadosGeraisImovel.valorRefMercado',
+  dataUltVlrMercado:    'dados_imovel.DadosGeraisImovel.dataUltVlrMercado',
+
+  // AreaConstruidaCompl
+  areaPrivativa: 'dados_imovel.AreaConstruidaCompl.areaPrivativa',
+  areaComum:     'dados_imovel.AreaConstruidaCompl.areaComum',
+  fraIdeal:      'dados_imovel.AreaConstruidaCompl.fraIdeal',
+
+  // EnderecoImovel
+  tipoLogradouro: 'dados_imovel.EnderecoImovel.tipoLogradouro',
+  nomeLogradouro: 'dados_imovel.EnderecoImovel.nomeLogradouro',
+  temBairro:      'dados_imovel.EnderecoImovel.temBairro',
+  bairro:         'dados_imovel.EnderecoImovel.bairro',
+  cep:            'dados_imovel.EnderecoImovel.cep',
+  numeroImovel:   'dados_imovel.EnderecoImovel.numeroImovel',
+  complNroImovel: 'dados_imovel.EnderecoImovel.complNroImovel',
+  complEndereco:  'dados_imovel.EnderecoImovel.complEndereco',
+
+  // ServicoRegistroImovel
+  nomeServentiaRI:  'dados_imovel.ServicoRegistroImovel.nomeServentiaRI',
+  cnsRI:            'dados_imovel.ServicoRegistroImovel.cnsRI',
+  cnmRI:            'dados_imovel.ServicoRegistroImovel.cnmRI',
+  numMatriculaRI:   'dados_imovel.ServicoRegistroImovel.numMatriculaRI',
+  numUltimoAtoRI:   'dados_imovel.ServicoRegistroImovel.numUltimoAtoRI',
+  lvCartRI:         'dados_imovel.ServicoRegistroImovel.lvCartRI',
+  flCartRI:         'dados_imovel.ServicoRegistroImovel.flCartRI',
+  dtUltAtualizacao: 'dados_imovel.ServicoRegistroImovel.dtUltAtualizacao',
+
+  // CartorioNotas
+  nomeServentiaNotas: 'dados_imovel.CartorioNotas.nomeServentiaNotas',
+  cnsNotas:           'dados_imovel.CartorioNotas.cnsNotas',
+  lvCartNotas:        'dados_imovel.CartorioNotas.lvCartNotas',
+  flCartNotas:        'dados_imovel.CartorioNotas.flCartNotas',
+
+  // ITBI
+  baseCalculITBI:        'dados_imovel.ITBI.baseCalculITBI',
+  valorRefITBI:          'dados_imovel.ITBI.valorRefITBI',
+  dtTransacaoITBI:       'dados_imovel.ITBI.dtTransacaoITBI',
+  tpTransacaoITBI:       'dados_imovel.ITBI.tpTransacaoITBI',
+  percTransacionadoITBI: 'dados_imovel.ITBI.percTransacionadoITBI',
+
+  // DadosComplementares — medidas terreno
+  frente_terreno:   'dados_imovel.DadosComplementares.medidasTerreno.frente',
+  fundo_terreno:    'dados_imovel.DadosComplementares.medidasTerreno.fundo',
+  lado_dir_terreno: 'dados_imovel.DadosComplementares.medidasTerreno.ladoDireito',
+  lado_esq_terreno: 'dados_imovel.DadosComplementares.medidasTerreno.ladoEsquerdo',
+
+  // DadosComplementares — medidas edificação
+  frente_edif:      'dados_imovel.DadosComplementares.medidasEdificacao.frente',
+  fundo_edif:       'dados_imovel.DadosComplementares.medidasEdificacao.fundo',
+  lado_dir_edif:    'dados_imovel.DadosComplementares.medidasEdificacao.ladoDireito',
+  lado_esq_edif:    'dados_imovel.DadosComplementares.medidasEdificacao.ladoEsquerdo',
+
+  // DadosComplementares — construção
+  adicional:  'dados_imovel.DadosComplementares.construcao.adicional',
+  num_frentes:'dados_imovel.DadosComplementares.construcao.numFrentes',
+  num_andares:'dados_imovel.DadosComplementares.construcao.numAndares',
+
+  // Topo (espelho)
+  bairro_imovel:  'bairro_imovel',
+  quadra_imovel:  'quadra_imovel',
+  lote_letra:     'lote_letra',
+  unidade_imovel: 'unidade_imovel',
+  status:         'status',
+  responsavel:    'responsavel',
+  data_registro:  'data_registro'
+};
+
+/* ============================================================
    MAPEAMENTO DOS CAMPOS DO NOVO FORMULÁRIO SINTER
    ============================================================ */
 const SELECT_OPTIONS = {
@@ -837,12 +1046,15 @@ const Modal = {
 
 /* ============================================================
    ESCUTA DE FICHAS — Firebase
+   ------------------------------------------------------------
+   Aplica normalizarFicha em cada doc para achatar o modelo
+   aninhado (dados_imovel.*) ao formato consumido pelo painel.
    ============================================================ */
 function escutarFichas(){
   const q = query(collection(db,'fichas'), orderBy('criado_em','desc'));
   onSnapshot(q, function(snap){
     const arr = [];
-    snap.forEach(function(d){ arr.push(Object.assign({ id:d.id }, d.data())); });
+    snap.forEach(function(d){ arr.push(normalizarFicha(Object.assign({ id:d.id }, d.data()))); });
     State.registros = arr;
     if(State.page === 'dashboard' && hasAccess('dashboard')) renderDashboard();
     if(State.page === 'registros' && hasAccess('registros')) renderRegistros();
@@ -851,7 +1063,7 @@ function escutarFichas(){
     console.warn('[fichas] onSnapshot com orderBy falhou, tentando sem ordenação:', err);
     onSnapshot(collection(db,'fichas'), function(snap2){
       const arr2 = [];
-      snap2.forEach(function(d){ arr2.push(Object.assign({ id:d.id }, d.data())); });
+      snap2.forEach(function(d){ arr2.push(normalizarFicha(Object.assign({ id:d.id }, d.data()))); });
       arr2.sort(function(a,b){
         const ta = a.criado_em && a.criado_em.toDate ? a.criado_em.toDate() : new Date(a.criado_em||0);
         const tb = b.criado_em && b.criado_em.toDate ? b.criado_em.toDate() : new Date(b.criado_em||0);
@@ -1677,33 +1889,51 @@ Pages.registros.edit = function(id){
     headerExtra: headerExtra,
     body: tabsHTML,
     onConfirm: async function(modal){
-      const updates = {};
+      const flatUpdates = {};
       modal.querySelectorAll('[data-edit-field]').forEach(function(el){
         const name = el.dataset.editField;
-        if(el.type === 'checkbox'){ updates[name] = !!el.checked; return; }
+        if(el.type === 'checkbox'){ flatUpdates[name] = !!el.checked; return; }
         let v = el.value;
         if(typeof v === 'string' && v && !['dtUltimoValorVenal','dataUltVlrMercado','dtUltAtualizacao','dtTransacaoITBI','data_registro','status','tipoImovel','tpArquitetonico','destinacaoImovel','padraoConstrutivo','bice','tipoLogradouro','tpTransacaoITBI','cep'].includes(name)){
           v = v.toUpperCase();
         }
-        updates[name] = v;
+        flatUpdates[name] = v;
       });
 
-      const ft = Number(String(updates.frente_terreno||'').replace(',','.')) || 0;
-      const fu = Number(String(updates.fundo_terreno||'').replace(',','.')) || 0;
-      const fe = Number(String(updates.frente_edif||'').replace(',','.')) || 0;
-      const fo = Number(String(updates.fundo_edif||'').replace(',','.')) || 0;
-      if(ft > 0 && fu > 0) updates.areaTerreno = ft * fu;
-      if(fe > 0 && fo > 0) updates.areaConstruida = fe * fo;
+      // Recalcula áreas
+      const ft = Number(String(flatUpdates.frente_terreno||'').replace(',','.')) || 0;
+      const fu = Number(String(flatUpdates.fundo_terreno||'').replace(',','.')) || 0;
+      const fe = Number(String(flatUpdates.frente_edif||'').replace(',','.')) || 0;
+      const fo = Number(String(flatUpdates.fundo_edif||'').replace(',','.')) || 0;
+      if(ft > 0 && fu > 0) flatUpdates.areaTerreno = ft * fu;
+      if(fe > 0 && fo > 0) flatUpdates.areaConstruida = fe * fo;
 
-      if(!String(updates.inscricaoImobiliaria || '').trim()){
+      // Gera inscrição imobiliária se faltar
+      if(!String(flatUpdates.inscricaoImobiliaria || '').trim()){
         const bi = (State.listas && State.listas.grupos && State.listas.grupos.bairros) || [];
-        const biMap = bi.find(function(o){ return o.label === updates.bairro_imovel; });
+        const biMap = bi.find(function(o){ return o.label === flatUpdates.bairro_imovel; });
         const bNum = biMap && biMap.numero ? String(biMap.numero).padStart(3,'0') : '000';
-        if(updates.quadra_imovel && updates.lote_letra){
-          updates.inscricaoImobiliaria = '00.00.' +
-            String(updates.quadra_imovel).padStart(3,'0') + '.' +
-            String(updates.lote_letra).padStart(3,'0') + '.' + bNum;
+        if(flatUpdates.quadra_imovel && flatUpdates.lote_letra){
+          flatUpdates.inscricaoImobiliaria = '00.00.' +
+            String(flatUpdates.quadra_imovel).padStart(3,'0') + '.' +
+            String(flatUpdates.lote_letra).padStart(3,'0') + '.' + bNum;
         }
+      }
+
+      // Converte flat → dot-path para o Firestore
+      const updates = {};
+      for(const k in flatUpdates){
+        if(FIELD_PATHS[k]) updates[FIELD_PATHS[k]] = flatUpdates[k];
+      }
+      // Mantém espelho e nested em sincronia para localização
+      if('bairro_imovel' in flatUpdates){
+        updates['dados_imovel.DadosComplementares.localizacaoCadastral.bairro'] = flatUpdates.bairro_imovel;
+      }
+      if('quadra_imovel' in flatUpdates){
+        updates['dados_imovel.DadosComplementares.localizacaoCadastral.quadra'] = flatUpdates.quadra_imovel;
+      }
+      if('lote_letra' in flatUpdates){
+        updates['dados_imovel.DadosComplementares.localizacaoCadastral.lote']   = flatUpdates.lote_letra;
       }
 
       try {
@@ -1753,7 +1983,10 @@ Pages.registros.openStatus = function(id){
       '</select></div>',
     onConfirm: async function(modal){
       const v = modal.querySelector('#newStatus').value;
-      await updateDoc(doc(db,'fichas', id), { status: v });
+      await updateDoc(doc(db,'fichas', id), {
+        'status': v,
+        'dados_imovel.DadosComplementares.status': v
+      });
       toast('Status atualizado.', 'success');
     }
   });
@@ -2153,7 +2386,7 @@ function bootApp(){
   escutarFichas();
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[Admin v4.0 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[Admin v4.1 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){
