@@ -621,7 +621,10 @@ function fmtDateTime(s){
     return d.toLocaleString('pt-BR');
   }catch(e){ return String(s); }
 }
-function todayISO(){ const d = new Date(); return new Date(d.getTime()-d.timezoneOffset()*60000).toISOString().slice(0,10); }
+function todayISO(){
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+}
 
 /* ============================================================
    NORMALIZAÇÃO — Converte o documento aninhado (dados_imovel.*)
@@ -734,8 +737,7 @@ function normalizarFicha(raw){
 }
 
 /* ============================================================
-   MAPA FLAT → DOT-PATH — para gravar edições preservando
-   a estrutura aninhada do novo modelo.
+   MAPA FLAT → DOT-PATH — gravar edições preservando a estrutura
    ============================================================ */
 const FIELD_PATHS = {
   inscricaoImobiliaria: 'dados_imovel.DadosGeraisImovel.inscricaoImobiliaria',
@@ -2195,123 +2197,125 @@ Pages.registros.imprimirPDF = function(id){
 };
 
 /* ============================================================
-   EXPORTAÇÃO — Converte a ficha normalizada (flat) para o
-   formato exato do modelo:
-     DadosGeraisImovel, AreaConstruidaCompl, EnderecoImovel,
-     Titular, ServicoRegistroImovel, CartorioNotas, ITBI.
-   Campos que não constam no modelo são descartados.
+   EXPORTAÇÃO — prefere a estrutura aninhada do Firestore
+   (r.dados_imovel.*) e cai para o formato flat se necessário.
    ============================================================ */
 function toExportModel(r){
   if(!r || typeof r !== 'object') return null;
 
-  const str  = v => (v == null) ? '' : String(v);
-  const num  = v => {
+  // Fonte preferida: estrutura aninhada gravada pelo Worker
+  const src = (r.dados_imovel && typeof r.dados_imovel === 'object') ? r.dados_imovel : null;
+
+  const S = v => (v == null) ? '' : String(v);
+  const N = v => {
     if(v === '' || v == null) return null;
-    const n = Number(String(v).replace(',', '.'));
-    return Number.isFinite(n) ? n : null;
+    if(typeof v === 'number') return Number.isFinite(v) ? v : null;
+    const x = Number(String(v).replace(',', '.'));
+    return Number.isFinite(x) ? x : null;
   };
-  const int  = v => {
-    const n = num(v);
-    return n == null ? null : Math.trunc(n);
+  const I = v => { const x = N(v); return x == null ? null : Math.trunc(x); };
+  const B = v => !!v;
+  const D = v => { const s = S(v).trim(); return s || null; };
+  const C = v => String(v || '').replace(/\D/g, '');
+
+  // Pega campo: prefere nested, senão flat
+  const pick = (block, field) => {
+    if(src && src[block] && src[block][field] !== undefined && src[block][field] !== null && src[block][field] !== ''){
+      return src[block][field];
+    }
+    return r[field];
   };
-  const bool = v => !!v;
-  const date = v => {
-    const s = str(v).trim();
-    return s || null;
-  };
-  const cep  = v => String(v || '').replace(/\D/g, '');
 
-  const titulares = Array.isArray(r.Titular)
-    ? r.Titular.map(t => ({
-        niTitular:          str(t.niTitular),
-        nomeTitular:        str(t.nomeTitular),
-        percTitularidade:   num(t.percTitularidade),
-        dtAquisicaoTitular: date(t.dtAquisicaoTitular),
-        tipoTitularidade:   int(t.tipoTitularidade),
-        docTitularidade:    int(t.docTitularidade)
-      }))
-    : [];
+  const titularesSrc = (src && Array.isArray(src.Titular)) ? src.Titular
+                     : (Array.isArray(r.Titular) ? r.Titular : []);
 
-  const transmitentes = Array.isArray(r.TransmitenteITBI)
-    ? r.TransmitenteITBI.map(t => ({
-        nomeTransmitenteITBI: str(t.nomeTransmitenteITBI),
-        idTransmitenteITBI:   str(t.idTransmitenteITBI)
-      }))
-    : [];
+  const transSrc = (src && src.ITBI && Array.isArray(src.ITBI.TransmitenteITBI))
+                 ? src.ITBI.TransmitenteITBI
+                 : (Array.isArray(r.TransmitenteITBI) ? r.TransmitenteITBI : []);
 
-  const adquirentes = Array.isArray(r.AdquirenteITBI)
-    ? r.AdquirenteITBI.map(a => ({
-        nomeAdquirenteITBI:        str(a.nomeAdquirenteITBI),
-        idAdquirenteITBI:          str(a.idAdquirenteITBI),
-        percTransacAdquirenteITBI: num(a.percTransacAdquirenteITBI)
-      }))
-    : [];
+  const adqSrc = (src && src.ITBI && Array.isArray(src.ITBI.AdquirenteITBI))
+               ? src.ITBI.AdquirenteITBI
+               : (Array.isArray(r.AdquirenteITBI) ? r.AdquirenteITBI : []);
 
   return {
     DadosGeraisImovel: {
-      inscricaoImobiliaria: str(r.inscricaoImobiliaria),
-      tipoImovel:           int(r.tipoImovel),
-      tpArquitetonico:      int(r.tpArquitetonico),
-      destinacaoImovel:     int(r.destinacaoImovel),
-      idParcela:            str(r.idParcela),
-      areaTerreno:          num(r.areaTerreno),
-      areaConstruida:       num(r.areaConstruida),
-      bice:                 int(r.bice),
-      anoConstrutivo:       int(r.anoConstrutivo),
-      valorVenal:           num(r.valorVenal),
-      dtUltimoValorVenal:   date(r.dtUltimoValorVenal),
-      padraoConstrutivo:    int(r.padraoConstrutivo),
-      qtdGaragem:           int(r.qtdGaragem),
-      temPiscina:           bool(r.temPiscina),
-      valorRefMercado:      num(r.valorRefMercado),
-      dataUltVlrMercado:    date(r.dataUltVlrMercado)
+      inscricaoImobiliaria: S(pick('DadosGeraisImovel', 'inscricaoImobiliaria')),
+      tipoImovel:           I(pick('DadosGeraisImovel', 'tipoImovel')),
+      tpArquitetonico:      I(pick('DadosGeraisImovel', 'tpArquitetonico')),
+      destinacaoImovel:     I(pick('DadosGeraisImovel', 'destinacaoImovel')),
+      idParcela:            S(pick('DadosGeraisImovel', 'idParcela')),
+      areaTerreno:          N(pick('DadosGeraisImovel', 'areaTerreno')),
+      areaConstruida:       N(pick('DadosGeraisImovel', 'areaConstruida')),
+      bice:                 I(pick('DadosGeraisImovel', 'bice')),
+      anoConstrutivo:       I(pick('DadosGeraisImovel', 'anoConstrutivo')),
+      valorVenal:           N(pick('DadosGeraisImovel', 'valorVenal')),
+      dtUltimoValorVenal:   D(pick('DadosGeraisImovel', 'dtUltimoValorVenal')),
+      padraoConstrutivo:    I(pick('DadosGeraisImovel', 'padraoConstrutivo')),
+      qtdGaragem:           I(pick('DadosGeraisImovel', 'qtdGaragem')),
+      temPiscina:           B(pick('DadosGeraisImovel', 'temPiscina')),
+      valorRefMercado:      N(pick('DadosGeraisImovel', 'valorRefMercado')),
+      dataUltVlrMercado:    D(pick('DadosGeraisImovel', 'dataUltVlrMercado'))
     },
 
     AreaConstruidaCompl: {
-      areaPrivativa: num(r.areaPrivativa),
-      areaComum:     num(r.areaComum),
-      fraIdeal:      num(r.fraIdeal)
+      areaPrivativa: N(pick('AreaConstruidaCompl', 'areaPrivativa')),
+      areaComum:     N(pick('AreaConstruidaCompl', 'areaComum')),
+      fraIdeal:      N(pick('AreaConstruidaCompl', 'fraIdeal'))
     },
 
     EnderecoImovel: {
-      tipoLogradouro: int(r.tipoLogradouro),
-      nomeLogradouro: str(r.nomeLogradouro),
-      temBairro:      bool(r.temBairro),
-      bairro:         str(r.bairro),
-      cep:            cep(r.cep),
-      numeroImovel:   str(r.numeroImovel),
-      complNroImovel: str(r.complNroImovel),
-      complEndereco:  str(r.complEndereco)
+      tipoLogradouro: I(pick('EnderecoImovel', 'tipoLogradouro')),
+      nomeLogradouro: S(pick('EnderecoImovel', 'nomeLogradouro')),
+      temBairro:      B(pick('EnderecoImovel', 'temBairro')),
+      bairro:         S(pick('EnderecoImovel', 'bairro')),
+      cep:            C(pick('EnderecoImovel', 'cep')),
+      numeroImovel:   S(pick('EnderecoImovel', 'numeroImovel')),
+      complNroImovel: S(pick('EnderecoImovel', 'complNroImovel')),
+      complEndereco:  S(pick('EnderecoImovel', 'complEndereco'))
     },
 
-    Titular: titulares,
+    Titular: titularesSrc.map(t => ({
+      niTitular:          S(t.niTitular),
+      nomeTitular:        S(t.nomeTitular),
+      percTitularidade:   N(t.percTitularidade),
+      dtAquisicaoTitular: D(t.dtAquisicaoTitular),
+      tipoTitularidade:   I(t.tipoTitularidade),
+      docTitularidade:    I(t.docTitularidade)
+    })),
 
     ServicoRegistroImovel: {
-      nomeServentiaRI:  str(r.nomeServentiaRI),
-      cnsRI:            int(r.cnsRI),
-      cnmRI:            int(r.cnmRI),
-      numMatriculaRI:   str(r.numMatriculaRI),
-      numUltimoAtoRI:   str(r.numUltimoAtoRI),
-      lvCartRI:         str(r.lvCartRI),
-      flCartRI:         str(r.flCartRI),
-      dtUltAtualizacao: date(r.dtUltAtualizacao)
+      nomeServentiaRI:  S(pick('ServicoRegistroImovel', 'nomeServentiaRI')),
+      cnsRI:            I(pick('ServicoRegistroImovel', 'cnsRI')),
+      cnmRI:            I(pick('ServicoRegistroImovel', 'cnmRI')),
+      numMatriculaRI:   S(pick('ServicoRegistroImovel', 'numMatriculaRI')),
+      numUltimoAtoRI:   S(pick('ServicoRegistroImovel', 'numUltimoAtoRI')),
+      lvCartRI:         S(pick('ServicoRegistroImovel', 'lvCartRI')),
+      flCartRI:         S(pick('ServicoRegistroImovel', 'flCartRI')),
+      dtUltAtualizacao: D(pick('ServicoRegistroImovel', 'dtUltAtualizacao'))
     },
 
     CartorioNotas: {
-      nomeServentiaNotas: str(r.nomeServentiaNotas),
-      cnsNotas:           int(r.cnsNotas),
-      lvCartNotas:        str(r.lvCartNotas),
-      flCartNotas:        str(r.flCartNotas)
+      nomeServentiaNotas: S(pick('CartorioNotas', 'nomeServentiaNotas')),
+      cnsNotas:           I(pick('CartorioNotas', 'cnsNotas')),
+      lvCartNotas:        S(pick('CartorioNotas', 'lvCartNotas')),
+      flCartNotas:        S(pick('CartorioNotas', 'flCartNotas'))
     },
 
     ITBI: {
-      baseCalculITBI:        num(r.baseCalculITBI),
-      dtTransacaoITBI:       date(r.dtTransacaoITBI),
-      tpTransacaoITBI:       int(r.tpTransacaoITBI),
-      percTransacionadoITBI: num(r.percTransacionadoITBI),
-      TransmitenteITBI:      transmitentes,
-      AdquirenteITBI:        adquirentes,
-      valorRefITBI:          num(r.valorRefITBI)
+      baseCalculITBI:        N(pick('ITBI', 'baseCalculITBI')),
+      dtTransacaoITBI:       D(pick('ITBI', 'dtTransacaoITBI')),
+      tpTransacaoITBI:       I(pick('ITBI', 'tpTransacaoITBI')),
+      percTransacionadoITBI: N(pick('ITBI', 'percTransacionadoITBI')),
+      TransmitenteITBI:      transSrc.map(t => ({
+        nomeTransmitenteITBI: S(t.nomeTransmitenteITBI),
+        idTransmitenteITBI:   S(t.idTransmitenteITBI)
+      })),
+      AdquirenteITBI:        adqSrc.map(a => ({
+        nomeAdquirenteITBI:        S(a.nomeAdquirenteITBI),
+        idAdquirenteITBI:          S(a.idAdquirenteITBI),
+        percTransacAdquirenteITBI: N(a.percTransacAdquirenteITBI)
+      })),
+      valorRefITBI:          N(pick('ITBI', 'valorRefITBI'))
     }
   };
 }
@@ -2336,21 +2340,46 @@ const Data = {
       fichas
     };
 
+    // Diagnóstico — abra o Console (F12) para inspecionar o que foi lido
+    try {
+      console.groupCollapsed('[export] payload (' + fichas.length + ' ficha(s))');
+      console.log('Primeira ficha:', fichas[0]);
+      console.log('Payload completo:', payload);
+      console.groupEnd();
+    } catch(e){}
+
     try {
       const json = JSON.stringify(payload, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
       const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
+
+      const a = document.createElement('a');
+      a.href = url;
       a.download = 'careiro-backup-' + todayISO() + '.json';
+      a.rel = 'noopener';
+      a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
-      a.remove();
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+      document.body.removeChild(a);
+
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
       toast('Backup exportado.', 'success', fichas.length + ' ficha(s)');
     } catch(err){
       console.error('[export] falha:', err);
-      toast('Não foi possível exportar o arquivo.', 'error');
+      try {
+        const json = JSON.stringify(payload, null, 2);
+        const w = window.open('', '_blank');
+        if(w){
+          w.document.write('<pre style="font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;padding:16px;">' +
+            json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>');
+          w.document.close();
+          toast('Download bloqueado — JSON aberto em nova aba.', 'warning');
+        } else {
+          toast('Não foi possível exportar o arquivo.', 'error');
+        }
+      } catch(e2){
+        toast('Não foi possível exportar o arquivo.', 'error');
+      }
     }
   },
 
@@ -2514,7 +2543,7 @@ function bootApp(){
   escutarFichas();
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[Admin v4.2 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[Admin v4.4 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){
