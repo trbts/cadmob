@@ -35,10 +35,7 @@ body{
   box-shadow:0 8px 24px rgba(8,56,107,.22); text-align:center;
 }
 .header-inner{ max-width:560px; margin:0 auto; }
-.brand-logo{ width:40px; height:40px; border-radius:12px; margin:0 auto 8px; background:#fff; display:grid; place-items:center; overflow:hidden; box-shadow:0 8px 18px rgba(0,0,0,.18); }
-.brand-logo img{ width:100%; height:100%; object-fit:cover; display:block; }
-.brand-org{ margin:0; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.9px; opacity:.78; }
-.brand-title{ margin:4px 0 0; font-size:18px; font-weight:700; letter-spacing:-.3px; }
+.brand-title{ margin:0; font-size:18px; font-weight:700; letter-spacing:-.3px; }
 .header-clear{ position:absolute; top:calc(var(--safe-top) + 12px); right:12px; width:34px; height:34px; border-radius:10px; border:0; display:grid; place-items:center; background:rgba(255,255,255,.14); color:#fff; }
 .header-clear:active{ transform:scale(.94); background:rgba(255,255,255,.28); }
 .header-clear svg{ width:16px; height:16px; }
@@ -101,6 +98,9 @@ body{
 .field .hint{ font-size:11.5px; color:var(--muted); margin-top:-2px; }
 .field .hint strong{ color:var(--primary); }
 
+/* remove uppercase for cpf/cnpj inputs */
+.field input[data-mask="cpfcnpj"]{ text-transform:none; letter-spacing:.5px; }
+
 .alert{ display:none; margin-top:12px; padding:12px 14px; border-radius:12px; font-size:13px; font-weight:600; line-height:1.45; }
 .alert.show{ display:block; animation:stepIn .25s ease; }
 .alert.error{ background:#fef2f2; color:#b91c1c; border:1.5px solid #fecaca; }
@@ -127,19 +127,10 @@ body{
 .add-btn{ display:inline-flex; align-items:center; gap:8px; margin-top:12px; padding:10px 16px; border:1.5px solid var(--primary); background:transparent; color:var(--primary); border-radius:12px; font-family:inherit; font-weight:700; font-size:13px; cursor:pointer; }
 .add-btn:active{ background:var(--primary-light); transform:scale(.97); }
 
-/* Foto */
-.photo-block{
-  margin-top:14px; border:1.5px dashed var(--border); border-radius:14px;
-  padding:16px; background:#fbfcfe; text-align:center;
-}
+.photo-block{ margin-top:14px; border:1.5px dashed var(--border); border-radius:14px; padding:16px; background:#fbfcfe; text-align:center; }
 .photo-block.has-photo{ border-style:solid; background:#fff; padding:12px; }
 .photo-block.invalid{ border-color:var(--danger); background:#fff6f6; }
-.photo-btn{
-  display:inline-flex; align-items:center; gap:10px; height:48px; padding:0 20px;
-  border-radius:12px; background:linear-gradient(135deg,#0d5cab,#083d73); color:#fff;
-  font-weight:700; font-size:14.5px; border:0; cursor:pointer;
-  box-shadow:0 6px 16px rgba(13,92,171,.28);
-}
+.photo-btn{ display:inline-flex; align-items:center; gap:10px; height:48px; padding:0 20px; border-radius:12px; background:linear-gradient(135deg,#0d5cab,#083d73); color:#fff; font-weight:700; font-size:14.5px; border:0; cursor:pointer; box-shadow:0 6px 16px rgba(13,92,171,.28); }
 .photo-btn:active{ transform:scale(.97); }
 .photo-btn svg{ width:20px; height:20px; }
 .photo-block .hint{ margin-top:10px; font-size:11.5px; color:var(--muted); }
@@ -168,34 +159,14 @@ body{
 .toast.success{ background:#0f8a63; }
 .toast.error{ background:#c0392b; }
 
-/* AUTH GATE */
-.auth-gate{
-  position:fixed; inset:0; z-index:9999;
-  background:linear-gradient(135deg,#0d5cab,#083d73);
-  display:flex; align-items:center; justify-content:center;
-  color:#fff; text-align:center; padding:24px;
-}
+.auth-gate{ position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg,#0d5cab,#083d73); display:flex; align-items:center; justify-content:center; color:#fff; text-align:center; padding:24px; }
 .auth-gate.hidden{ display:none; }
-.auth-gate-inner{
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:18px; padding:36px 32px;
-  max-width:440px; width:100%;
-  box-shadow:0 20px 40px rgba(0,0,0,.25);
-}
-.auth-gate .gate-spinner{
-  width:38px; height:38px; border-radius:50%;
-  border:3px solid rgba(255,255,255,.2); border-top-color:#fff;
-  margin:0 auto 18px; animation:gateSpin .8s linear infinite;
-}
+.auth-gate-inner{ background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:18px; padding:36px 32px; max-width:440px; width:100%; box-shadow:0 20px 40px rgba(0,0,0,.25); }
+.auth-gate .gate-spinner{ width:38px; height:38px; border-radius:50%; border:3px solid rgba(255,255,255,.2); border-top-color:#fff; margin:0 auto 18px; animation:gateSpin .8s linear infinite; }
 @keyframes gateSpin{ to{transform:rotate(360deg)} }
 .auth-gate h2{ font-size:17px; color:#fff; margin-bottom:10px; font-weight:700; }
 .auth-gate p{ font-size:13.5px; color:rgba(255,255,255,.85); line-height:1.55; }
-.auth-gate .gate-btn{
-  margin-top:20px; background:rgba(255,255,255,.12); color:#fff;
-  border:1px solid rgba(255,255,255,.22); height:42px; padding:0 20px;
-  border-radius:10px; font-weight:600; font-size:13.5px;
-}
+.auth-gate .gate-btn{ margin-top:20px; background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22); height:42px; padding:0 20px; border-radius:10px; font-weight:600; font-size:13.5px; }
 
 @media (max-width:360px){
   body{ font-size:14px; }
@@ -210,7 +181,6 @@ body{
 </head>
 <body>
 
-<!-- ============ AUTH GATE ============ -->
 <div class="auth-gate" id="authGate">
   <div class="auth-gate-inner">
     <div class="gate-spinner" id="gateSpinner"></div>
@@ -230,8 +200,6 @@ body{
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
   </button>
   <div class="header-inner">
-    <div class="brand-logo"><img src="logo.png" alt="Cadastro Imobiliário"></div>
-    <p class="brand-org">Prefeitura Municipal de Careiro</p>
     <h1 class="brand-title">Cadastro de Unidade Imobiliária</h1>
     <div class="stepper" id="stepper">
       <div class="step" data-step="1"><span class="step-dot">1</span></div>
@@ -272,11 +240,11 @@ body{
           <select id="bairro_imovel" name="bairro_imovel"><option value="">Carregando…</option></select>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="quadra_imovel">Quadra</label>
-            <select id="quadra_imovel" name="quadra_imovel" disabled><option value="">—</option></select>
+          <div class="field"><label for="quadra_imovel">Quadra <span class="req">*</span></label>
+            <input type="text" id="quadra_imovel" name="quadra_imovel" maxlength="3" inputmode="numeric" placeholder="000" disabled>
           </div>
-          <div class="field"><label for="lote_letra">Lote</label>
-            <select id="lote_letra" name="lote_letra" disabled><option value="">—</option></select>
+          <div class="field"><label for="lote_letra">Lote <span class="req">*</span></label>
+            <input type="text" id="lote_letra" name="lote_letra" maxlength="3" inputmode="numeric" placeholder="000" disabled>
           </div>
         </div>
         <div class="field">
@@ -455,23 +423,19 @@ body{
         <p class="sub-head">Construção</p>
         <div class="row row-2">
           <div class="field">
-            <label for="adicional">Adicional</label>
-            <input type="number" step="0.01" id="adicional" name="adicional" placeholder="0,00">
-          </div>
-          <div class="field">
             <label for="num_frentes">N° de Frentes</label>
             <select id="num_frentes" name="num_frentes">
               <option value="">—</option><option>1</option><option>2</option>
               <option>3</option><option>4</option><option>5</option>
             </select>
           </div>
-        </div>
-        <div class="field">
-          <label for="num_andares">N° de Andares</label>
-          <select id="num_andares" name="num_andares">
-            <option value="">—</option><option>1</option><option>2</option>
-            <option>3</option><option>4</option><option>5</option>
-          </select>
+          <div class="field">
+            <label for="num_andares">N° de Andares</label>
+            <select id="num_andares" name="num_andares">
+              <option value="">—</option><option>1</option><option>2</option>
+              <option>3</option><option>4</option><option>5</option>
+            </select>
+          </div>
         </div>
       </div></div>
     </section>
@@ -506,7 +470,9 @@ body{
         </div>
         <div class="field">
           <label for="nomeLogradouro">Nome do Logradouro <span class="req">*</span></label>
-          <input type="text" id="nomeLogradouro" name="nomeLogradouro" maxlength="300" required placeholder="Nome da rua / avenida">
+          <input type="text" id="nomeLogradouro" name="nomeLogradouro" maxlength="300" required placeholder="Digite e escolha uma opção" list="ruas-list" autocomplete="off">
+          <datalist id="ruas-list"></datalist>
+          <div class="hint">Comece a digitar para ver sugestões de ruas cadastradas.</div>
         </div>
         <div class="row row-3">
           <div class="field"><label for="numeroImovel">Número</label>
@@ -519,7 +485,8 @@ body{
         <div class="row row-2">
           <div class="field" id="wrap-bairro">
             <label for="bairro">Bairro</label>
-            <input type="text" id="bairro" name="bairro" maxlength="30">
+            <input type="text" id="bairro" name="bairro" maxlength="30" list="bairros-list" autocomplete="off" placeholder="Digite e escolha um bairro">
+            <datalist id="bairros-list"></datalist>
           </div>
           <div class="field">
             <label for="cep">CEP <span class="req">*</span></label>
@@ -561,7 +528,7 @@ body{
     <!-- ============ ETAPA 5 — TITULARES ============ -->
     <section class="step-panel" data-step="5">
       <div class="card"><div class="card-body">
-        <p class="sub-note">Se CPF/CNPJ ou nome forem informados, os demais campos do titular passam a ser obrigatórios.</p>
+        <p class="sub-note">Se CPF/CNPJ ou nome forem informados, os demais campos do titular passam a ser obrigatórios. A soma das participações deve resultar em 100%.</p>
         <div id="titulares"></div>
         <button type="button" class="add-btn" data-add="titulares">+ Adicionar titular</button>
       </div></div>
@@ -712,9 +679,6 @@ const auth = getAuth(app);
 
 const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
 
-/* ============================================================
-   ENVIO PARA A NUVEM (Worker)
-   ============================================================ */
 async function enviarFichaViaWorker(payload){
   if(!auth.currentUser){
     const e = new Error('sem_sessao');
@@ -747,9 +711,6 @@ async function enviarFichaViaWorker(payload){
   return data;
 }
 
-/* ============================================================
-   AUTH GATE
-   ============================================================ */
 const FORM_ROLES = ['funcionario', 'admin', 'superadmin'];
 
 function gateShow(opts){
@@ -818,9 +779,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* ============================================================
-   FORMULÁRIO
-   ============================================================ */
 function initFormulario(){
 (function () {
   'use strict';
@@ -834,30 +792,12 @@ function initFormulario(){
     'CENTRO','NOVA ESPERANÇA','NOVO HORIZONTE','DA PAZ',
     'VISTA ALEGRE','SEBASTIÃO BORGES','DISTRITO','NOVO'
   ];
-  const QUADRAS_NUMS_PADRAO = ['001','002','003','004','005','006','007','008','009','010'];
-  const LOTES_NUMS_PADRAO   = ['001','002','003','004','005','006','007','008','009','010'];
+  const RUAS_PADRAO = ['VITÓRIA','PRECIOSA'];
 
-  function gerarListasPadrao(){
-    const bairros = BAIRROS_PADRAO.map((nome, i) => ({
-      label: nome, numero: String(i + 1).padStart(3, '0'), ativo: true
-    }));
-    const quadras = [];
-    BAIRROS_PADRAO.forEach(b => {
-      QUADRAS_NUMS_PADRAO.forEach(q => quadras.push({ bairro: b, numero: q }));
-    });
-    const lotes = [];
-    BAIRROS_PADRAO.forEach(b => {
-      QUADRAS_NUMS_PADRAO.forEach(q => {
-        LOTES_NUMS_PADRAO.forEach(l => lotes.push({ bairro: b, quadra: q, numero: l }));
-      });
-    });
-    return { bairros, quadras, lotes };
-  }
-  const PADRAO = gerarListasPadrao();
-
-  let LISTAS  = { bairros: PADRAO.bairros, ruas: [] };
-  let QUADRAS = PADRAO.quadras.slice();
-  let LOTES   = PADRAO.lotes.slice();
+  let LISTAS  = {
+    bairros: BAIRROS_PADRAO.map((nome,i)=>({label:nome, numero:String(i+1).padStart(3,'0'), ativo:true})),
+    ruas: RUAS_PADRAO.slice()
+  };
 
   /* ---------- HELPERS ---------- */
   function norm(s){ return String(s == null ? '' : s).trim(); }
@@ -872,6 +812,7 @@ function initFormulario(){
     if(v.indexOf(',') >= 0) return Number(v.replace(/\./g,'').replace(',','.')) || 0;
     return Number(v) || 0;
   }
+  function round4(n){ return Math.round(n * 10000) / 10000; }
 
   function getBairros(){
     return (Array.isArray(LISTAS.bairros) ? LISTAS.bairros : [])
@@ -881,16 +822,8 @@ function initFormulario(){
         numero: String(o.numero != null ? o.numero : (i+1)).padStart(3,'0')
       }));
   }
-  function quadrasDoBairro(bairro){
-    return QUADRAS.filter(q => q.bairro === bairro)
-      .sort((a,b) => String(a.numero).localeCompare(String(b.numero)));
-  }
-  function lotesDaQuadra(bairro, quadra){
-    return LOTES.filter(l => l.bairro === bairro && l.quadra === quadra)
-      .sort((a,b) => String(a.numero).localeCompare(String(b.numero)));
-  }
 
-  /* ---------- SELECTS BAIRRO/QUADRA/LOTE ---------- */
+  /* ---------- SELECT BAIRRO (ETAPA 1) ---------- */
   function popularBairros(){
     const sel = document.getElementById('bairro_imovel');
     if(!sel) return;
@@ -900,55 +833,63 @@ function initFormulario(){
       list.map(b => '<option value="' + esc(b.nome) + '">' + esc(b.numero) + ' - ' + esc(b.nome) + '</option>').join('');
     if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
   }
-  function atualizarQuadras(){
-    const bairro = document.getElementById('bairro_imovel').value;
-    const selQ = document.getElementById('quadra_imovel');
-    const selL = document.getElementById('lote_letra');
-    if(!selQ || !selL) return;
 
-    selL.innerHTML = '<option value="">—</option>';
-    selL.value = '';
-    selL.disabled = true;
-
-    selQ.innerHTML = '<option value="">—</option>';
-    selQ.value = '';
-    selQ.disabled = !bairro;
-
-    if(!bairro){ gerarInscricao(); return; }
-
-    const lista = quadrasDoBairro(bairro);
-    selQ.innerHTML = '<option value="">' + (lista.length ? 'Selecione' : 'Nenhuma quadra') + '</option>' +
-      lista.map(q => '<option value="' + esc(q.numero) + '">' + esc(q.numero) + '</option>').join('');
-    gerarInscricao();
+  /* ---------- DATALISTS (ETAPA 4) ---------- */
+  function popularRuas(){
+    const dl = document.getElementById('ruas-list');
+    if(!dl) return;
+    const fromListas = (LISTAS.ruas || []).map(r => {
+      if(typeof r === 'string') return r;
+      return r.label || r.nome || '';
+    }).filter(Boolean);
+    const nomes = [...new Set([...RUAS_PADRAO, ...fromListas])]
+      .map(n => String(n).toUpperCase().trim())
+      .filter(Boolean);
+    dl.innerHTML = nomes.map(n => '<option value="' + esc(n) + '"></option>').join('');
   }
-  function atualizarLotes(){
-    const bairro = document.getElementById('bairro_imovel').value;
-    const quadra = document.getElementById('quadra_imovel').value;
-    const selL = document.getElementById('lote_letra');
-    if(!selL) return;
-
-    selL.innerHTML = '<option value="">—</option>';
-    selL.value = '';
-    selL.disabled = !quadra;
-
-    if(!bairro || !quadra){ gerarInscricao(); return; }
-
-    const lista = lotesDaQuadra(bairro, quadra);
-    selL.innerHTML = '<option value="">' + (lista.length ? 'Selecione' : 'Nenhum lote') + '</option>' +
-      lista.map(l => '<option value="' + esc(l.numero) + '">' + esc(l.numero) + '</option>').join('');
-    gerarInscricao();
+  function popularBairrosDatalist(){
+    const dl = document.getElementById('bairros-list');
+    if(!dl) return;
+    const bairros = getBairros().map(b => String(b.nome).toUpperCase()).filter(Boolean);
+    dl.innerHTML = bairros.map(n => '<option value="' + esc(n) + '"></option>').join('');
   }
+
+  /* ---------- QUADRA / LOTE (3 DÍGITOS OBRIGATÓRIOS) ---------- */
   function gerarInscricao(){
     const bairro = document.getElementById('bairro_imovel').value;
-    const quadra = document.getElementById('quadra_imovel').value;
-    const lote   = document.getElementById('lote_letra').value;
+    const quadra = document.getElementById('quadra_imovel').value.trim();
+    const lote   = document.getElementById('lote_letra').value.trim();
     const insc   = document.getElementById('inscricaoImobiliaria');
     if(!insc) return;
     if(!bairro || !quadra || !lote){ insc.value = ''; return; }
+    if(!/^\d{3}$/.test(quadra) || !/^\d{3}$/.test(lote)){ insc.value = ''; return; }
     const info = getBairros().find(x => x.nome === bairro);
     const b = (info && info.numero ? String(info.numero) : '000').padStart(3,'0');
-    insc.value = '00.00.' + String(quadra).padStart(3,'0') + '.' + String(lote).padStart(3,'0') + '.' + b;
+    insc.value = '00.00.' + quadra + '.' + lote + '.' + b;
   }
+
+  function syncLocalizacao(){
+    const bairro = document.getElementById('bairro_imovel').value;
+    const qEl = document.getElementById('quadra_imovel');
+    const lEl = document.getElementById('lote_letra');
+    const hasBairro = !!bairro;
+    qEl.disabled = !hasBairro;
+    lEl.disabled = !hasBairro;
+    if(!hasBairro){
+      qEl.value = '';
+      lEl.value = '';
+    }
+    gerarInscricao();
+  }
+
+  ['quadra_imovel','lote_letra'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', function(){
+      this.value = this.value.replace(/\D/g, '').slice(0, 3);
+      gerarInscricao();
+    });
+  });
 
   /* ---------- CÁLCULO DE ÁREAS ---------- */
   function calcAreas(){
@@ -966,16 +907,225 @@ function initFormulario(){
     if(aeEl) aeEl.value = ae > 0 ? ae.toFixed(2) : '';
   }
 
-  /* ---------- LISTAS (titulares/ITBI) ---------- */
-  const titularTpl = i => `<div class="list-item" data-idx="${i}">
+  /* ============================================================
+     VALIDAÇÃO DE CPF / CNPJ
+     ============================================================ */
+  function validarCPF(cpf){
+    cpf = String(cpf).replace(/\D/g, '');
+    if(cpf.length !== 11) return false;
+    if(/^(\d)\1{10}$/.test(cpf)) return false;
+    let sum = 0;
+    for(let i = 0; i < 9; i++) sum += parseInt(cpf[i], 10) * (10 - i);
+    let d1 = 11 - (sum % 11);
+    if(d1 >= 10) d1 = 0;
+    if(parseInt(cpf[9], 10) !== d1) return false;
+    sum = 0;
+    for(let i = 0; i < 10; i++) sum += parseInt(cpf[i], 10) * (11 - i);
+    let d2 = 11 - (sum % 11);
+    if(d2 >= 10) d2 = 0;
+    if(parseInt(cpf[10], 10) !== d2) return false;
+    return true;
+  }
+  function validarCNPJ(cnpj){
+    cnpj = String(cnpj).replace(/\D/g, '');
+    if(cnpj.length !== 14) return false;
+    if(/^(\d)\1{13}$/.test(cnpj)) return false;
+    function calc(base){
+      let sum = 0, pos = base.length - 7;
+      for(let i = 0; i < base.length; i++){
+        sum += parseInt(base[i], 10) * pos--;
+        if(pos < 2) pos = 9;
+      }
+      const r = sum % 11;
+      return r < 2 ? 0 : 11 - r;
+    }
+    const d1 = calc(cnpj.slice(0, 12));
+    if(parseInt(cnpj[12], 10) !== d1) return false;
+    const d2 = calc(cnpj.slice(0, 13));
+    if(parseInt(cnpj[13], 10) !== d2) return false;
+    return true;
+  }
+  function validarCPFouCNPJ(v){
+    const d = String(v || '').replace(/\D/g, '');
+    if(!d) return true;
+    if(d.length === 11) return validarCPF(d);
+    if(d.length === 14) return validarCNPJ(d);
+    return false;
+  }
+
+  /* ---------- MÁSCARA CPF/CNPJ ---------- */
+  function formatCpfCnpj(v){
+    const d = String(v == null ? '' : v).replace(/\D/g, '').slice(0, 14);
+    if(!d) return '';
+    if(d.length <= 11){
+      // CPF: 000.000.000-00
+      let out = '';
+      for(let i = 0; i < d.length; i++){
+        if(i === 3 || i === 6) out += '.';
+        if(i === 9) out += '-';
+        out += d[i];
+      }
+      return out;
+    }
+    // CNPJ: 00.000.000/0000-00
+    let out = '';
+    for(let i = 0; i < d.length; i++){
+      if(i === 2 || i === 5) out += '.';
+      if(i === 8) out += '/';
+      if(i === 12) out += '-';
+      out += d[i];
+    }
+    return out;
+  }
+
+  /* ---------- CPF/CNPJ COM MÁSCARA + VALIDAÇÃO EM TEMPO REAL ---------- */
+  function setupCpfCnpjInput(inp){
+    if(!inp || inp.dataset.cpfSetup === '1') return;
+    inp.dataset.cpfSetup = '1';
+    inp.setAttribute('inputmode', 'numeric');
+    inp.setAttribute('maxlength', '18'); // CNPJ formatado: 18 caracteres
+    inp.setAttribute('autocomplete', 'off');
+
+    function aplicarFeedback(){
+      const wrap = inp.closest('.field') || inp.closest('.edit-item');
+      if(!wrap) return;
+      wrap.classList.remove('invalid', 'valid');
+      const v = inp.value.replace(/\D/g, '');
+      if(!v) return;
+      if(v.length === 11){
+        if(validarCPF(v)) wrap.classList.add('valid');
+        else wrap.classList.add('invalid');
+      } else if(v.length === 14){
+        if(validarCNPJ(v)) wrap.classList.add('valid');
+        else wrap.classList.add('invalid');
+      }
+    }
+
+    inp.addEventListener('input', function(){
+      const formatted = formatCpfCnpj(inp.value);
+      if(inp.value !== formatted) inp.value = formatted;
+      aplicarFeedback();
+    });
+
+    inp.addEventListener('blur', aplicarFeedback);
+
+    inp.addEventListener('paste', function(){
+      setTimeout(function(){
+        inp.value = formatCpfCnpj(inp.value);
+        aplicarFeedback();
+      }, 0);
+    });
+
+    // Formata valor inicial se já houver
+    if(inp.value) inp.value = formatCpfCnpj(inp.value);
+  }
+
+  /* ============================================================
+     PORCENTAGEM DE PARTICIPAÇÃO DOS TITULARES
+     ============================================================ */
+  function getPercInputs(){
+    return [...document.querySelectorAll('#titulares .list-item [name=percTitular]')];
+  }
+
+  function recalcPerc(sourceInput){
+    const inputs = getPercInputs();
+    const n = inputs.length;
+    if(n === 0) return;
+
+    inputs.forEach(inp => {
+      const wrap = inp.closest('.field');
+      if(wrap) wrap.classList.remove('invalid');
+    });
+
+    if(n === 1){
+      inputs[0].readOnly = true;
+      inputs[0].value = '100';
+      delete inputs[0].dataset.locked;
+      return;
+    }
+
+    inputs.forEach(inp => { inp.readOnly = false; });
+
+    let sumLocked = 0;
+    let freeCount = 0;
+    inputs.forEach(inp => {
+      if(inp.dataset.locked === '1'){
+        const v = parseFloat(String(inp.value).replace(',', '.'));
+        if(Number.isFinite(v)) sumLocked += v;
+      } else {
+        freeCount++;
+      }
+    });
+
+    const remaining = 100 - sumLocked;
+
+    if(remaining < -0.001){
+      if(sourceInput){
+        const wrap = sourceInput.closest('.field');
+        if(wrap) wrap.classList.add('invalid');
+      }
+      return;
+    }
+
+    if(freeCount > 0){
+      const perFree = round4(remaining / freeCount);
+      inputs.forEach(inp => {
+        if(inp.dataset.locked !== '1'){
+          inp.value = perFree;
+        }
+      });
+    } else {
+      if(Math.abs(sumLocked - 100) > 0.01 && sourceInput){
+        const wrap = sourceInput.closest('.field');
+        if(wrap) wrap.classList.add('invalid');
+      }
+    }
+  }
+
+  document.getElementById('titulares').addEventListener('input', function(e){
+    if(!e.target || e.target.name !== 'percTitular') return;
+    const inp = e.target;
+    const val = String(inp.value || '').trim();
+
+    if(val === ''){
+      delete inp.dataset.locked;
+    } else {
+      inp.dataset.locked = '1';
+      let v = parseFloat(val.replace(',', '.'));
+      if(Number.isFinite(v)){
+        v = Math.max(0, Math.min(100, v));
+        inp.value = round4(v);
+      }
+    }
+    recalcPerc(inp);
+  });
+
+  document.getElementById('titulares').addEventListener('focusin', function(e){
+    if(e.target && e.target.name === 'percTitular'){
+      setTimeout(function(){ try { e.target.select(); } catch(err){} }, 0);
+    }
+  });
+
+  function atualizarTitularesUI(){
+    const rows = [...document.querySelectorAll('#titulares .list-item')];
+    const n = rows.length;
+    rows.forEach(r => {
+      const btn = r.querySelector('.rm');
+      if(btn) btn.style.display = n <= 1 ? 'none' : '';
+    });
+    recalcPerc(null);
+  }
+
+  /* ---------- TEMPLATES ---------- */
+  const titularTpl = () => `<div class="list-item">
     <button type="button" class="rm">remover</button>
     <div class="field"><label>CPF/CNPJ</label>
-      <input name="niTitular" inputmode="numeric"></div>
+      <input name="niTitular" data-mask="cpfcnpj" maxlength="18" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00"></div>
     <div class="field"><label>Nome</label>
-      <input name="nomeTitular" maxlength="300"></div>
+      <input name="nomeTitular" maxlength="100"></div>
     <div class="row row-2">
       <div class="field"><label>% Participação</label>
-        <input type="number" step="0.0001" name="percTitular"></div>
+        <input type="number" step="0.0001" min="0" max="100" name="percTitular"></div>
       <div class="field"><label>Data de Aquisição</label>
         <input type="date" name="dtAquisicaoTitular"></div>
     </div>
@@ -1005,7 +1155,7 @@ function initFormulario(){
     <div class="field"><label>Nome</label>
       <input name="nomeTransmitenteITBI" maxlength="300"></div>
     <div class="field"><label>CPF/CNPJ</label>
-      <input name="idTransmitenteITBI" inputmode="numeric"></div>
+      <input name="idTransmitenteITBI" data-mask="cpfcnpj" maxlength="18" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00"></div>
   </div>`;
 
   const adqTpl = () => `<div class="list-item">
@@ -1013,7 +1163,7 @@ function initFormulario(){
     <div class="field"><label>Nome</label>
       <input name="nomeAdquirenteITBI" maxlength="300"></div>
     <div class="field"><label>CPF/CNPJ</label>
-      <input name="idAdquirenteITBI" inputmode="numeric"></div>
+      <input name="idAdquirenteITBI" data-mask="cpfcnpj" maxlength="18" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00"></div>
     <div class="field"><label>% Adquirido</label>
       <input type="number" step="0.000001" name="percTransacAdquirenteITBI"></div>
   </div>`;
@@ -1023,13 +1173,36 @@ function initFormulario(){
     transmitentes: { el: document.getElementById('transmitentes'),  tpl: transTpl   },
     adquirentes:   { el: document.getElementById('adquirentes'),    tpl: adqTpl     }
   };
+
+  function removerRow(key, node){
+    node.remove();
+    if(key === 'titulares'){
+      const restantes = [...lists[key].el.querySelectorAll('.list-item')];
+      if(restantes.length === 0){
+        addRow('titulares');
+        return;
+      }
+      atualizarTitularesUI();
+    }
+  }
+
   function addRow(key){
     const div = document.createElement('div');
     div.innerHTML = lists[key].tpl();
     const node = div.firstElementChild;
-    node.querySelector('.rm').onclick = () => node.remove();
+
+    const rm = node.querySelector('.rm');
+    if(rm) rm.onclick = () => removerRow(key, node);
+
+    node.querySelectorAll('[data-mask="cpfcnpj"]').forEach(setupCpfCnpjInput);
+
     lists[key].el.appendChild(node);
+
+    if(key === 'titulares'){
+      atualizarTitularesUI();
+    }
   }
+
   document.querySelectorAll('[data-add]').forEach(b => {
     b.onclick = () => addRow(b.dataset.add);
   });
@@ -1409,7 +1582,6 @@ function initFormulario(){
     const invalidos = [];
     panel.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
 
-    /* 1) Campos com atributo required (HTML) */
     panel.querySelectorAll('[required]').forEach(el => {
       if(el.disabled) return;
       const wrap = el.closest('.field');
@@ -1426,9 +1598,16 @@ function initFormulario(){
     const q = n => form.querySelector('[name="' + n + '"]');
 
     if(stepNum === 1){
-      if(!g('bairro_imovel')) invalidos.push({ el: q('bairro_imovel'), msg: 'Selecione o bairro (localização cadastral).' });
-      if(!g('quadra_imovel')) invalidos.push({ el: q('quadra_imovel'), msg: 'Selecione a quadra (localização cadastral).' });
-      if(!g('lote_letra'))    invalidos.push({ el: q('lote_letra'),    msg: 'Selecione o lote (localização cadastral).' });
+      const bairro = g('bairro_imovel');
+      const quadra = String(g('quadra_imovel') || '').trim();
+      const lote   = String(g('lote_letra') || '').trim();
+
+      if(!bairro) invalidos.push({ el: q('bairro_imovel'), msg: 'Selecione o bairro (localização cadastral).' });
+      if(!quadra) invalidos.push({ el: q('quadra_imovel'), msg: 'Informe a quadra (3 dígitos).' });
+      else if(!/^\d{3}$/.test(quadra)) invalidos.push({ el: q('quadra_imovel'), msg: 'Quadra deve ter exatamente 3 dígitos.' });
+      if(!lote) invalidos.push({ el: q('lote_letra'), msg: 'Informe o lote (3 dígitos).' });
+      else if(!/^\d{3}$/.test(lote)) invalidos.push({ el: q('lote_letra'), msg: 'Lote deve ter exatamente 3 dígitos.' });
+
       const tipo = g('tipoImovel');
       if(!tipo) invalidos.push({ el: q('tipoImovel'), msg: 'Selecione o tipo de imóvel.' });
       if(tipo === '2' && !g('tpArquitetonico')) invalidos.push({ el: q('tpArquitetonico'), msg: 'Tipo arquitetônico é obrigatório para imóvel predial.' });
@@ -1462,20 +1641,58 @@ function initFormulario(){
     }
     if(stepNum === 5){
       const rows = [...document.querySelectorAll('#titulares .list-item')];
-      const identificados = [];
       rows.forEach((r, i) => {
-        const ni = r.querySelector('[name=niTitular]').value;
-        const nome = r.querySelector('[name=nomeTitular]').value;
-        if(ni || nome){
-          identificados.push(r);
-          ['percTitular','dtAquisicaoTitular','tipoTitularidade','docTitularidade'].forEach(f => {
-            const inp = r.querySelector('[name=' + f + ']');
-            if(inp && !inp.value) invalidos.push({ el: inp, msg: 'Titular ' + (i+1) + ': preencha ' + f + '.' });
-          });
+        const niEl  = r.querySelector('[name=niTitular]');
+        const nomeEl = r.querySelector('[name=nomeTitular]');
+        const ni = niEl.value.trim();
+        const nome = nomeEl.value.trim();
+        if(!ni && !nome) return;
+
+        if(ni && !validarCPFouCNPJ(ni)){
+          const wrap = niEl.closest('.field');
+          if(wrap) wrap.classList.add('invalid');
+          invalidos.push({ el: niEl, msg: 'Titular ' + (i+1) + ': CPF/CNPJ inválido.' });
         }
+
+        ['percTitular','dtAquisicaoTitular','tipoTitularidade','docTitularidade'].forEach(f => {
+          const inp = r.querySelector('[name=' + f + ']');
+          if(inp && !String(inp.value).trim()){
+            invalidos.push({ el: inp, msg: 'Titular ' + (i+1) + ': preencha todos os campos.' });
+          }
+        });
       });
+
+      if(rows.length >= 2){
+        let soma = 0;
+        rows.forEach(r => {
+          const v = r.querySelector('[name=percTitular]').value;
+          soma += parseFloat(String(v).replace(',', '.')) || 0;
+        });
+        if(Math.abs(soma - 100) > 0.01){
+          invalidos.push({ el: rows[0].querySelector('[name=percTitular]'), msg: 'A soma das participações deve ser 100% (atual: ' + round4(soma) + '%).' });
+        }
+      }
     }
     if(stepNum === 7){
+      document.querySelectorAll('#transmitentes .list-item').forEach((r, i) => {
+        const inp = r.querySelector('[name=idTransmitenteITBI]');
+        const v = inp.value.trim();
+        if(v && !validarCPFouCNPJ(v)){
+          const wrap = inp.closest('.field');
+          if(wrap) wrap.classList.add('invalid');
+          invalidos.push({ el: inp, msg: 'Transmitente ' + (i+1) + ': CPF/CNPJ inválido.' });
+        }
+      });
+      document.querySelectorAll('#adquirentes .list-item').forEach((r, i) => {
+        const inp = r.querySelector('[name=idAdquirenteITBI]');
+        const v = inp.value.trim();
+        if(v && !validarCPFouCNPJ(v)){
+          const wrap = inp.closest('.field');
+          if(wrap) wrap.classList.add('invalid');
+          invalidos.push({ el: inp, msg: 'Adquirente ' + (i+1) + ': CPF/CNPJ inválido.' });
+        }
+      });
+
       const itbiFields = ['baseCalculITBI','valorRefITBI','dtTransacaoITBI','tpTransacaoITBI','percTransacionadoITBI'];
       const anyItbi = itbiFields.some(k => g(k));
       if(anyItbi){
@@ -1501,7 +1718,7 @@ function initFormulario(){
     return s ? s : null;
   }
 
-  /* ---------- COLETA / LIMPEZA ---------- */
+  /* ---------- COLETA ---------- */
   function collect(){
     const up = v => String(v == null ? '' : v).toUpperCase();
     const g  = n => {
@@ -1510,6 +1727,7 @@ function initFormulario(){
       return el.type === 'checkbox' ? el.checked : el.value;
     };
     const cepOnlyDigits = String(g('cep') || '').replace(/\D/g,'');
+    const onlyDigits = v => String(v == null ? '' : v).replace(/\D/g, '');
 
     const dadosImovel = {};
 
@@ -1550,7 +1768,7 @@ function initFormulario(){
     };
 
     dadosImovel.Titular = [...document.querySelectorAll('#titulares .list-item')].map(r => ({
-      niTitular:            up(r.querySelector('[name=niTitular]').value),
+      niTitular:            onlyDigits(r.querySelector('[name=niTitular]').value),
       nomeTitular:          up(r.querySelector('[name=nomeTitular]').value),
       percTitularidade:     toNum(r.querySelector('[name=percTitular]').value),
       dtAquisicaoTitular:   toDateOrNull(r.querySelector('[name=dtAquisicaoTitular]').value),
@@ -1583,17 +1801,16 @@ function initFormulario(){
       percTransacionadoITBI:   toNum(g('percTransacionadoITBI')),
       TransmitenteITBI: [...document.querySelectorAll('#transmitentes .list-item')].map(r => ({
         nomeTransmitenteITBI: up(r.querySelector('[name=nomeTransmitenteITBI]').value),
-        idTransmitenteITBI:   up(r.querySelector('[name=idTransmitenteITBI]').value)
+        idTransmitenteITBI:   onlyDigits(r.querySelector('[name=idTransmitenteITBI]').value)
       })),
       AdquirenteITBI: [...document.querySelectorAll('#adquirentes .list-item')].map(r => ({
         nomeAdquirenteITBI:          up(r.querySelector('[name=nomeAdquirenteITBI]').value),
-        idAdquirenteITBI:            up(r.querySelector('[name=idAdquirenteITBI]').value),
+        idAdquirenteITBI:            onlyDigits(r.querySelector('[name=idAdquirenteITBI]').value),
         percTransacAdquirenteITBI:   toNum(r.querySelector('[name=percTransacAdquirenteITBI]').value)
       })),
       valorRefITBI:            toNum(g('valorRefITBI'))
     };
 
-    /* ---- Campos fora do modelo (.txt) → coleção separada ---- */
     dadosImovel.DadosComplementares = {
       localizacaoCadastral: {
         bairro: up(g('bairro_imovel')),
@@ -1613,7 +1830,6 @@ function initFormulario(){
         ladoEsquerdo: toNum(g('lado_esq_edif'))
       },
       construcao: {
-        adicional:  toNum(g('adicional')),
         numFrentes: toInt(g('num_frentes')),
         numAndares: toInt(g('num_andares'))
       },
@@ -1643,7 +1859,9 @@ function initFormulario(){
     addRow('titulares'); addRow('transmitentes'); addRow('adquirentes');
 
     popularBairros();
-    atualizarQuadras();
+    popularRuas();
+    popularBairrosDatalist();
+    syncLocalizacao();
     calcAreas();
     syncTipo();
     syncBairro();
@@ -1710,12 +1928,10 @@ function initFormulario(){
 
   /* ---------- EVENTOS ESPECÍFICOS ---------- */
   document.getElementById('bairro_imovel').addEventListener('change', function(){
-    atualizarQuadras();
+    syncLocalizacao();
     const b = document.querySelector('[name=bairro]');
     if(b && !b.value) b.value = this.value.toUpperCase();
   });
-  document.getElementById('quadra_imovel').addEventListener('change', atualizarLotes);
-  document.getElementById('lote_letra').addEventListener('change', gerarInscricao);
 
   ['frente_terreno','fundo_terreno','frente_edif','fundo_edif'].forEach(id => {
     const el = document.getElementById(id);
@@ -1726,36 +1942,31 @@ function initFormulario(){
   onSnapshot(doc(db,'config','listas'), snap => {
     const data = snap.exists() ? (snap.data().grupos || {}) : {};
     const bairrosFs = Array.isArray(data.bairros) ? data.bairros : [];
+    const ruasFs = Array.isArray(data.ruas) ? data.ruas : [];
     LISTAS = {
-      bairros: bairrosFs.length ? bairrosFs : PADRAO.bairros,
-      ruas: Array.isArray(data.ruas) ? data.ruas : []
+      bairros: bairrosFs.length ? bairrosFs : BAIRROS_PADRAO.map((nome,i)=>({label:nome, numero:String(i+1).padStart(3,'0'), ativo:true})),
+      ruas: ruasFs.length ? ruasFs : RUAS_PADRAO.slice()
     };
     popularBairros();
-    atualizarQuadras();
+    popularRuas();
+    popularBairrosDatalist();
   }, err => {
     console.warn('[listas] falha:', err);
     popularBairros();
+    popularRuas();
+    popularBairrosDatalist();
   });
-
-  onSnapshot(doc(db,'config','quadras'), snap => {
-    const items = (snap.exists() && Array.isArray(snap.data().items)) ? snap.data().items : [];
-    QUADRAS = items.length ? items : PADRAO.quadras.slice();
-    atualizarQuadras();
-  }, err => { console.warn('[quadras] falha:', err); });
-
-  onSnapshot(doc(db,'config','lotes'), snap => {
-    const items = (snap.exists() && Array.isArray(snap.data().items)) ? snap.data().items : [];
-    LOTES = items.length ? items : PADRAO.lotes.slice();
-    atualizarLotes();
-  }, err => { console.warn('[lotes] falha:', err); });
 
   /* ---------- INIT ---------- */
   renderStep();
   calcAreas();
   popularBairros();
-  atualizarQuadras();
+  popularRuas();
+  popularBairrosDatalist();
+  syncLocalizacao();
   updateProgress();
   renderFotoUI();
+  atualizarTitularesUI();
 
 })();
 }
