@@ -285,14 +285,42 @@ async function ensureUserDoc(user){
 }
 
 /* ============================================================
-   REDIRECIONA SE JÁ LOGADO
+   REDIRECIONA SE JÁ LOGADO — roteamento por role
+   ------------------------------------------------------------
+   • funcionario        → formulario.html  (Painel de Formulários)
+   • admin / superadmin → painel.html      (Painel Administrativo)
+   • user (pendente)    → painel.html      (mostra "Acesso pendente")
+
+   Antes, QUALQUER usuário autenticado caía em painel.html, e o
+   painel rejeitava 'funcionario' com "Painel incorreto" — gerando
+   um loop de login → painel errado → logout. Agora o roteamento
+   é feito aqui, com base na role lida no Firestore.
    ============================================================ */
 let redirecting = false;
+
 onAuthStateChanged(auth, async function(user){
   if(user && !redirecting){
     redirecting = true;
+
     try { await ensureUserDoc(user); }
     catch(e){ console.warn('[ensureUserDoc] falhou:', e.code, e.message); }
+
+    let role = 'user';
+    try {
+      const snap = await getDoc(doc(db, 'usuarios', user.uid));
+      if(snap.exists()) role = String(snap.data().role || 'user').toLowerCase();
+    } catch(e){
+      console.warn('[role] falhou:', e);
+    }
+
+    // Funcionário vai para o app do formulário (Painel de Formulários).
+    if(role === 'funcionario'){
+      window.location.href = 'formulario.html';
+      return;
+    }
+
+    // admin, superadmin e 'user' pendente vão para o painel.
+    // ('user' pendente é tratado lá com a tela "Acesso pendente".)
     window.location.href = 'painel.html';
   }
 });
@@ -324,6 +352,9 @@ document.getElementById('formLogin').addEventListener('submit', async function(e
   if(!email || !senha){ showError(errEl, null, { message:'Preencha e-mail e senha.' }); return; }
   setLoading(btn, true, 'Entrando…');
   try {
+    // Zera a flag antes de autenticar para garantir que o
+    // onAuthStateChanged dispare a rota correta.
+    redirecting = false;
     await signInWithEmailAndPassword(auth, email, senha);
     // onAuthStateChanged redireciona
   } catch(err){
@@ -351,6 +382,7 @@ document.getElementById('formSignup').addEventListener('submit', async function(
   if(s1 !== s2){ showError(errEl, null, { message:'As senhas não coincidem.' }); return; }
   setLoading(btn, true, 'Criando conta…');
   try {
+    redirecting = false;
     const cred = await createUserWithEmailAndPassword(auth, email, s1);
     try { await updateProfile(cred.user, { displayName: nome }); } catch(e){ console.warn(e); }
     try { await ensureUserDoc(cred.user); }

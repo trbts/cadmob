@@ -336,6 +336,11 @@ async function rotearAposLogin(user){
   document.getElementById('panel-login').classList.add('active');
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === 'login'));
   try { await signOut(auth); } catch(e){}
+
+  // IMPORTANTE: libera a flag para permitir novo login em seguida.
+  // Sem isso, o usuário que foi deslogado por "pendente" não consegue
+  // mais disparar o onAuthStateChanged numa próxima tentativa.
+  redirecting = false;
 }
 
 /* ---------- Roteamento automático se já estiver logado ---------- */
@@ -372,6 +377,9 @@ document.getElementById('formLogin').addEventListener('submit', async e => {
   if(!email || !senha){ showError(errEl, null, { message:'Preencha e-mail e senha.' }, 'Dados incompletos'); return; }
   setLoading(btn, true, 'Entrando…');
   try {
+    // Zera a flag antes de autenticar, para garantir que o
+    // onAuthStateChanged dispare a rota numa nova tentativa de login.
+    redirecting = false;
     await signInWithEmailAndPassword(auth, email, senha);
     // onAuthStateChanged cuida do roteamento
   } catch(err){
@@ -397,6 +405,7 @@ document.getElementById('formSignup').addEventListener('submit', async e => {
   if(s1 !== s2){ showError(errEl, null, { message:'As senhas não coincidem.' }, 'Senhas diferentes'); return; }
   setLoading(btn, true, 'Criando conta…');
   try {
+    redirecting = false;
     const cred = await createUserWithEmailAndPassword(auth, email, s1);
     try { await updateProfile(cred.user, { displayName: nome }); } catch(e){}
     try { await ensureUserDoc(cred.user); } catch(e){ console.warn(e); }

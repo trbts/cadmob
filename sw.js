@@ -21,7 +21,11 @@
  * ------------------------------------------------------------------
  */
 
-const CACHE_NAME = 'cadmob-form-v2';
+// v3: bumpada junto com as mudanças no fluxo de autenticação
+// (formulario-login.html + formulario.html). Ao subir uma nova
+// versão do app, basta incrementar este número para forçar a
+// invalidação de todo o cache antigo no activate.
+const CACHE_NAME = 'cadmob-form-v3';
 
 const APP_SHELL = [
   './index.html',
