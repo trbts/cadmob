@@ -614,7 +614,7 @@ body{
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 7 — ITBI + EMISSÃO ============ -->
+    <!-- ============ ETAPA 7 — ITBI ============ -->
     <section class="step-panel" data-step="7">
       <div class="card"><div class="card-body">
         <p class="sub-note">ITBI é opcional. Se preencher um campo, todos os demais passam a ser obrigatórios.</p>
@@ -664,12 +664,6 @@ body{
         <p class="sub-head">Adquirentes</p>
         <div id="adquirentes"></div>
         <button type="button" class="add-btn" data-add="adquirentes">+ Adicionar adquirente</button>
-
-        <p class="sub-head">Emissão</p>
-        <div class="field">
-          <label for="data_registro">Data de Emissão</label>
-          <input type="date" id="data_registro" name="data_registro" required readonly>
-        </div>
       </div></div>
     </section>
 
@@ -1074,14 +1068,6 @@ function initFormulario(){
     });
   }
 
-  /* ---------- DATA EMISSÃO ---------- */
-  function preencherDataEmissao(){
-    const dr = document.getElementById('data_registro'); if(!dr) return;
-    const hoje = new Date();
-    dr.value = new Date(hoje.getTime() - hoje.getTimezoneOffset()*60000).toISOString().slice(0,10);
-  }
-  preencherDataEmissao();
-
   /* ============================================================
      FOTO
      ============================================================ */
@@ -1330,7 +1316,7 @@ function initFormulario(){
     'Endereço e Foto',
     'Titulares',
     'Registro e Cartório',
-    'ITBI e Emissão'
+    'ITBI'
   ];
   let currentStep = 1;
   const completedSteps = new Set();
@@ -1423,6 +1409,7 @@ function initFormulario(){
     const invalidos = [];
     panel.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
 
+    /* 1) Campos com atributo required (HTML) */
     panel.querySelectorAll('[required]').forEach(el => {
       if(el.disabled) return;
       const wrap = el.closest('.field');
@@ -1439,7 +1426,11 @@ function initFormulario(){
     const q = n => form.querySelector('[name="' + n + '"]');
 
     if(stepNum === 1){
+      if(!g('bairro_imovel')) invalidos.push({ el: q('bairro_imovel'), msg: 'Selecione o bairro (localização cadastral).' });
+      if(!g('quadra_imovel')) invalidos.push({ el: q('quadra_imovel'), msg: 'Selecione a quadra (localização cadastral).' });
+      if(!g('lote_letra'))    invalidos.push({ el: q('lote_letra'),    msg: 'Selecione o lote (localização cadastral).' });
       const tipo = g('tipoImovel');
+      if(!tipo) invalidos.push({ el: q('tipoImovel'), msg: 'Selecione o tipo de imóvel.' });
       if(tipo === '2' && !g('tpArquitetonico')) invalidos.push({ el: q('tpArquitetonico'), msg: 'Tipo arquitetônico é obrigatório para imóvel predial.' });
       if(tipo === '2' && !g('idParcela')) invalidos.push({ el: q('idParcela'), msg: 'ID da parcela é obrigatório para imóvel predial.' });
       if(tipo === '2' && !g('anoConstrutivo')) invalidos.push({ el: q('anoConstrutivo'), msg: 'Ano construtivo é obrigatório para imóvel predial.' });
@@ -1450,17 +1441,20 @@ function initFormulario(){
     }
     if(stepNum === 2){
       const tipo = g('tipoImovel');
+      if(parseDecimal(g('areaTerreno')) <= 0) invalidos.push({ el: q('areaTerreno'), msg: 'Informe Frente e Fundo do terreno (Área do Terreno).' });
       if(tipo === '2'){
-        if(parseDecimal(g('areaTerreno')) <= 0) invalidos.push({ el: q('areaTerreno'), msg: 'Informe Frente e Fundo do terreno.' });
-        if(parseDecimal(g('areaConstruida')) <= 0) invalidos.push({ el: q('areaConstruida'), msg: 'Informe Frente e Fundo da edificação.' });
+        if(parseDecimal(g('areaConstruida')) <= 0) invalidos.push({ el: q('areaConstruida'), msg: 'Informe Frente e Fundo da edificação (Área Construída).' });
       }
     }
     if(stepNum === 4){
+      if(!g('tipoLogradouro')) invalidos.push({ el: q('tipoLogradouro'), msg: 'Selecione o tipo de logradouro.' });
+      if(!g('nomeLogradouro')) invalidos.push({ el: q('nomeLogradouro'), msg: 'Informe o nome do logradouro.' });
       if(document.getElementById('temBairro').checked && !g('bairro')){
         invalidos.push({ el: q('bairro'), msg: 'Bairro é obrigatório quando há divisão política.' });
       }
       const cepVal = g('cep').replace(/\D/g,'');
-      if(cepVal && !/^\d{8}$/.test(cepVal)) invalidos.push({ el: q('cep'), msg: 'CEP deve conter 8 dígitos.' });
+      if(!cepVal) invalidos.push({ el: q('cep'), msg: 'Informe o CEP.' });
+      else if(!/^\d{8}$/.test(cepVal)) invalidos.push({ el: q('cep'), msg: 'CEP deve conter 8 dígitos.' });
       if(!fotoBase64){
         photoBlock.classList.add('invalid');
         invalidos.push({ el: document.getElementById('btnTirarFoto'), msg: 'A foto do imóvel é obrigatória.' });
@@ -1485,7 +1479,7 @@ function initFormulario(){
       const itbiFields = ['baseCalculITBI','valorRefITBI','dtTransacaoITBI','tpTransacaoITBI','percTransacionadoITBI'];
       const anyItbi = itbiFields.some(k => g(k));
       if(anyItbi){
-        itbiFields.forEach(k => { if(!g(k)) invalidos.push({ el: q(k), msg: 'ITBI incompleto.' }); });
+        itbiFields.forEach(k => { if(!g(k)) invalidos.push({ el: q(k), msg: 'ITBI incompleto. Preencha todos os campos de ITBI.' }); });
       }
     }
     return invalidos;
@@ -1517,10 +1511,9 @@ function initFormulario(){
     };
     const cepOnlyDigits = String(g('cep') || '').replace(/\D/g,'');
 
-    /* ---- MODELO PRINCIPAL ---- */
-    const data = {};
+    const dadosImovel = {};
 
-    data.DadosGeraisImovel = {
+    dadosImovel.DadosGeraisImovel = {
       inscricaoImobiliaria: up(g('inscricaoImobiliaria')),
       tipoImovel:           toInt(g('tipoImovel')),
       tpArquitetonico:      toInt(g('tpArquitetonico')),
@@ -1539,13 +1532,13 @@ function initFormulario(){
       dataUltVlrMercado:    toDateOrNull(g('dataUltVlrMercado'))
     };
 
-    data.AreaConstruidaCompl = {
+    dadosImovel.AreaConstruidaCompl = {
       areaPrivativa: toNum(g('areaPrivativa')),
       areaComum:     toNum(g('areaComum')),
       fraIdeal:      toNum(g('fraIdeal'))
     };
 
-    data.EnderecoImovel = {
+    dadosImovel.EnderecoImovel = {
       tipoLogradouro:  toInt(g('tipoLogradouro')),
       nomeLogradouro:  up(g('nomeLogradouro')),
       temBairro:       !!g('temBairro'),
@@ -1556,7 +1549,7 @@ function initFormulario(){
       complEndereco:   up(g('complEndereco'))
     };
 
-    data.Titular = [...document.querySelectorAll('#titulares .list-item')].map(r => ({
+    dadosImovel.Titular = [...document.querySelectorAll('#titulares .list-item')].map(r => ({
       niTitular:            up(r.querySelector('[name=niTitular]').value),
       nomeTitular:          up(r.querySelector('[name=nomeTitular]').value),
       percTitularidade:     toNum(r.querySelector('[name=percTitular]').value),
@@ -1565,7 +1558,7 @@ function initFormulario(){
       docTitularidade:      toInt(r.querySelector('[name=docTitularidade]').value)
     }));
 
-    data.ServicoRegistroImovel = {
+    dadosImovel.ServicoRegistroImovel = {
       nomeServentiaRI:  up(g('nomeServentiaRI')),
       cnsRI:            toInt(g('cnsRI')),
       cnmRI:            toNum(g('cnmRI')),
@@ -1576,14 +1569,14 @@ function initFormulario(){
       dtUltAtualizacao: toDateOrNull(g('dtUltAtualizacao'))
     };
 
-    data.CartorioNotas = {
+    dadosImovel.CartorioNotas = {
       nomeServentiaNotas: up(g('nomeServentiaNotas')),
       cnsNotas:           toInt(g('cnsNotas')),
       lvCartNotas:        up(g('lvCartNotas')),
       flCartNotas:        up(g('flCartNotas'))
     };
 
-    data.ITBI = {
+    dadosImovel.ITBI = {
       baseCalculITBI:          toNum(g('baseCalculITBI')),
       dtTransacaoITBI:         toDateOrNull(g('dtTransacaoITBI')),
       tpTransacaoITBI:         toInt(g('tpTransacaoITBI')),
@@ -1600,8 +1593,8 @@ function initFormulario(){
       valorRefITBI:            toNum(g('valorRefITBI'))
     };
 
-    /* ---- COLEÇÃO À PARTE (campos que não constam no modelo) ---- */
-    data.DadosComplementares = {
+    /* ---- Campos fora do modelo (.txt) → coleção separada ---- */
+    dadosImovel.DadosComplementares = {
       localizacaoCadastral: {
         bairro: up(g('bairro_imovel')),
         quadra: up(g('quadra_imovel')),
@@ -1633,12 +1626,11 @@ function initFormulario(){
         precisaoM:              fotoGeo ? fotoGeo.precisao : null,
         geolocalizacaoHorario:  fotoGeo ? fotoGeo.horario : null
       } : null,
-      dataEmissao: g('data_registro') || null,
       status: 'pendente',
       origem: 'sinter'
     };
 
-    return data;
+    return { dados_imovel: dadosImovel };
   }
 
   function clearForm(){
@@ -1652,7 +1644,6 @@ function initFormulario(){
 
     popularBairros();
     atualizarQuadras();
-    preencherDataEmissao();
     calcAreas();
     syncTipo();
     syncBairro();
