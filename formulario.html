@@ -1317,9 +1317,8 @@ function initFormulario(){
 
   function obterLocalizacaoPrecisa(opts){
     const cfg = opts || {};
-    // ✅ ALTERAÇÃO 1: defaults alinhados com 4 m / 15 s
-    const timeoutMs = Number(cfg.timeoutMs) > 0 ? Number(cfg.timeoutMs) : 15000;
-    const alvoPrecisao = Number(cfg.alvoPrecisao) > 0 ? Number(cfg.alvoPrecisao) : 4;
+    const timeoutMs = Number(cfg.timeoutMs) > 0 ? Number(cfg.timeoutMs) : 8000;
+    const alvoPrecisao = Number(cfg.alvoPrecisao) > 0 ? Number(cfg.alvoPrecisao) : 8;
     const onUpdate = typeof cfg.onUpdate === 'function' ? cfg.onUpdate : null;
 
     return new Promise(resolve => {
@@ -1437,20 +1436,16 @@ function initFormulario(){
     }
     setFotoLoading(true);
     setFotoLoadingTexto('Localizando… buscando sinal de GPS');
-
-    // ✅ ALTERAÇÃO 2: alvo 4 m / timeout 15 s, mensagem mostra o alvo
-    const GPS_TIMEOUT_MS = 15000;
-    const GPS_ALVO_M     = 4;
     const geo = await obterLocalizacaoPrecisa({
-      timeoutMs: GPS_TIMEOUT_MS, alvoPrecisao: GPS_ALVO_M,
+      timeoutMs: 8000, alvoPrecisao: 8,
       onUpdate: (melhor, decorridoMs) => {
-        const restante = Math.max(0, Math.round((GPS_TIMEOUT_MS - decorridoMs) / 1000));
+        const restante = Math.max(0, Math.round((8000 - decorridoMs) / 1000));
         if(!melhor || melhor.precisao == null){
           setFotoLoadingTexto('Localizando… aguardando leitura (' + restante + 's)');
           return;
         }
         const p = Math.round(melhor.precisao);
-        setFotoLoadingTexto('Localizando… precisão ' + p + ' m / alvo ' + GPS_ALVO_M + ' m (restam ' + restante + 's)');
+        setFotoLoadingTexto('Localizando… precisão ' + p + ' m (restam ' + restante + 's)');
       }
     });
     setFotoLoadingTexto('Processando imagem…');
