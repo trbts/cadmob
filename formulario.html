@@ -9,8 +9,10 @@
 <meta name="apple-mobile-web-app-title" content="Cadastro Imob.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="logo.png" type="image/png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icons/favicon-16.png" sizes="16x16" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<title>Cadastro de Unidade Imobiliária — SINTER</title>
+<title>Ficha de Cadastro Imobiliário</title>
 <style>
 :root{
   --primary:#0d5cab; --primary-dark:#083d73; --primary-light:#e9f2fb;
@@ -35,11 +37,15 @@ body{
   box-shadow:0 8px 24px rgba(8,56,107,.22); text-align:center;
 }
 .header-inner{ max-width:560px; margin:0 auto; }
-.brand-title{ margin:0; font-size:18px; font-weight:700; letter-spacing:-.3px; }
+.brand-logo{ width:40px; height:40px; border-radius:12px; margin:0 auto 8px; background:#fff; display:grid; place-items:center; overflow:hidden; box-shadow:0 8px 18px rgba(0,0,0,.18); }
+.brand-logo img{ width:100%; height:100%; object-fit:cover; display:block; }
+.brand-org{ margin:0; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.9px; opacity:.78; }
+.brand-title{ margin:4px 0 0; font-size:18px; font-weight:700; letter-spacing:-.3px; }
 .header-clear{ position:absolute; top:calc(var(--safe-top) + 12px); right:12px; width:34px; height:34px; border-radius:10px; border:0; display:grid; place-items:center; background:rgba(255,255,255,.14); color:#fff; }
 .header-clear:active{ transform:scale(.94); background:rgba(255,255,255,.28); }
 .header-clear svg{ width:16px; height:16px; }
 
+/* ===== USER CHIP (usuário logado) ===== */
 .header-user{
   position:absolute; top:calc(var(--safe-top) + 12px); left:12px;
   display:flex; align-items:center; justify-content:center;
@@ -48,7 +54,9 @@ body{
   border:0; font-family:inherit; cursor:pointer; transition:background .15s;
 }
 .header-user:active{ transform:scale(.96); background:rgba(255,255,255,.28); }
-.header-user .h-logout-icon{ width:18px; height:18px; flex:0 0 auto; }
+.header-user .h-logout-icon{
+  width:18px; height:18px; flex:0 0 auto;
+}
 
 .stepper{ display:flex; align-items:center; justify-content:center; max-width:420px; margin:16px auto 0; }
 .step{ flex:0 0 auto; display:grid; place-items:center; padding:0; border:0; background:none; cursor:default; }
@@ -79,6 +87,7 @@ body{
 .field select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:18px; padding-right:38px; white-space:nowrap; overflow:hidden; text-transform:uppercase; }
 .field input:focus, .field select:focus{ border-color:var(--primary); background:#fff; box-shadow:0 0 0 3.5px rgba(13,92,171,.12); }
 
+/* ===== Força maiúsculas nos campos de texto ===== */
 .field input[type="text"],
 .field input[type="tel"],
 .field input[type="search"],
@@ -98,9 +107,6 @@ body{
 .field .hint{ font-size:11.5px; color:var(--muted); margin-top:-2px; }
 .field .hint strong{ color:var(--primary); }
 
-/* remove uppercase for cpf/cnpj inputs */
-.field input[data-mask="cpfcnpj"]{ text-transform:none; letter-spacing:.5px; }
-
 .alert{ display:none; margin-top:12px; padding:12px 14px; border-radius:12px; font-size:13px; font-weight:600; line-height:1.45; }
 .alert.show{ display:block; animation:stepIn .25s ease; }
 .alert.error{ background:#fef2f2; color:#b91c1c; border:1.5px solid #fecaca; }
@@ -116,34 +122,19 @@ body{
 .row{ display:grid; gap:0 10px; }
 .row-2{ grid-template-columns:1fr 1fr; }
 .row-3{ grid-template-columns:1fr 1fr 1fr; }
+.cep-row{ grid-template-columns:minmax(122px,1fr) minmax(0,1.6fr) minmax(56px,.75fr); }
 
-.chk-field{ display:flex; align-items:center; gap:10px; margin-top:14px; padding:12px 13px; background:#fbfcfe; border:1.5px solid var(--border); border-radius:12px; min-height:48px; cursor:pointer; }
-.chk-field input{ width:20px; height:20px; flex:0 0 auto; accent-color:var(--primary); }
-.chk-field label{ font-size:12.5px; font-weight:600; color:#41536a; text-transform:uppercase; letter-spacing:.3px; }
-
-.list-item{ position:relative; padding:14px; margin-top:12px; background:#fbfcfe; border:1.5px dashed var(--border); border-radius:14px; }
-.list-item .rm{ position:absolute; top:8px; right:8px; background:none; border:0; color:var(--danger); font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; padding:4px 8px; border-radius:8px; }
-.list-item .rm:active{ background:#fee2e2; }
-.add-btn{ display:inline-flex; align-items:center; gap:8px; margin-top:12px; padding:10px 16px; border:1.5px solid var(--primary); background:transparent; color:var(--primary); border-radius:12px; font-family:inherit; font-weight:700; font-size:13px; cursor:pointer; }
-.add-btn:active{ background:var(--primary-light); transform:scale(.97); }
-
-.photo-block{ margin-top:14px; border:1.5px dashed var(--border); border-radius:14px; padding:16px; background:#fbfcfe; text-align:center; }
-.photo-block.has-photo{ border-style:solid; background:#fff; padding:12px; }
-.photo-block.invalid{ border-color:var(--danger); background:#fff6f6; }
-.photo-btn{ display:inline-flex; align-items:center; gap:10px; height:48px; padding:0 20px; border-radius:12px; background:linear-gradient(135deg,#0d5cab,#083d73); color:#fff; font-weight:700; font-size:14.5px; border:0; cursor:pointer; box-shadow:0 6px 16px rgba(13,92,171,.28); }
-.photo-btn:active{ transform:scale(.97); }
-.photo-btn svg{ width:20px; height:20px; }
-.photo-block .hint{ margin-top:10px; font-size:11.5px; color:var(--muted); }
-.photo-preview{ display:flex; flex-direction:column; gap:10px; }
-.photo-preview img{ width:100%; max-height:320px; object-fit:contain; border-radius:10px; background:#0f172a0d; }
-.photo-info{ font-size:12px; color:var(--muted); text-align:center; font-weight:600; }
-.photo-info strong{ color:var(--success); }
-.photo-actions{ display:flex; gap:8px; }
-.photo-actions button{ flex:1; height:40px; border-radius:10px; font-weight:700; font-size:13px; border:1.5px solid var(--border); background:#fff; color:var(--text); cursor:pointer; }
-.photo-actions .btn-photo-danger{ color:var(--danger); border-color:#fecaca; background:#fff6f6; }
-.photo-loading{ display:flex; align-items:center; justify-content:center; gap:10px; padding:20px; color:var(--muted); font-size:13px; font-weight:600; }
-.photo-loading .spinner{ width:18px; height:18px; border-radius:50%; border:2.5px solid rgba(13,92,171,.2); border-top-color:var(--primary); animation:photoSpin .8s linear infinite; }
-@keyframes photoSpin{ to{ transform:rotate(360deg); } }
+.chips{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
+.chip{ display:flex; align-items:center; gap:9px; min-height:50px; padding:10px 11px; background:#fbfcfe; border:1.5px solid var(--border); border-radius:13px; cursor:pointer; user-select:none; transition:border-color .16s, background .16s, transform .1s; }
+.chip:active{ transform:scale(.975); }
+.chip input{ position:absolute; opacity:0; width:0; height:0; pointer-events:none; }
+.chip-box{ flex:0 0 auto; width:21px; height:21px; border-radius:7px; border:2px solid #c6d2e0; background:#fff; display:grid; place-items:center; transition:background .16s, border-color .16s; pointer-events:none; }
+.chip-box::after{ content:""; width:5px; height:9px; border:2px solid #fff; border-top:0; border-left:0; transform:rotate(45deg) translate(-1px,-1px) scale(0); transition:transform .16s; }
+.chip-text{ font-size:12.5px; font-weight:600; color:#41536a; line-height:1.25; pointer-events:none; text-transform:uppercase; }
+.chip.active{ border-color:var(--primary); background:var(--primary-light); }
+.chip.active .chip-box{ background:var(--primary); border-color:var(--primary); }
+.chip.active .chip-box::after{ transform:rotate(45deg) translate(-1px,-1px) scale(1); }
+.chip.active .chip-text{ color:var(--primary-dark); }
 
 .app-footer{ position:fixed; left:0; right:0; bottom:0; z-index:50; background:rgba(255,255,255,.95); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-top:1px solid var(--border); padding:10px 14px calc(10px + var(--safe-bottom)); }
 .footer-inner{ max-width:560px; margin:0 auto; display:flex; gap:10px; }
@@ -159,24 +150,98 @@ body{
 .toast.success{ background:#0f8a63; }
 .toast.error{ background:#c0392b; }
 
-.auth-gate{ position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg,#0d5cab,#083d73); display:flex; align-items:center; justify-content:center; color:#fff; text-align:center; padding:24px; }
+/* ===== AUTH GATE ===== */
+.auth-gate{
+  position:fixed; inset:0; z-index:9999;
+  background:linear-gradient(135deg,#0d5cab,#083d73);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; text-align:center; padding:24px;
+}
 .auth-gate.hidden{ display:none; }
-.auth-gate-inner{ background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:18px; padding:36px 32px; max-width:440px; width:100%; box-shadow:0 20px 40px rgba(0,0,0,.25); }
-.auth-gate .gate-spinner{ width:38px; height:38px; border-radius:50%; border:3px solid rgba(255,255,255,.2); border-top-color:#fff; margin:0 auto 18px; animation:gateSpin .8s linear infinite; }
+.auth-gate-inner{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px; padding:36px 32px;
+  max-width:440px; width:100%;
+  box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+.auth-gate .gate-spinner{
+  width:38px; height:38px; border-radius:50%;
+  border:3px solid rgba(255,255,255,.2); border-top-color:#fff;
+  margin:0 auto 18px; animation:gateSpin .8s linear infinite;
+}
 @keyframes gateSpin{ to{transform:rotate(360deg)} }
 .auth-gate h2{ font-size:17px; color:#fff; margin-bottom:10px; font-weight:700; }
 .auth-gate p{ font-size:13.5px; color:rgba(255,255,255,.85); line-height:1.55; }
-.auth-gate .gate-btn{ margin-top:20px; background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22); height:42px; padding:0 20px; border-radius:10px; font-weight:600; font-size:13.5px; }
+.auth-gate .gate-btn{
+  margin-top:20px; background:rgba(255,255,255,.12); color:#fff;
+  border:1px solid rgba(255,255,255,.22); height:42px; padding:0 20px;
+  border-radius:10px; font-weight:600; font-size:13.5px;
+}
+
+/* ===== FOTO DO IMÓVEL ===== */
+.photo-block{
+  margin-top:14px; border:1.5px dashed var(--border); border-radius:14px;
+  padding:16px; background:#fbfcfe; text-align:center;
+}
+.photo-block.has-photo{
+  border-style:solid; background:#fff; padding:12px;
+}
+.photo-block.invalid{
+  border-color:var(--danger); background:#fff6f6;
+}
+.photo-block .req-hint{
+  margin-top:10px; font-size:11.5px; font-weight:700; color:var(--danger);
+}
+.photo-btn{
+  display:inline-flex; align-items:center; gap:10px; height:48px; padding:0 20px;
+  border-radius:12px; background:linear-gradient(135deg,#0d5cab,#083d73); color:#fff;
+  font-weight:700; font-size:14.5px; border:0; cursor:pointer;
+  box-shadow:0 6px 16px rgba(13,92,171,.28);
+}
+.photo-btn:active{ transform:scale(.97); }
+.photo-btn svg{ width:20px; height:20px; }
+.photo-block .hint{ margin-top:10px; font-size:11.5px; color:var(--muted); }
+.photo-preview{ display:flex; flex-direction:column; gap:10px; }
+.photo-preview img{
+  width:100%; max-height:320px; object-fit:contain; border-radius:10px;
+  background:#0f172a0d;
+}
+.photo-info{
+  font-size:12px; color:var(--muted); text-align:center; font-weight:600;
+}
+.photo-info strong{ color:var(--success); }
+.photo-actions{ display:flex; gap:8px; }
+.photo-actions button{
+  flex:1; height:40px; border-radius:10px; font-weight:700; font-size:13px;
+  border:1.5px solid var(--border); background:#fff; color:var(--text); cursor:pointer;
+}
+.photo-actions .btn-photo-danger{
+  color:var(--danger); border-color:#fecaca; background:#fff6f6;
+}
+.photo-loading{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  padding:20px; color:var(--muted); font-size:13px; font-weight:600;
+}
+.photo-loading .spinner{
+  width:18px; height:18px; border-radius:50%;
+  border:2.5px solid rgba(13,92,171,.2); border-top-color:var(--primary);
+  animation:photoSpin .8s linear infinite;
+}
+@keyframes photoSpin{ to{ transform:rotate(360deg); } }
 
 @media (max-width:360px){
   body{ font-size:14px; }
   .brand-title{ font-size:16.5px; }
   .step-head-title{ font-size:16.5px; }
+  .chips{ grid-template-columns:1fr; }
   .row-3{ grid-template-columns:1fr 1fr; }
+  .cep-row{ grid-template-columns:1fr 1fr; }
   .card-body{ padding:2px 13px 16px; }
   .app-main{ padding-left:11px; padding-right:11px; }
   .btn-ghost{ flex:0 0 42%; }
 }
+@media (min-width:600px){ .chips{ grid-template-columns:repeat(3, 1fr); } }
 </style>
 </head>
 <body>
@@ -200,7 +265,9 @@ body{
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
   </button>
   <div class="header-inner">
-    <h1 class="brand-title">Cadastro de Unidade Imobiliária</h1>
+    <div class="brand-logo"><img src="logo.png" alt="Cadastro Imobiliário"></div>
+    <p class="brand-org">Prefeitura Municipal de Careiro</p>
+    <h1 class="brand-title">Ficha de Cadastro Imobiliário</h1>
     <div class="stepper" id="stepper">
       <div class="step" data-step="1"><span class="step-dot">1</span></div>
       <div class="step-line" data-line="1"></div>
@@ -223,275 +290,136 @@ body{
   <div class="step-head">
     <div>
       <span class="step-head-eyebrow" id="stepCounter">Etapa 1 de 7</span>
-      <h2 class="step-head-title" id="stepTitle">Localização e Dados Gerais</h2>
+      <h2 class="step-head-title" id="stepTitle">Dados do Proprietário</h2>
     </div>
     <span class="step-head-progress" id="stepProgress">0%</span>
   </div>
 
-  <form id="f" novalidate>
+  <form id="fichaForm" novalidate>
 
-    <!-- ============ ETAPA 1 — LOCALIZAÇÃO + DADOS GERAIS ============ -->
+    <!-- ============ ETAPA 1 ============ -->
     <section class="step-panel active" data-step="1">
-
-      <div class="card"><div class="card-body">
-        <p class="sub-head">Localização Cadastral</p>
-        <div class="field">
-          <label for="bairro_imovel">Bairro</label>
-          <select id="bairro_imovel" name="bairro_imovel"><option value="">Carregando…</option></select>
-        </div>
-        <div class="row row-2">
-          <div class="field"><label for="quadra_imovel">Quadra <span class="req">*</span></label>
-            <input type="text" id="quadra_imovel" name="quadra_imovel" maxlength="3" inputmode="numeric" placeholder="000" disabled>
-          </div>
-          <div class="field"><label for="lote_letra">Lote <span class="req">*</span></label>
-            <input type="text" id="lote_letra" name="lote_letra" maxlength="3" inputmode="numeric" placeholder="000" disabled>
-          </div>
-        </div>
-        <div class="field">
-          <label for="inscricaoImobiliaria">Inscrição Imobiliária <span class="req">*</span></label>
-          <input type="text" id="inscricaoImobiliaria" name="inscricaoImobiliaria" maxlength="45" required readonly placeholder="00.00.000.000.000">
-          <div class="hint">Gerada automaticamente a partir do bairro, quadra e lote.</div>
-        </div>
-      </div></div>
-
-      <div class="card"><div class="card-body">
-        <p class="sub-head">Dados Gerais</p>
-
-        <div class="field">
-          <label for="tipoImovel">Tipo de Imóvel <span class="req">*</span></label>
-          <select id="tipoImovel" name="tipoImovel" required>
-            <option value="">Selecione…</option>
-            <option value="1">1 - Territorial (sem edificação)</option>
-            <option value="2">2 - Predial (com edificação)</option>
-            <option value="3">3 - Bem imóvel de características especiais</option>
-          </select>
-        </div>
-
-        <div class="field" id="wrap-tpArquitetonico">
-          <label for="tpArquitetonico">Tipo Arquitetônico</label>
-          <select id="tpArquitetonico" name="tpArquitetonico">
-            <option value="">Selecione…</option>
-            <option value="1">1 - Casa</option><option value="2">2 - Apartamento</option>
-            <option value="3">3 - Vaga de garagem</option><option value="4">4 - Laje</option>
-            <option value="5">5 - Sala</option><option value="6">6 - Conjunto de salas</option>
-            <option value="7">7 - Loja</option><option value="8">8 - Sobreloja</option>
-            <option value="9">9 - Estacionamento</option><option value="10">10 - Barraco</option>
-            <option value="11">11 - Galpão</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="destinacaoImovel">Destinação do Imóvel</label>
-          <select id="destinacaoImovel" name="destinacaoImovel">
-            <option value="">Selecione…</option>
-            <option value="1">Residencial</option><option value="2">Comercial</option>
-            <option value="3">Prestação de serviço</option><option value="4">Industrial</option>
-            <option value="5">Educacional</option><option value="6">Lazer</option>
-            <option value="7">Desportos</option><option value="8">Religioso</option>
-            <option value="9">Institucional</option><option value="10">Transporte</option>
-            <option value="11">Comunicação</option><option value="12">Saúde</option>
-            <option value="13">Hotelaria</option><option value="14">Uso misto</option>
-            <option value="15">Urbano com destinação rural</option>
-            <option value="16">Bem de uso comum do povo</option>
-            <option value="17">Saneamento</option>
-            <option value="99">Não Residencial</option>
-          </select>
-        </div>
-
-        <div class="row row-2">
+      <div class="card">
+        <div class="card-body">
           <div class="field">
-            <label for="padraoConstrutivo">Padrão Construtivo</label>
-            <select id="padraoConstrutivo" name="padraoConstrutivo">
-              <option value="">Selecione…</option>
-              <option value="1">Popular</option><option value="2">Baixo</option>
-              <option value="3">Normal</option><option value="4">Alto</option>
-              <option value="5">Luxo</option>
-            </select>
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" maxlength="50" required placeholder="Nome completo do proprietário" autocomplete="name">
           </div>
-          <div class="field">
-            <label for="qtdGaragem">Qtd. Garagens</label>
-            <input type="number" id="qtdGaragem" name="qtdGaragem" maxlength="3" placeholder="0">
+          <div class="row row-2">
+            <div class="field"><label for="nascimento">Nascimento</label><input type="date" id="nascimento" name="nascimento" required></div>
+            <div class="field"><label for="telefone">Telefone</label><input type="tel" id="telefone" name="telefone" required inputmode="numeric" data-mask="phone" placeholder="(00) 00000-0000"></div>
           </div>
-        </div>
 
-        <div class="row row-2">
-          <div class="field">
-            <label for="idParcela">ID da Parcela/Lote</label>
-            <input type="text" id="idParcela" name="idParcela" maxlength="35">
-            <div class="hint">Obrigatório p/ predial; não informar p/ territorial.</div>
-          </div>
-          <div class="field">
-            <label for="anoConstrutivo">Ano Construtivo</label>
-            <input type="number" id="anoConstrutivo" name="anoConstrutivo" min="1000" max="9999" placeholder="AAAA">
-          </div>
-        </div>
+          <p class="sub-head">Endereço do Lote</p>
 
-        <div class="row row-2">
-          <div class="field">
-            <label for="valorVenal">Valor Venal</label>
-            <input type="number" step="0.01" id="valorVenal" name="valorVenal" placeholder="0,00">
+          <div class="field"><label for="bairro_prop">Bairro</label><select id="bairro_prop" name="bairro_prop" required><option value="">—</option></select></div>
+          <div class="row row-2">
+            <div class="field"><label for="quadra_prop">Quadra</label><select id="quadra_prop" name="quadra_prop" required disabled><option value="">—</option></select></div>
+            <div class="field"><label for="lote_prop">Lote</label><select id="lote_prop" name="lote_prop" required disabled><option value="">—</option></select></div>
           </div>
-          <div class="field">
-            <label for="dtUltimoValorVenal">Último Valor Venal</label>
-            <input type="date" id="dtUltimoValorVenal" name="dtUltimoValorVenal">
-          </div>
-        </div>
 
-        <div class="row row-2">
-          <div class="field">
-            <label for="valorRefMercado">Valor Ref. Mercado</label>
-            <input type="number" step="0.01" id="valorRefMercado" name="valorRefMercado" placeholder="0,00">
-          </div>
-          <div class="field">
-            <label for="dataUltVlrMercado">Últ. Vlr. Mercado</label>
-            <input type="date" id="dataUltVlrMercado" name="dataUltVlrMercado">
-          </div>
-        </div>
+          <div id="proprietarioAlerta" class="alert"></div>
 
-        <div class="field" id="wrap-bice">
-          <label for="bice">BICE</label>
-          <select id="bice" name="bice">
-            <option value="">Selecione…</option>
-            <option value="1">1 - Usinas nucleares, hidrelétricas e termoelétricas</option>
-            <option value="2">2 - Parques eólicos e plantas solares</option>
-            <option value="3">3 - Plataformas e plantas de refino de petróleo e gás</option>
-            <option value="4">4 - Portos, aeroportos e terminais</option>
-            <option value="5">5 - Aquedutos, gasodutos e minerodutos</option>
-            <option value="6">6 - Aquíferos e jazidas minerais</option>
-            <option value="7">7 - Rodovias, túneis, pontes e viadutos</option>
-            <option value="8">8 - Praças e logradouros</option>
-            <option value="9">9 - Museus, prédios e monumentos históricos</option>
-            <option value="10">10 - Terras indígenas e terras devolutas</option>
-            <option value="11">11 - Lagos, rios, açudes, mananciais e espelho d'água</option>
-            <option value="12">12 - Parques, florestas e unidades de conservação</option>
-          </select>
-          <div class="hint">Obrigatório quando o tipo é "Bem imóvel de características especiais".</div>
+          <div class="row row-2">
+            <div class="field">
+              <label for="unidade_prop">Unidade</label>
+              <input type="text" id="unidade_prop" name="unidade_prop" maxlength="10" placeholder="Ex.: A">
+            </div>
+            <div class="field"><label for="numero_prop">N°</label><input type="text" id="numero_prop" name="numero_prop" maxlength="10" required inputmode="numeric" placeholder="N°"></div>
+          </div>
+          <div class="field"><label for="logradouro_prop">Logradouro</label><select id="logradouro_prop" name="logradouro_prop" required><option value="">—</option></select></div>
+          <div class="field"><label for="complemento_prop">Complemento</label><input type="text" id="complemento_prop" name="complemento_prop" maxlength="50" placeholder="Apto, bloco, referência..."></div>
+          <div class="row cep-row">
+            <div class="field"><label for="cep">CEP</label><input type="text" id="cep" name="cep" required inputmode="numeric" data-mask="cep" placeholder="00000-000"></div>
+            <div class="field"><label for="cidade">Cidade</label><input type="text" id="cidade" name="cidade" required maxlength="50" placeholder="Cidade"></div>
+            <div class="field"><label for="uf">UF</label><input type="text" id="uf" name="uf" required maxlength="2" placeholder="UF" style="text-transform:uppercase"></div>
+          </div>
+          <div class="row row-2">
+            <div class="field"><label for="sexo">Sexo</label>
+              <select id="sexo" name="sexo" required>
+                <option value="">SELECIONE</option><option value="M">MASCULINO</option><option value="F">FEMININO</option><option value="NI">NÃO INFORMADO</option>
+              </select></div>
+            <div class="field"><label for="estado_civil">Estado Civil</label>
+              <select id="estado_civil" name="estado_civil" required>
+                <option value="">SELECIONE</option><option value="solteiro">SOLTEIRO(A)</option><option value="casado">CASADO(A)</option>
+                <option value="divorciado">DIVORCIADO(A)</option><option value="viuvo">VIÚVO(A)</option><option value="uniao">UNIÃO ESTÁVEL</option>
+              </select></div>
+          </div>
+          <div class="field" id="wrap_cpf">
+            <label for="cpf_cnpj">CPF / CNPJ</label>
+            <input type="text" id="cpf_cnpj" name="cpf_cnpj" required inputmode="numeric" data-mask="doc" placeholder="000.000.000-00">
+          </div>
         </div>
-
-        <div class="chk-field">
-          <input type="checkbox" id="temPiscina" name="temPiscina">
-          <label for="temPiscina">Possui piscina</label>
-        </div>
-        <div class="chk-field">
-          <input type="checkbox" id="temBairro" name="temBairro">
-          <label for="temBairro">Há divisão política (bairro)</label>
-        </div>
-      </div></div>
+      </div>
     </section>
 
-    <!-- ============ ETAPA 2 — MEDIDAS E ÁREAS ============ -->
+    <!-- ============ ETAPA 2 (opcional) ============ -->
     <section class="step-panel" data-step="2">
       <div class="card"><div class="card-body">
+        <p class="sub-note">Etapa <strong>opcional</strong>. Você pode preencher as medidas agora ou deixar em branco e seguir para a próxima etapa.</p>
+
         <p class="sub-head">Terreno</p>
         <div class="row row-2">
-          <div class="field"><label for="frente_terreno">Frente (m)</label>
-            <input type="text" id="frente_terreno" name="frente_terreno" inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="fundo_terreno">Fundo (m)</label>
-            <input type="text" id="fundo_terreno" name="fundo_terreno" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="frente_terreno">Frente (m)</label><input type="text" id="frente_terreno" name="frente_terreno" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="fundo_terreno">Fundo (m)</label><input type="text" id="fundo_terreno" name="fundo_terreno" inputmode="decimal" placeholder="0,00"></div>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="lado_dir_terreno">Lado Direito (m)</label>
-            <input type="text" id="lado_dir_terreno" name="lado_dir_terreno" inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="lado_esq_terreno">Lado Esquerdo (m)</label>
-            <input type="text" id="lado_esq_terreno" name="lado_esq_terreno" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_dir_terreno">Lado Direito (m)</label><input type="text" id="lado_dir_terreno" name="lado_dir_terreno" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_esq_terreno">Lado Esquerdo (m)</label><input type="text" id="lado_esq_terreno" name="lado_esq_terreno" inputmode="decimal" placeholder="0,00"></div>
         </div>
-        <div class="field">
-          <label for="areaTerreno">Área do Terreno (m²) <span class="req">*</span></label>
-          <input type="number" step="0.01" id="areaTerreno" name="areaTerreno" required readonly placeholder="cálculo automático">
-          <div class="hint">Área = <strong>Frente × Fundo</strong>.</div>
-        </div>
+        <div class="field"><label for="area_terreno">Área Terreno (m²)</label><input type="text" id="area_terreno" name="area_terreno" readonly placeholder="cálculo automático"></div>
+        <p class="sub-note">Área do terreno: <strong>Frente × Fundo</strong>.</p>
 
         <p class="sub-head">Edificação</p>
         <div class="row row-2">
-          <div class="field"><label for="frente_edif">Frente (m)</label>
-            <input type="text" id="frente_edif" name="frente_edif" inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="fundo_edif">Fundo (m)</label>
-            <input type="text" id="fundo_edif" name="fundo_edif" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="frente_edif">Frente (m)</label><input type="text" id="frente_edif" name="frente_edif" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="fundo_edif">Fundo (m)</label><input type="text" id="fundo_edif" name="fundo_edif" inputmode="decimal" placeholder="0,00"></div>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="lado_dir_edif">Lado Direito (m)</label>
-            <input type="text" id="lado_dir_edif" name="lado_dir_edif" inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="lado_esq_edif">Lado Esquerdo (m)</label>
-            <input type="text" id="lado_esq_edif" name="lado_esq_edif" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_dir_edif">Lado Direito (m)</label><input type="text" id="lado_dir_edif" name="lado_dir_edif" inputmode="decimal" placeholder="0,00"></div>
+          <div class="field"><label for="lado_esq_edif">Lado Esquerdo (m)</label><input type="text" id="lado_esq_edif" name="lado_esq_edif" inputmode="decimal" placeholder="0,00"></div>
         </div>
-        <div class="field">
-          <label for="areaConstruida">Área Construída (m²)</label>
-          <input type="number" step="0.01" id="areaConstruida" name="areaConstruida" readonly placeholder="cálculo automático">
-          <div class="hint">Área = <strong>Frente × Fundo</strong>.</div>
-        </div>
-
-        <p class="sub-head">Construção</p>
         <div class="row row-2">
-          <div class="field">
-            <label for="num_frentes">N° de Frentes</label>
-            <select id="num_frentes" name="num_frentes">
-              <option value="">—</option><option>1</option><option>2</option>
-              <option>3</option><option>4</option><option>5</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="num_andares">N° de Andares</label>
-            <select id="num_andares" name="num_andares">
-              <option value="">—</option><option>1</option><option>2</option>
-              <option>3</option><option>4</option><option>5</option>
-            </select>
-          </div>
+          <div class="field"><label for="num_frentes">N° de Frentes</label>
+            <select id="num_frentes" name="num_frentes"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="field"><label for="num_andares">N° de Andares</label>
+            <select id="num_andares" name="num_andares"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
         </div>
+        <div class="row row-2">
+          <div class="field"><label for="area_edificada">Área Edificada (m²)</label><input type="text" id="area_edificada" name="area_edificada" readonly placeholder="cálculo automático"></div>
+          <div class="field"><label for="area_total_edificada">Área Total Edif. (m²)</label><input type="text" id="area_total_edificada" name="area_total_edificada" readonly placeholder="cálculo automático"></div>
+        </div>
+        <div class="field"><label for="ano_construcao">Ano Construção</label><input type="text" id="ano_construcao" name="ano_construcao" inputmode="numeric" maxlength="4" placeholder="AAAA"></div>
+        <p class="sub-note">Área Edificada = <strong>Frente × Fundo</strong> · Área Total = <strong>Área Edificada × Andares</strong>.</p>
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 3 — ÁREA CONSTRUÍDA COMPLEMENTAR ============ -->
-    <section class="step-panel" data-step="3" id="fs-complementar">
+    <!-- ============ ETAPA 3 ============ -->
+    <section class="step-panel" data-step="3">
       <div class="card"><div class="card-body">
-        <p class="sub-note">Não se aplica a imóveis territoriais.</p>
-        <div class="field"><label for="areaPrivativa">Área Privativa (m²)</label>
-          <input type="number" step="0.0001" id="areaPrivativa" name="areaPrivativa" placeholder="0,0000"></div>
-        <div class="field"><label for="areaComum">Área Comum (m²)</label>
-          <input type="number" step="0.0001" id="areaComum" name="areaComum" placeholder="0,0000"></div>
-        <div class="field"><label for="fraIdeal">Fração Ideal</label>
-          <input type="number" step="0.0001" id="fraIdeal" name="fraIdeal" placeholder="0,0000"></div>
-      </div></div>
-    </section>
+        <div class="field"><label for="inscricao_anterior">Inscrição Anterior</label><input type="text" id="inscricao_anterior" name="inscricao_anterior" readonly placeholder="00.00.000.000.000"></div>
 
-    <!-- ============ ETAPA 4 — ENDEREÇO ============ -->
-    <section class="step-panel" data-step="4">
-      <div class="card"><div class="card-body">
-        <div class="field">
-          <label for="tipoLogradouro">Tipo de Logradouro <span class="req">*</span></label>
-          <select id="tipoLogradouro" name="tipoLogradouro" required>
-            <option value="">Selecione…</option>
-            <option value="250">250 - Rua</option><option value="26">26 - Avenida</option>
-            <option value="273">273 - Travessa</option><option value="10">10 - Alameda</option>
-            <option value="146">146 - Jardim</option><option value="215">215 - Praça</option>
-            <option value="298">298 - Vila</option><option value="82">82 - Conjunto</option>
-            <option value="81">81 - Condomínio</option><option value="117">117 - Estrada</option>
-            <option value="247">247 - Rodovia</option><option value="184">184 - Outros</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="nomeLogradouro">Nome do Logradouro <span class="req">*</span></label>
-          <input type="text" id="nomeLogradouro" name="nomeLogradouro" maxlength="300" required placeholder="Digite e escolha uma opção" list="ruas-list" autocomplete="off">
-          <datalist id="ruas-list"></datalist>
-          <div class="hint">Comece a digitar para ver sugestões de ruas cadastradas.</div>
-        </div>
-        <div class="row row-3">
-          <div class="field"><label for="numeroImovel">Número</label>
-            <input type="text" id="numeroImovel" name="numeroImovel" maxlength="8" inputmode="numeric" placeholder="N°"></div>
-          <div class="field"><label for="complNroImovel">Compl. Nº</label>
-            <input type="text" id="complNroImovel" name="complNroImovel" maxlength="30"></div>
-          <div class="field"><label for="complEndereco">Complemento</label>
-            <input type="text" id="complEndereco" name="complEndereco" maxlength="30"></div>
-        </div>
+        <div class="field"><label for="bairro_imovel">Bairro</label><select id="bairro_imovel" name="bairro_imovel" required><option value="">—</option></select></div>
         <div class="row row-2">
-          <div class="field" id="wrap-bairro">
-            <label for="bairro">Bairro</label>
-            <input type="text" id="bairro" name="bairro" maxlength="30" list="bairros-list" autocomplete="off" placeholder="Digite e escolha um bairro">
-            <datalist id="bairros-list"></datalist>
-          </div>
+          <div class="field"><label for="quadra_imovel">Quadra</label><select id="quadra_imovel" name="quadra_imovel" required disabled><option value="">—</option></select></div>
+          <div class="field"><label for="lote_letra">Lote</label><select id="lote_letra" name="lote_letra" required disabled><option value="">—</option></select></div>
+        </div>
+
+        <div id="imovelAlerta" class="alert"></div>
+
+        <div class="row row-2">
           <div class="field">
-            <label for="cep">CEP <span class="req">*</span></label>
-            <input type="text" id="cep" name="cep" maxlength="8" pattern="\d{8}" required inputmode="numeric" data-mask="cep" placeholder="00000000">
+            <label for="unidade_imovel">Unidade</label>
+            <input type="text" id="unidade_imovel" name="unidade_imovel" maxlength="10" placeholder="Ex.: A">
           </div>
+          <div class="field"><label for="numero_imovel">N°</label><input type="text" id="numero_imovel" name="numero_imovel" maxlength="10" required inputmode="numeric" placeholder="N°"></div>
+        </div>
+        <div class="field"><label for="logradouro_imovel">Logradouro</label><select id="logradouro_imovel" name="logradouro_imovel" required><option value="">—</option></select></div>
+        <div class="field"><label for="complemento_imovel">Complemento</label><input type="text" id="complemento_imovel" name="complemento_imovel" maxlength="50" placeholder="Complemento"></div>
+        <div class="row cep-row">
+          <div class="field"><label for="cep_imovel">CEP</label><input type="text" id="cep_imovel" name="cep_imovel" inputmode="numeric" data-mask="cep" placeholder="00000-000"></div>
+          <div class="field"><label for="cidade_imovel">Cidade</label><input type="text" id="cidade_imovel" name="cidade_imovel" maxlength="50" placeholder="Cidade"></div>
+          <div class="field"><label for="uf_imovel">UF</label><input type="text" id="uf_imovel" name="uf_imovel" maxlength="2" placeholder="UF" style="text-transform:uppercase"></div>
         </div>
 
         <p class="sub-head">Foto do Imóvel <span class="req">*</span></p>
@@ -506,7 +434,7 @@ body{
               </svg>
               Tirar foto
             </button>
-            <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio. O GPS é acionado em modo de alta precisão.</p>
+            <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio. O GPS é acionado em modo de alta precisão e seleciona automaticamente a melhor amostra (≤ 8 m quando possível).</p>
           </div>
 
           <div class="photo-preview" id="photoPreview" style="display:none;">
@@ -525,112 +453,136 @@ body{
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 5 — TITULARES ============ -->
+    <!-- ============ ETAPA 4 — LOGRADOURO ============ -->
+    <section class="step-panel" data-step="4">
+      <div class="card"><div class="card-body">
+        <p class="sub-note">Toque nos itens que existem no logradouro do imóvel.</p>
+        <div class="chips" id="chipsLogradouro">
+          <div class="chip"><input type="checkbox" name="log_pavimentado"><span class="chip-box"></span><span class="chip-text">PAVIMENTADO</span></div>
+          <div class="chip"><input type="checkbox" name="log_coleta_lixo"><span class="chip-box"></span><span class="chip-text">COLETA DE LIXO</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_agua"><span class="chip-box"></span><span class="chip-text">REDE DE ÁGUA</span></div>
+          <div class="chip"><input type="checkbox" name="log_iluminacao"><span class="chip-box"></span><span class="chip-text">ILUMINAÇÃO</span></div>
+          <div class="chip"><input type="checkbox" name="log_cabine_policial"><span class="chip-box"></span><span class="chip-text">CABINE POLICIAL</span></div>
+          <div class="chip"><input type="checkbox" name="log_arborizacao"><span class="chip-box"></span><span class="chip-text">ARBORIZAÇÃO</span></div>
+          <div class="chip"><input type="checkbox" name="log_meio_fio"><span class="chip-box"></span><span class="chip-text">MEIO FIO</span></div>
+          <div class="chip"><input type="checkbox" name="log_varricao"><span class="chip-box"></span><span class="chip-text">VARRIÇÃO</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_publica"><span class="chip-box"></span><span class="chip-text">REDE PÚBLICA</span></div>
+          <div class="chip"><input type="checkbox" name="log_banca_jornal"><span class="chip-box"></span><span class="chip-text">BANCA DE JORNAL</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_telefonica"><span class="chip-box"></span><span class="chip-text">REDE TELEFÔNICA</span></div>
+          <div class="chip"><input type="checkbox" name="log_rede_eletrica"><span class="chip-box"></span><span class="chip-text">REDE ELÉTRICA</span></div>
+          <div class="chip"><input type="checkbox" name="log_galeria_pluvial"><span class="chip-box"></span><span class="chip-text">GALERIA PLUVIAL</span></div>
+          <div class="chip"><input type="checkbox" name="log_esgoto"><span class="chip-box"></span><span class="chip-text">ESGOTO</span></div>
+          <div class="chip"><input type="checkbox" name="log_ponto_onibus"><span class="chip-box"></span><span class="chip-text">PONTO DE ÔNIBUS</span></div>
+          <div class="chip"><input type="checkbox" name="log_correio"><span class="chip-box"></span><span class="chip-text">CORREIO</span></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ ETAPA 5 — TERRENO ============ -->
     <section class="step-panel" data-step="5">
       <div class="card"><div class="card-body">
-        <p class="sub-note">Se CPF/CNPJ ou nome forem informados, os demais campos do titular passam a ser obrigatórios. A soma das participações deve resultar em 100%.</p>
-        <div id="titulares"></div>
-        <button type="button" class="add-btn" data-add="titulares">+ Adicionar titular</button>
+        <div class="field"><label for="situacao">01 — Situação</label>
+          <select id="situacao" name="situacao" required><option value="">SELECIONE</option>
+            <option value="1">1 - LIVRE</option><option value="2">2 - OCUPADO</option><option value="3">3 - ALUGADO</option>
+            <option value="4">4 - CEDIDO</option><option value="5">5 - INVADIDO</option></select></div>
+
+        <div class="field"><label for="topografia">02 — Topografia</label>
+          <select id="topografia" name="topografia" required><option value="">SELECIONE</option>
+            <option value="1">1 - PLANO</option><option value="2">2 - ACLIVE</option><option value="3">3 - DECLIVE</option>
+            <option value="4">4 - IRREGULAR</option><option value="5">5 - MONTANHOSO</option></select></div>
+
+        <div class="field"><label for="pedologia">03 — Pedologia</label>
+          <select id="pedologia" name="pedologia" required><option value="">SELECIONE</option>
+            <option value="1">1 - FIRME</option><option value="2">2 - ALAGADIÇO</option><option value="3">3 - ARENOSO</option>
+            <option value="4">4 - ROCHOSO</option><option value="5">5 - ARGILOSO</option></select></div>
+
+        <div class="field"><label for="ocupacao">04 — Ocupação</label>
+          <select id="ocupacao" name="ocupacao" required><option value="">SELECIONE</option>
+            <option value="1">1 - OCUPADO</option><option value="2">2 - DESOCUPADO</option>
+            <option value="3">3 - EM CONSTRUÇÃO</option></select></div>
+
+        <div class="field"><label for="patrimonio">05 — Patrimônio</label>
+          <select id="patrimonio" name="patrimonio" required><option value="">SELECIONE</option>
+            <option value="1">1 - PARTICULAR</option><option value="2">2 - PÚBLICO FEDERAL</option>
+            <option value="3">3 - PÚBLICO ESTADUAL</option><option value="4">4 - PÚBLICO MUNICIPAL</option></select></div>
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 6 — REGISTRO E CARTÓRIO ============ -->
+    <!-- ============ ETAPA 6 — EDIFICAÇÃO ============ -->
     <section class="step-panel" data-step="6">
       <div class="card"><div class="card-body">
-        <p class="sub-head">Registro de Imóvel</p>
-        <p class="sub-note">Informe o CNM (matrícula digital) ou combine os demais campos.</p>
-        <div class="field">
-          <label for="nomeServentiaRI">Nome da Serventia</label>
-          <input type="text" id="nomeServentiaRI" name="nomeServentiaRI" maxlength="300">
+        <div class="row row-2">
+          <div class="field"><label for="alinhamento">Alinhamento</label>
+            <select id="alinhamento" name="alinhamento" required><option value="">SELECIONE</option>
+              <option value="1">1 - ALINHADO</option><option value="2">2 - RECUADO</option><option value="3">3 - ESQUINA</option></select></div>
+          <div class="field"><label for="posicionamento">Posicionamento</label>
+            <select id="posicionamento" name="posicionamento" required><option value="">SELECIONE</option>
+              <option value="1">1 - FRENTE</option><option value="2">2 - FUNDOS</option>
+              <option value="3">3 - LATERAL DIREITA</option><option value="4">4 - LATERAL ESQUERDA</option></select></div>
+        </div>
+        <div class="field"><label for="situacao_unid">Situação Unid. Constru.</label>
+          <select id="situacao_unid" name="situacao_unid" required><option value="">SELECIONE</option>
+            <option value="1">1 - PRÓPRIA</option><option value="2">2 - ALUGADA</option><option value="3">3 - CEDIDA</option><option value="4">4 - INVADIDA</option></select></div>
+        <div class="row row-2">
+          <div class="field"><label for="estrutura">Estrutura</label>
+            <select id="estrutura" name="estrutura" required><option value="">SELECIONE</option>
+              <option value="1">1 - ALVENARIA</option><option value="2">2 - MADEIRA</option><option value="3">3 - MISTA</option>
+              <option value="4">4 - METÁLICA</option><option value="5">5 - CONCRETO</option></select></div>
+          <div class="field"><label for="cobertura">Cobertura</label>
+            <select id="cobertura" name="cobertura" required><option value="">SELECIONE</option>
+              <option value="1">1 - TELHA DE BARRO</option><option value="2">2 - FIBROCIMENTO</option><option value="3">3 - LAJE</option>
+              <option value="4">4 - ZINCO</option><option value="5">5 - PALHA</option></select></div>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="cnsRI">CNS</label>
-            <input type="number" id="cnsRI" name="cnsRI" maxlength="6"></div>
-          <div class="field"><label for="cnmRI">CNM</label>
-            <input type="text" id="cnmRI" name="cnmRI" maxlength="16" pattern="\d{15,16}" inputmode="numeric" placeholder="15 ou 16 dígitos"></div>
+          <div class="field"><label for="paredes">Paredes</label>
+            <select id="paredes" name="paredes" required><option value="">SELECIONE</option>
+              <option value="1">1 - ALVENARIA</option><option value="2">2 - MADEIRA</option><option value="3">3 - MISTA</option><option value="4">4 - TAIPA</option></select></div>
+          <div class="field"><label for="forro">Forro</label>
+            <select id="forro" name="forro" required><option value="">SELECIONE</option>
+              <option value="1">1 - LAJE</option><option value="2">2 - MADEIRA</option><option value="3">3 - PVC</option>
+              <option value="4">4 - GESSO</option><option value="5">5 - SEM FORRO</option></select></div>
+        </div>
+        <div class="field"><label for="revest_fachada">Revestimento da Fachada</label>
+          <select id="revest_fachada" name="revest_fachada" required><option value="">SELECIONE</option>
+            <option value="1">1 - REBOCO</option><option value="2">2 - CERÂMICA</option><option value="3">3 - PINTURA</option><option value="4">4 - SEM REVESTIMENTO</option></select></div>
+        <div class="field"><label for="uso_principal">Uso Principal</label>
+          <select id="uso_principal" name="uso_principal" required><option value="">SELECIONE</option>
+            <option value="1">1 - RESIDENCIAL</option><option value="2">2 - COMERCIAL</option><option value="3">3 - MISTO</option><option value="4">4 - INDUSTRIAL</option></select></div>
+        <div class="row row-2">
+          <div class="field"><label for="instal_sanitaria">Instal. Sanitária</label>
+            <select id="instal_sanitaria" name="instal_sanitaria" required><option value="">SELECIONE</option>
+              <option value="1">1 - REDE PÚBLICA</option><option value="2">2 - FOSSA SÉPTICA</option>
+              <option value="3">3 - FOSSA RUDIMENTAR</option><option value="4">4 - INEXISTENTE</option></select></div>
+          <div class="field"><label for="instal_eletrica">Instal. Elétrica</label>
+            <select id="instal_eletrica" name="instal_eletrica" required><option value="">SELECIONE</option>
+              <option value="1">1 - REDE PÚBLICA</option><option value="2">2 - PRÓPRIA</option><option value="3">3 - INEXISTENTE</option></select></div>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="numMatriculaRI">Nº Matrícula</label>
-            <input type="text" id="numMatriculaRI" name="numMatriculaRI" maxlength="15"></div>
-          <div class="field"><label for="numUltimoAtoRI">Nº Último Ato</label>
-            <input type="text" id="numUltimoAtoRI" name="numUltimoAtoRI" maxlength="7"></div>
-        </div>
-        <div class="row row-3">
-          <div class="field"><label for="lvCartRI">Livro</label>
-            <input type="text" id="lvCartRI" name="lvCartRI" maxlength="4"></div>
-          <div class="field"><label for="flCartRI">Folha</label>
-            <input type="text" id="flCartRI" name="flCartRI" maxlength="4"></div>
-          <div class="field"><label for="dtUltAtualizacao">Últ. Atualização</label>
-            <input type="date" id="dtUltAtualizacao" name="dtUltAtualizacao"></div>
-        </div>
-
-        <p class="sub-head">Cartório de Notas</p>
-        <p class="sub-note">Informe o CNS (preferencial) ou o nome da serventia, junto com livro e folha.</p>
-        <div class="field">
-          <label for="nomeServentiaNotas">Nome da Serventia</label>
-          <input type="text" id="nomeServentiaNotas" name="nomeServentiaNotas" maxlength="300">
-        </div>
-        <div class="row row-3">
-          <div class="field"><label for="cnsNotas">CNS</label>
-            <input type="number" id="cnsNotas" name="cnsNotas" maxlength="6"></div>
-          <div class="field"><label for="lvCartNotas">Livro</label>
-            <input type="text" id="lvCartNotas" name="lvCartNotas" maxlength="4"></div>
-          <div class="field"><label for="flCartNotas">Folha</label>
-            <input type="text" id="flCartNotas" name="flCartNotas" maxlength="4"></div>
+          <div class="field"><label for="piso">Piso</label>
+            <select id="piso" name="piso" required><option value="">SELECIONE</option>
+              <option value="1">1 - CERÂMICA</option><option value="2">2 - CIMENTO</option><option value="3">3 - MADEIRA</option>
+              <option value="4">4 - PORCELANATO</option><option value="5">5 - TERRA BATIDA</option></select></div>
+          <div class="field"><label for="conservacao">Est. de Conservação</label>
+            <select id="conservacao" name="conservacao" required><option value="">SELECIONE</option>
+              <option value="1">1 - ÓTIMO</option><option value="2">2 - BOM</option><option value="3">3 - REGULAR</option>
+              <option value="4">4 - RUIM</option><option value="5">5 - PÉSSIMO</option></select></div>
         </div>
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 7 — ITBI ============ -->
+    <!-- ============ ETAPA 7 ============ -->
     <section class="step-panel" data-step="7">
       <div class="card"><div class="card-body">
-        <p class="sub-note">ITBI é opcional. Se preencher um campo, todos os demais passam a ser obrigatórios.</p>
-
-        <div class="row row-2">
-          <div class="field"><label for="baseCalculITBI">Base de Cálculo</label>
-            <input type="number" step="0.01" id="baseCalculITBI" name="baseCalculITBI"></div>
-          <div class="field"><label for="valorRefITBI">Valor de Referência</label>
-            <input type="number" step="0.01" id="valorRefITBI" name="valorRefITBI"></div>
+        <div class="field"><label for="responsavel">Nome do Responsável</label><select id="responsavel" name="responsavel" required><option value="">Carregando...</option></select></div>
+        <div class="field" id="wrap_responsavel_logado" style="display:none;">
+          <div class="hint">Conectado como <strong class="logado-nome">—</strong> · <a href="#" id="linkTrocarResponsavel" style="color:var(--primary);font-weight:700;">Trocar</a></div>
         </div>
-        <div class="row row-2">
-          <div class="field"><label for="dtTransacaoITBI">Data da Transação</label>
-            <input type="date" id="dtTransacaoITBI" name="dtTransacaoITBI"></div>
-          <div class="field"><label for="percTransacionadoITBI">% Transacionado</label>
-            <input type="number" step="0.000001" id="percTransacionadoITBI" name="percTransacionadoITBI"></div>
+        <div class="field" id="wrap_senha_resp" style="display:none;">
+          <label for="senha_responsavel">Senha de Acesso <span class="req">*</span></label>
+          <input type="password" id="senha_responsavel" name="senha_responsavel" autocomplete="current-password" placeholder="Digite sua senha de funcionário">
+          <div class="hint">Somente o funcionário cadastrado (ativo) pode concluir o envio.</div>
         </div>
-        <div class="field">
-          <label for="tpTransacaoITBI">Tipo da Transação</label>
-          <select id="tpTransacaoITBI" name="tpTransacaoITBI">
-            <option value="">Selecione…</option>
-            <option value="1">1 - Compra e venda</option><option value="2">2 - Usufruto</option>
-            <option value="3">3 - Nua propriedade</option><option value="4">4 - Cessão de direitos</option>
-            <option value="5">5 - Dação em pagamento</option><option value="6">6 - Extinção de condomínio</option>
-            <option value="7">7 - Integralização de capital</option><option value="8">8 - Permuta</option>
-            <option value="9">9 - Interveniência</option><option value="10">10 - Adjudicação</option>
-            <option value="11">11 - Compra e venda com interveniência</option><option value="12">12 - Cisão</option>
-            <option value="13">13 - Arrematação judicial</option><option value="14">14 - Distrato</option>
-            <option value="15">15 - Renúncia de usufruto</option><option value="16">16 - Extinção de pessoa jurídica</option>
-            <option value="17">17 - Torna sobre extinção de condomínio</option><option value="18">18 - Desincorporação de capital</option>
-            <option value="19">19 - Incorporação de sociedade</option><option value="20">20 - Desapropriação</option>
-            <option value="21">21 - Consolidação da propriedade</option><option value="22">22 - Distribuição de lucros e resultados</option>
-            <option value="23">23 - Partilha de bens em ação judicial (meação)</option><option value="24">24 - Redução de capital</option>
-            <option value="25">25 - Fusão</option><option value="26">26 - Transação judicial</option>
-            <option value="27">27 - Usucapião</option><option value="28">28 - Reserva de ágio</option>
-            <option value="29">29 - Reserva de capital</option><option value="30">30 - Translação de domínio</option>
-            <option value="31">31 - Direito real de aquisição</option><option value="32">32 - Cessão de direitos hereditários</option>
-            <option value="33">33 - Alienação</option><option value="34">34 - Instituição de direito real de garantia</option>
-            <option value="35">35 - Instituição do direito de superfície</option><option value="36">36 - Arrematação extrajudicial</option>
-            <option value="37">37 - Promessa de compra e venda</option>
-          </select>
-        </div>
-
-        <p class="sub-head">Transmitentes</p>
-        <div id="transmitentes"></div>
-        <button type="button" class="add-btn" data-add="transmitentes">+ Adicionar transmitente</button>
-
-        <p class="sub-head">Adquirentes</p>
-        <div id="adquirentes"></div>
-        <button type="button" class="add-btn" data-add="adquirentes">+ Adicionar adquirente</button>
+        <div class="field"><label for="data_registro">Data de Emissão</label><input type="date" id="data_registro" name="data_registro" required readonly></div>
       </div></div>
     </section>
 
@@ -661,7 +613,8 @@ body{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
-  getFirestore, doc, onSnapshot
+  getFirestore, collection, doc, onSnapshot,
+  getDocs, query, where, getDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
@@ -747,7 +700,6 @@ onAuthStateChanged(auth, async (user) => {
 
   let role = 'user';
   try {
-    const { getDoc } = await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js");
     const snap = await getDoc(doc(db, 'usuarios', user.uid));
     if(snap.exists()){
       role = String(snap.data().role || 'user').toLowerCase();
@@ -765,7 +717,7 @@ onAuthStateChanged(auth, async (user) => {
   if(!FORM_ROLES.includes(role)){
     gateShow({
       title:'Acesso pendente',
-      msg:'Sua conta ainda não foi aprovada. Aguarde a liberação pelo administrador.',
+      msg:'Sua conta ainda não foi aprovada. Aguarde a liberação pelo administrador (role "Funcionário").',
       showLogout:true
     });
     return;
@@ -783,504 +735,465 @@ function initFormulario(){
 (function () {
   'use strict';
 
-  const form    = document.getElementById('f');
+  const form = document.getElementById('fichaForm');
   const toastEl = document.getElementById('toast');
-  const DRAFT_KEY = 'careiro_sinter_draft_v2';
+  const DRAFT_KEY = 'careiro_ficha_draft_v3';
+  const RESP_LOGIN_KEY = 'careiro_responsavel_logado_v1';
 
-  /* ---------- DADOS PADRÃO (FALLBACK) ---------- */
-  const BAIRROS_PADRAO = [
-    'CENTRO','NOVA ESPERANÇA','NOVO HORIZONTE','DA PAZ',
-    'VISTA ALEGRE','SEBASTIÃO BORGES','DISTRITO','NOVO'
-  ];
-  const RUAS_PADRAO = ['VITÓRIA','PRECIOSA'];
-
-  let LISTAS  = {
-    bairros: BAIRROS_PADRAO.map((nome,i)=>({label:nome, numero:String(i+1).padStart(3,'0'), ativo:true})),
-    ruas: RUAS_PADRAO.slice()
-  };
-
-  /* ---------- HELPERS ---------- */
-  function norm(s){ return String(s == null ? '' : s).trim(); }
-  function esc(s){
-    return String(s == null ? '' : s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  function getResponsavelLogado(){
+    try { return localStorage.getItem(RESP_LOGIN_KEY) || ''; } catch(e){ return ''; }
   }
-  function parseDecimal(v){
-    v = String(v == null ? '' : v).replace(/[^\d,.-]/g,'');
-    if(!v) return 0;
-    if(v.indexOf(',') >= 0) return Number(v.replace(/\./g,'').replace(',','.')) || 0;
-    return Number(v) || 0;
+  function setResponsavelLogado(nome){
+    try { localStorage.setItem(RESP_LOGIN_KEY, nome || ''); } catch(e){}
   }
-  function round4(n){ return Math.round(n * 10000) / 10000; }
+  function limparResponsavelLogado(){
+    try { localStorage.removeItem(RESP_LOGIN_KEY); } catch(e){}
+  }
 
+  let LISTAS = { funcionarios: [], bairros: [], ruas: [] };
+  let QUADRAS = [];
+  let LOTES = [];
+  let FICHAS = [];
+  let fichasCarregadas = false;
+
+  function grupoAtivo(id){
+    const arr = Array.isArray(LISTAS[id]) ? LISTAS[id] : [];
+    if(id === 'bairros' || id === 'ruas') return arr.slice();
+    return arr.filter(o => o.ativo !== false);
+  }
+  function getFuncionarios(){ return grupoAtivo('funcionarios').map(o => o.label); }
   function getBairros(){
-    return (Array.isArray(LISTAS.bairros) ? LISTAS.bairros : [])
-      .filter(o => o && o.ativo !== false)
-      .map((o,i) => ({
-        nome:   o.label,
-        numero: String(o.numero != null ? o.numero : (i+1)).padStart(3,'0')
-      }));
+    return grupoAtivo('bairros').map((o, i) => ({
+      nome: o.label,
+      numero: String(o.numero != null ? o.numero : (i + 1)).padStart(3,'0')
+    }));
+  }
+  function getRuas(){
+    return grupoAtivo('ruas').map(o => ({
+      label: o.label,
+      bairro: String(o.bairro || '')
+    }));
   }
 
-  /* ---------- SELECT BAIRRO (ETAPA 1) ---------- */
-  function popularBairros(){
-    const sel = document.getElementById('bairro_imovel');
-    if(!sel) return;
-    const atual = sel.value;
-    const list = getBairros();
-    sel.innerHTML = '<option value="">' + (list.length ? 'Selecione' : 'Nenhum bairro') + '</option>' +
-      list.map(b => '<option value="' + esc(b.nome) + '">' + esc(b.numero) + ' - ' + esc(b.nome) + '</option>').join('');
-    if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
+  function quadrasDoBairro(bairro){
+    return QUADRAS.filter(q => q.bairro === bairro).sort((a,b) => a.numero.localeCompare(b.numero));
   }
+  function lotesDaQuadra(bairro, quadra){
+    return LOTES.filter(l => l.bairro === bairro && l.quadra === quadra).sort((a,b) => a.numero.localeCompare(b.numero));
+  }
+  function norm(s){ return String(s == null ? '' : s).trim(); }
+  function normalizarUnidade(u){ return String(u || '').trim().toUpperCase(); }
 
-  /* ---------- DATALISTS (ETAPA 4) ---------- */
-  function popularRuas(){
-    const dl = document.getElementById('ruas-list');
-    if(!dl) return;
-    const fromListas = (LISTAS.ruas || []).map(r => {
-      if(typeof r === 'string') return r;
-      return r.label || r.nome || '';
-    }).filter(Boolean);
-    const nomes = [...new Set([...RUAS_PADRAO, ...fromListas])]
-      .map(n => String(n).toUpperCase().trim())
-      .filter(Boolean);
-    dl.innerHTML = nomes.map(n => '<option value="' + esc(n) + '"></option>').join('');
-  }
-  function popularBairrosDatalist(){
-    const dl = document.getElementById('bairros-list');
-    if(!dl) return;
-    const bairros = getBairros().map(b => String(b.nome).toUpperCase()).filter(Boolean);
-    dl.innerHTML = bairros.map(n => '<option value="' + esc(n) + '"></option>').join('');
-  }
-
-  /* ---------- QUADRA / LOTE (3 DÍGITOS OBRIGATÓRIOS) ---------- */
-  function gerarInscricao(){
-    const bairro = document.getElementById('bairro_imovel').value;
-    const quadra = document.getElementById('quadra_imovel').value.trim();
-    const lote   = document.getElementById('lote_letra').value.trim();
-    const insc   = document.getElementById('inscricaoImobiliaria');
-    if(!insc) return;
-    if(!bairro || !quadra || !lote){ insc.value = ''; return; }
-    if(!/^\d{3}$/.test(quadra) || !/^\d{3}$/.test(lote)){ insc.value = ''; return; }
-    const info = getBairros().find(x => x.nome === bairro);
-    const b = (info && info.numero ? String(info.numero) : '000').padStart(3,'0');
-    insc.value = '00.00.' + quadra + '.' + lote + '.' + b;
-  }
-
-  function syncLocalizacao(){
-    const bairro = document.getElementById('bairro_imovel').value;
-    const qEl = document.getElementById('quadra_imovel');
-    const lEl = document.getElementById('lote_letra');
-    const hasBairro = !!bairro;
-    qEl.disabled = !hasBairro;
-    lEl.disabled = !hasBairro;
-    if(!hasBairro){
-      qEl.value = '';
-      lEl.value = '';
-    }
-    gerarInscricao();
-  }
-
-  ['quadra_imovel','lote_letra'].forEach(id => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.addEventListener('input', function(){
-      this.value = this.value.replace(/\D/g, '').slice(0, 3);
-      gerarInscricao();
+  function fichasComChave(bairro, quadra, lote, unidade){
+    const b = norm(bairro);
+    const q = norm(quadra);
+    const l = norm(lote);
+    const u = normalizarUnidade(unidade);
+    return FICHAS.filter(function(f){
+      return norm(f.bairro_imovel) === b
+          && norm(f.quadra_imovel) === q
+          && norm(f.lote_letra)    === l
+          && normalizarUnidade(f.unidade_imovel) === u;
     });
-  });
-
-  /* ---------- CÁLCULO DE ÁREAS ---------- */
-  function calcAreas(){
-    const g = id => document.getElementById(id);
-    const num = id => { const el = g(id); return el ? parseDecimal(el.value) : 0; };
-
-    const ft = num('frente_terreno'), fu = num('fundo_terreno');
-    const at = (ft > 0 && fu > 0) ? ft * fu : 0;
-    const atEl = g('areaTerreno');
-    if(atEl) atEl.value = at > 0 ? at.toFixed(2) : '';
-
-    const fe = num('frente_edif'), fo = num('fundo_edif');
-    const ae = (fe > 0 && fo > 0) ? fe * fo : 0;
-    const aeEl = g('areaConstruida');
-    if(aeEl) aeEl.value = ae > 0 ? ae.toFixed(2) : '';
   }
-
-  /* ============================================================
-     VALIDAÇÃO DE CPF / CNPJ
-     ============================================================ */
-  function validarCPF(cpf){
-    cpf = String(cpf).replace(/\D/g, '');
-    if(cpf.length !== 11) return false;
-    if(/^(\d)\1{10}$/.test(cpf)) return false;
-    let sum = 0;
-    for(let i = 0; i < 9; i++) sum += parseInt(cpf[i], 10) * (10 - i);
-    let d1 = 11 - (sum % 11);
-    if(d1 >= 10) d1 = 0;
-    if(parseInt(cpf[9], 10) !== d1) return false;
-    sum = 0;
-    for(let i = 0; i < 10; i++) sum += parseInt(cpf[i], 10) * (11 - i);
-    let d2 = 11 - (sum % 11);
-    if(d2 >= 10) d2 = 0;
-    if(parseInt(cpf[10], 10) !== d2) return false;
-    return true;
-  }
-  function validarCNPJ(cnpj){
-    cnpj = String(cnpj).replace(/\D/g, '');
-    if(cnpj.length !== 14) return false;
-    if(/^(\d)\1{13}$/.test(cnpj)) return false;
-    function calc(base){
-      let sum = 0, pos = base.length - 7;
-      for(let i = 0; i < base.length; i++){
-        sum += parseInt(base[i], 10) * pos--;
-        if(pos < 2) pos = 9;
-      }
-      const r = sum % 11;
-      return r < 2 ? 0 : 11 - r;
-    }
-    const d1 = calc(cnpj.slice(0, 12));
-    if(parseInt(cnpj[12], 10) !== d1) return false;
-    const d2 = calc(cnpj.slice(0, 13));
-    if(parseInt(cnpj[13], 10) !== d2) return false;
-    return true;
-  }
-  function validarCPFouCNPJ(v){
-    const d = String(v || '').replace(/\D/g, '');
-    if(!d) return true;
-    if(d.length === 11) return validarCPF(d);
-    if(d.length === 14) return validarCNPJ(d);
-    return false;
-  }
-
-  /* ---------- MÁSCARA CPF/CNPJ ---------- */
-  function formatCpfCnpj(v){
-    const d = String(v == null ? '' : v).replace(/\D/g, '').slice(0, 14);
-    if(!d) return '';
-    if(d.length <= 11){
-      // CPF: 000.000.000-00
-      let out = '';
-      for(let i = 0; i < d.length; i++){
-        if(i === 3 || i === 6) out += '.';
-        if(i === 9) out += '-';
-        out += d[i];
-      }
-      return out;
-    }
-    // CNPJ: 00.000.000/0000-00
-    let out = '';
-    for(let i = 0; i < d.length; i++){
-      if(i === 2 || i === 5) out += '.';
-      if(i === 8) out += '/';
-      if(i === 12) out += '-';
-      out += d[i];
-    }
-    return out;
-  }
-
-  /* ---------- CPF/CNPJ COM MÁSCARA + VALIDAÇÃO EM TEMPO REAL ---------- */
-  function setupCpfCnpjInput(inp){
-    if(!inp || inp.dataset.cpfSetup === '1') return;
-    inp.dataset.cpfSetup = '1';
-    inp.setAttribute('inputmode', 'numeric');
-    inp.setAttribute('maxlength', '18'); // CNPJ formatado: 18 caracteres
-    inp.setAttribute('autocomplete', 'off');
-
-    function aplicarFeedback(){
-      const wrap = inp.closest('.field') || inp.closest('.edit-item');
-      if(!wrap) return;
-      wrap.classList.remove('invalid', 'valid');
-      const v = inp.value.replace(/\D/g, '');
-      if(!v) return;
-      if(v.length === 11){
-        if(validarCPF(v)) wrap.classList.add('valid');
-        else wrap.classList.add('invalid');
-      } else if(v.length === 14){
-        if(validarCNPJ(v)) wrap.classList.add('valid');
-        else wrap.classList.add('invalid');
-      }
-    }
-
-    inp.addEventListener('input', function(){
-      const formatted = formatCpfCnpj(inp.value);
-      if(inp.value !== formatted) inp.value = formatted;
-      aplicarFeedback();
+  function fichasDoLote(bairro, quadra, lote){
+    const b = norm(bairro);
+    const q = norm(quadra);
+    const l = norm(lote);
+    return FICHAS.filter(function(f){
+      return norm(f.bairro_imovel) === b
+          && norm(f.quadra_imovel) === q
+          && norm(f.lote_letra)    === l;
     });
-
-    inp.addEventListener('blur', aplicarFeedback);
-
-    inp.addEventListener('paste', function(){
-      setTimeout(function(){
-        inp.value = formatCpfCnpj(inp.value);
-        aplicarFeedback();
-      }, 0);
-    });
-
-    // Formata valor inicial se já houver
-    if(inp.value) inp.value = formatCpfCnpj(inp.value);
   }
 
-  /* ============================================================
-     PORCENTAGEM DE PARTICIPAÇÃO DOS TITULARES
-     ============================================================ */
-  function getPercInputs(){
-    return [...document.querySelectorAll('#titulares .list-item [name=percTitular]')];
-  }
-
-  function recalcPerc(sourceInput){
-    const inputs = getPercInputs();
-    const n = inputs.length;
-    if(n === 0) return;
-
-    inputs.forEach(inp => {
-      const wrap = inp.closest('.field');
-      if(wrap) wrap.classList.remove('invalid');
-    });
-
-    if(n === 1){
-      inputs[0].readOnly = true;
-      inputs[0].value = '100';
-      delete inputs[0].dataset.locked;
-      return;
-    }
-
-    inputs.forEach(inp => { inp.readOnly = false; });
-
-    let sumLocked = 0;
-    let freeCount = 0;
-    inputs.forEach(inp => {
-      if(inp.dataset.locked === '1'){
-        const v = parseFloat(String(inp.value).replace(',', '.'));
-        if(Number.isFinite(v)) sumLocked += v;
-      } else {
-        freeCount++;
-      }
-    });
-
-    const remaining = 100 - sumLocked;
-
-    if(remaining < -0.001){
-      if(sourceInput){
-        const wrap = sourceInput.closest('.field');
-        if(wrap) wrap.classList.add('invalid');
-      }
-      return;
-    }
-
-    if(freeCount > 0){
-      const perFree = round4(remaining / freeCount);
-      inputs.forEach(inp => {
-        if(inp.dataset.locked !== '1'){
-          inp.value = perFree;
-        }
+  async function consultarLoteNaNuvem(bairro, quadra, lote, unidade){
+    if(!bairro || !quadra || !lote) return [];
+    try {
+      const q = query(
+        collection(db, 'fichas'),
+        where('bairro_imovel', '==', bairro),
+        where('quadra_imovel', '==', quadra),
+        where('lote_letra', '==', lote)
+      );
+      const snap = await getDocs(q);
+      const u = normalizarUnidade(unidade);
+      const encontrados = [];
+      snap.forEach(d => {
+        const f = d.data();
+        if(normalizarUnidade(f.unidade_imovel) === u) encontrados.push(f);
       });
-    } else {
-      if(Math.abs(sumLocked - 100) > 0.01 && sourceInput){
-        const wrap = sourceInput.closest('.field');
-        if(wrap) wrap.classList.add('invalid');
-      }
+      return encontrados;
+    } catch(err){
+      console.warn('[consulta] falhou, usando cache local:', err);
+      return fichasComChave(bairro, quadra, lote, unidade);
     }
   }
 
-  document.getElementById('titulares').addEventListener('input', function(e){
-    if(!e.target || e.target.name !== 'percTitular') return;
-    const inp = e.target;
-    const val = String(inp.value || '').trim();
-
-    if(val === ''){
-      delete inp.dataset.locked;
-    } else {
-      inp.dataset.locked = '1';
-      let v = parseFloat(val.replace(',', '.'));
-      if(Number.isFinite(v)){
-        v = Math.max(0, Math.min(100, v));
-        inp.value = round4(v);
-      }
-    }
-    recalcPerc(inp);
-  });
-
-  document.getElementById('titulares').addEventListener('focusin', function(e){
-    if(e.target && e.target.name === 'percTitular'){
-      setTimeout(function(){ try { e.target.select(); } catch(err){} }, 0);
-    }
-  });
-
-  function atualizarTitularesUI(){
-    const rows = [...document.querySelectorAll('#titulares .list-item')];
-    const n = rows.length;
-    rows.forEach(r => {
-      const btn = r.querySelector('.rm');
-      if(btn) btn.style.display = n <= 1 ? 'none' : '';
+  function popularResponsaveis(){
+    const sel = document.getElementById('responsavel'); if(!sel) return;
+    const atual = sel.value;
+    const list = getFuncionarios();
+    sel.innerHTML = '<option value="">' + (list.length ? 'Selecione' : 'Nenhum responsável cadastrado') + '</option>' +
+      list.map(n => '<option value="' + String(n).replace(/"/g,'&quot;') + '">' + esc(n) + '</option>').join('');
+    const logado = getResponsavelLogado();
+    if(atual) sel.value = atual;
+    else if(logado && list.includes(logado)) sel.value = logado;
+    atualizarCampoSenha();
+    syncTitle(sel);
+  }
+  function popularBairros(){
+    const list = getBairros();
+    ['bairro_prop','bairro_imovel'].forEach(id => {
+      const sel = document.getElementById(id); if(!sel) return;
+      const atual = sel.value;
+      sel.innerHTML = '<option value="">' + (list.length ? 'Selecione' : 'Nenhum bairro cadastrado') + '</option>' +
+        list.map(b => '<option value="' + String(b.nome).replace(/"/g,'&quot;') + '">' + esc(b.numero) + ' - ' + esc(b.nome) + '</option>').join('');
+      if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
+      syncTitle(sel);
     });
-    recalcPerc(null);
   }
 
-  /* ---------- TEMPLATES ---------- */
-  const titularTpl = () => `<div class="list-item">
-    <button type="button" class="rm">remover</button>
-    <div class="field"><label>CPF/CNPJ</label>
-      <input name="niTitular" data-mask="cpfcnpj" maxlength="18" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00"></div>
-    <div class="field"><label>Nome</label>
-      <input name="nomeTitular" maxlength="100"></div>
-    <div class="row row-2">
-      <div class="field"><label>% Participação</label>
-        <input type="number" step="0.0001" min="0" max="100" name="percTitular"></div>
-      <div class="field"><label>Data de Aquisição</label>
-        <input type="date" name="dtAquisicaoTitular"></div>
-    </div>
-    <div class="field"><label>Tipo de Titularidade</label>
-      <select name="tipoTitularidade"><option value="">Selecione…</option>
-        <option value="1">1 - Proprietário</option><option value="2">2 - Nu proprietário</option>
-        <option value="3">3 - Senhorio Direto</option><option value="4">4 - Credor Fiduciário</option>
-        <option value="5">5 - Possuidor a justo título</option><option value="6">6 - Possuidor por simples ocupação</option>
-        <option value="7">7 - Enfiteuta</option><option value="8">8 - Usufrutuário</option>
-        <option value="9">9 - Devedor Fiduciante</option><option value="10">10 - Usuário</option>
-        <option value="11">11 - Superficiário</option><option value="12">12 - Concessionário do Direito Real de Uso</option>
-        <option value="13">13 - Habitador</option><option value="14">14 - Promitente comprador (com registro)</option>
-        <option value="15">15 - Concessionário (contrato de concessão de uso)</option>
-        <option value="16">16 - Promitente comprador (demais)</option>
-        <option value="17">17 - Arrendatário</option>
-      </select></div>
-    <div class="field"><label>Doc. de Titularidade</label>
-      <select name="docTitularidade"><option value="">Selecione…</option>
-        <option value="1">1 - Escritura Pública</option><option value="2">2 - Contrato com força de Escritura</option>
-        <option value="3">3 - Instrumento Particular</option><option value="4">4 - Sentença Judicial</option>
-        <option value="5">5 - Documento de Posse Emitido por Órgão Público</option>
-      </select></div>
-  </div>`;
+  function popularLogradouros(sufixo){
+    const bairroId = sufixo === 'prop' ? 'bairro_prop' : 'bairro_imovel';
+    const selectId = sufixo === 'prop' ? 'logradouro_prop' : 'logradouro_imovel';
+    const bEl = document.getElementById(bairroId);
+    const sel = document.getElementById(selectId);
+    if(!sel) return;
 
-  const transTpl = () => `<div class="list-item">
-    <button type="button" class="rm">remover</button>
-    <div class="field"><label>Nome</label>
-      <input name="nomeTransmitenteITBI" maxlength="300"></div>
-    <div class="field"><label>CPF/CNPJ</label>
-      <input name="idTransmitenteITBI" data-mask="cpfcnpj" maxlength="18" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00"></div>
-  </div>`;
+    const bairro = bEl ? bEl.value : '';
+    const atual  = sel.value;
+    const list   = getRuas().filter(r => r.bairro === bairro);
 
-  const adqTpl = () => `<div class="list-item">
-    <button type="button" class="rm">remover</button>
-    <div class="field"><label>Nome</label>
-      <input name="nomeAdquirenteITBI" maxlength="300"></div>
-    <div class="field"><label>CPF/CNPJ</label>
-      <input name="idAdquirenteITBI" data-mask="cpfcnpj" maxlength="18" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00"></div>
-    <div class="field"><label>% Adquirido</label>
-      <input type="number" step="0.000001" name="percTransacAdquirenteITBI"></div>
-  </div>`;
+    let placeholder;
+    if(!bairro)          placeholder = 'Selecione o bairro primeiro';
+    else if(list.length) placeholder = 'Selecione a rua';
+    else                 placeholder = 'Nenhum logradouro vinculado a este bairro';
 
-  const lists = {
-    titulares:     { el: document.getElementById('titulares'),     tpl: titularTpl },
-    transmitentes: { el: document.getElementById('transmitentes'),  tpl: transTpl   },
-    adquirentes:   { el: document.getElementById('adquirentes'),    tpl: adqTpl     }
-  };
+    sel.innerHTML = '<option value="">' + placeholder + '</option>' +
+      list.map(r => '<option value="' + String(r.label).replace(/"/g,'&quot;') + '">' + esc(r.label) + '</option>').join('');
 
-  function removerRow(key, node){
-    node.remove();
-    if(key === 'titulares'){
-      const restantes = [...lists[key].el.querySelectorAll('.list-item')];
-      if(restantes.length === 0){
-        addRow('titulares');
+    if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
+    else sel.value = '';
+
+    syncTitle(sel);
+  }
+  function popularRuas(){
+    popularLogradouros('prop');
+    popularLogradouros('imovel');
+  }
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function syncTitle(el){
+    if(!el) return;
+    if(el.tagName === 'SELECT'){
+      const opt = el.options[el.selectedIndex];
+      el.title = opt ? opt.textContent.trim() : '';
+    } else {
+      el.title = el.value || '';
+    }
+  }
+  function refreshTitles(){
+    form.querySelectorAll('select, input[readonly]').forEach(syncTitle);
+  }
+
+  function atualizarQuadras(sufixo){
+    const bairro = document.getElementById('bairro_' + sufixo).value;
+    const selQ = document.getElementById('quadra_' + sufixo);
+    const selL = document.getElementById(sufixo === 'prop' ? 'lote_prop' : 'lote_letra');
+    const inpU = document.getElementById('unidade_' + sufixo);
+
+    if(selL){
+      selL.innerHTML = '<option value="">—</option>';
+      selL.value = '';
+      selL.disabled = !bairro;
+      syncTitle(selL);
+    }
+    if(inpU && inpU.value) inpU.value = '';
+
+    if(!bairro){
+      if(selQ){ selQ.innerHTML = '<option value="">—</option>'; selQ.value = ''; selQ.disabled = true; syncTitle(selQ); }
+      if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
+      return;
+    }
+
+    const lista = quadrasDoBairro(bairro);
+    const atualQ = selQ.value;
+    if(selQ){
+      selQ.disabled = false;
+      selQ.innerHTML = '<option value="">' + (lista.length ? 'Selecione' : 'Nenhuma quadra cadastrada para este bairro') + '</option>' +
+        lista.map(q => '<option value="' + esc(q.numero) + '">' + esc(q.numero) + '</option>').join('');
+      if(atualQ && lista.some(q => q.numero === atualQ)) selQ.value = atualQ;
+      else selQ.value = '';
+      syncTitle(selQ);
+    }
+
+    const quadraAtual = selQ ? selQ.value : '';
+    if(quadraAtual) atualizarLotes(sufixo);
+    if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
+  }
+
+  function atualizarLotes(sufixo){
+    const bairro = document.getElementById('bairro_' + sufixo).value;
+    const quadra = document.getElementById('quadra_' + sufixo).value;
+    const selL = document.getElementById(sufixo === 'prop' ? 'lote_prop' : 'lote_letra');
+    const inpU = document.getElementById('unidade_' + sufixo);
+    if(!selL) return;
+
+    selL.innerHTML = '<option value="">—</option>';
+    selL.value = '';
+    selL.disabled = !quadra;
+    syncTitle(selL);
+
+    if(inpU && inpU.value) inpU.value = '';
+
+    if(!bairro || !quadra){
+      if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
+      return;
+    }
+
+    const lista = lotesDaQuadra(bairro, quadra);
+    selL.innerHTML = '<option value="">' + (lista.length ? 'Selecione' : 'Nenhum lote cadastrado para esta quadra') + '</option>' +
+      lista.map(function(l){
+        return '<option value="' + esc(l.numero) + '">' + esc(l.numero) + '</option>';
+      }).join('');
+    syncTitle(selL);
+
+    if(sufixo === 'imovel') atualizarAlertaImovel(); else atualizarAlertaProprietario();
+  }
+
+  function atualizarAlertaProprietario(){
+    const el = document.getElementById('proprietarioAlerta');
+    if(!el) return;
+    el.className = 'alert';
+    el.innerHTML = '';
+
+    const bairro = document.getElementById('bairro_prop').value;
+    const quadra = document.getElementById('quadra_prop').value;
+    const lote   = document.getElementById('lote_prop').value;
+    const unidade= document.getElementById('unidade_prop').value;
+
+    if(!bairro || !quadra || !lote) return;
+
+    const duplicadas = fichasComChave(bairro, quadra, lote, unidade);
+    const todas = fichasDoLote(bairro, quadra, lote);
+
+    if(duplicadas.length > 0){
+      const uTxt = normalizarUnidade(unidade)
+        ? ' <strong>(unidade ' + esc(normalizarUnidade(unidade)) + ')</strong>'
+        : ' <strong>sem unidade</strong>';
+      el.className = 'alert show error';
+      el.innerHTML =
+        '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Lote já cadastrado</div>' +
+        'Este lote' + uTxt + ' já possui cadastro no sistema. Selecione outro lote para continuar.';
+      return;
+    }
+
+    if(todas.length > 0){
+      const usadas = [];
+      todas.forEach(function(f){
+        const u = normalizarUnidade(f.unidade_imovel);
+        if(u && !usadas.includes(u)) usadas.push(u);
+      });
+
+      if(normalizarUnidade(unidade)){
+        el.className = 'alert show success';
+        el.innerHTML =
+          '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Unidade disponível</div>' +
+          'Este lote já possui ' + todas.length + ' cadastro(s)' +
+          (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
+          ', mas a unidade <strong>' + esc(normalizarUnidade(unidade)) + '</strong> ainda está livre (desmembramento do lote).';
         return;
       }
-      atualizarTitularesUI();
+
+      el.className = 'alert show warn';
+      el.innerHTML =
+        '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Lote com cadastros existentes</div>' +
+        'Este lote já possui ' + todas.length + ' cadastro(s)' +
+        (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
+        '. Informe uma unidade diferente (ex.: A, B) para cadastrar este como um desmembramento do lote.';
+      return;
     }
+
+    el.className = 'alert show success';
+    el.innerHTML =
+      '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Lote disponível</div>' +
+      'Este lote está livre para cadastro.';
   }
 
-  function addRow(key){
-    const div = document.createElement('div');
-    div.innerHTML = lists[key].tpl();
-    const node = div.firstElementChild;
+  function atualizarAlertaImovel(){
+    const el = document.getElementById('imovelAlerta');
+    if(!el) return;
+    el.className = 'alert';
+    el.innerHTML = '';
 
-    const rm = node.querySelector('.rm');
-    if(rm) rm.onclick = () => removerRow(key, node);
+    const bairro = document.getElementById('bairro_imovel').value;
+    const quadra = document.getElementById('quadra_imovel').value;
+    const lote   = document.getElementById('lote_letra').value;
+    const unidade= document.getElementById('unidade_imovel').value;
 
-    node.querySelectorAll('[data-mask="cpfcnpj"]').forEach(setupCpfCnpjInput);
+    if(!bairro || !quadra || !lote) return;
 
-    lists[key].el.appendChild(node);
+    const duplicadas = fichasComChave(bairro, quadra, lote, unidade);
+    const todas = fichasDoLote(bairro, quadra, lote);
 
-    if(key === 'titulares'){
-      atualizarTitularesUI();
+    if(duplicadas.length > 0){
+      const uTxt = normalizarUnidade(unidade)
+        ? ' (unidade <strong>' + esc(normalizarUnidade(unidade)) + '</strong>)'
+        : ' <strong>sem unidade</strong>';
+      el.className = 'alert show error';
+      el.innerHTML =
+        '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Cadastro já existe</div>' +
+        'Já existe um cadastro para este lote' + uTxt + '. Não é possível duplicar.';
+      return;
     }
+
+    if(todas.length > 0){
+      const usadas = [];
+      todas.forEach(function(f){
+        const u = normalizarUnidade(f.unidade_imovel);
+        if(u && !usadas.includes(u)) usadas.push(u);
+      });
+
+      if(normalizarUnidade(unidade)){
+        el.className = 'alert show success';
+        el.innerHTML =
+          '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Unidade disponível</div>' +
+          'Este lote já possui ' + todas.length + ' cadastro(s)' +
+          (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
+          ', mas a unidade <strong>' + esc(normalizarUnidade(unidade)) + '</strong> ainda está livre (desmembramento do lote).';
+        return;
+      }
+
+      el.className = 'alert show warn';
+      el.innerHTML =
+        '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Lote com cadastros existentes</div>' +
+        'Este lote já possui ' + todas.length + ' cadastro(s)' +
+        (usadas.length ? ' nas unidades: <strong>' + usadas.map(esc).join(', ') + '</strong>' : '') +
+        '. Informe uma unidade diferente (ex.: A, B) para cadastrar este como um desmembramento do lote.';
+      return;
+    }
+
+    el.className = 'alert show success';
+    el.innerHTML =
+      '<div class="alert-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Lote disponível</div>' +
+      'Este lote ainda não possui cadastro.';
   }
 
-  document.querySelectorAll('[data-add]').forEach(b => {
-    b.onclick = () => addRow(b.dataset.add);
-  });
-  addRow('titulares'); addRow('transmitentes'); addRow('adquirentes');
-
-  /* ---------- SINCRONIZAÇÕES CONDICIONAIS ---------- */
-  const tipoImovel = document.getElementById('tipoImovel');
-  function syncTipo(){
-    const v = tipoImovel.value;
-    const arq = document.querySelector('[name=tpArquitetonico]');
-    const areaC = document.querySelector('[name=areaConstruida]');
-    const idP = document.querySelector('[name=idParcela]');
-    const bice = document.querySelector('[name=bice]');
-    const fsComp = document.getElementById('fs-complementar');
-    if(fsComp) fsComp.classList.toggle('hidden', v === '1');
-    if(arq) arq.disabled = (v === '1');
-    if(areaC) areaC.disabled = (v === '1');
-    if(idP) idP.disabled = (v === '1');
-    if(bice) bice.disabled = (v !== '3');
+  function escutarListas(){
+    onSnapshot(doc(db,'config','listas'), snap => {
+      const data = snap.exists() ? (snap.data().grupos || {}) : {};
+      LISTAS = {
+        funcionarios: Array.isArray(data.funcionarios) ? data.funcionarios : [],
+        bairros:      Array.isArray(data.bairros)      ? data.bairros      : [],
+        ruas:         Array.isArray(data.ruas)         ? data.ruas         : []
+      };
+      popularResponsaveis(); popularBairros(); popularRuas();
+    });
   }
-  tipoImovel.addEventListener('change', syncTipo); syncTipo();
-
-  const temBairro = document.getElementById('temBairro');
-  function syncBairro(){
-    const b = document.querySelector('[name=bairro]');
-    if(b) b.required = temBairro.checked;
+  function escutarQuadras(){
+    onSnapshot(doc(db,'config','quadras'), snap => {
+      QUADRAS = snap.exists() && Array.isArray(snap.data().items) ? snap.data().items : [];
+      atualizarQuadras('prop');
+      atualizarQuadras('imovel');
+    });
   }
-  temBairro.addEventListener('change', syncBairro); syncBairro();
-
-  /* ---------- MASK CEP ---------- */
-  const cepEl = document.getElementById('cep');
-  if(cepEl){
-    cepEl.addEventListener('input', () => {
-      let v = cepEl.value.replace(/\D/g,'').slice(0,8);
-      cepEl.value = v;
+  function escutarLotes(){
+    onSnapshot(doc(db,'config','lotes'), snap => {
+      LOTES = snap.exists() && Array.isArray(snap.data().items) ? snap.data().items : [];
+      const qp = document.getElementById('quadra_prop').value;
+      const qi = document.getElementById('quadra_imovel').value;
+      atualizarQuadras('prop');
+      atualizarQuadras('imovel');
+      if(qp){ document.getElementById('quadra_prop').value = qp; atualizarLotes('prop'); }
+      if(qi){ document.getElementById('quadra_imovel').value = qi; atualizarLotes('imovel'); }
+    });
+  }
+  function escutarFichas(){
+    onSnapshot(collection(db,'fichas'), snap => {
+      FICHAS = [];
+      snap.forEach(d => FICHAS.push(Object.assign({ id: d.id }, d.data())));
+      fichasCarregadas = true;
+      atualizarAlertaImovel();
+      atualizarAlertaProprietario();
+    }, err => {
+      console.warn('Erro ao escutar fichas:', err);
+      fichasCarregadas = true;
     });
   }
 
-  /* ============================================================
-     FOTO
-     ============================================================ */
+  function onlyDigits(v){ return v.replace(/\D+/g, ''); }
+  const masks = {
+    cep: v => { v = onlyDigits(v).slice(0,8); return v.length > 5 ? v.slice(0,5) + '-' + v.slice(5) : v; },
+    phone: v => {
+      v = onlyDigits(v).slice(0,11);
+      if(v.length <= 2) return v.length ? '(' + v : '';
+      if(v.length <= 6) return '(' + v.slice(0,2) + ') ' + v.slice(2);
+      if(v.length <= 10) return '(' + v.slice(0,2) + ') ' + v.slice(2,6) + '-' + v.slice(6);
+      return '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+    },
+    doc: v => {
+      v = onlyDigits(v).slice(0,14);
+      if(v.length <= 11){
+        return v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+      }
+      return v.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2');
+    }
+  };
+  document.querySelectorAll('[data-mask]').forEach(input => {
+    const fn = masks[input.dataset.mask]; if(!fn) return;
+    input.addEventListener('input', () => {
+      const pos = input.selectionStart, before = input.value.length;
+      input.value = fn(input.value);
+      const after = input.value.length;
+      input.setSelectionRange(pos + (after - before), pos + (after - before));
+    });
+  });
+
   let fotoBase64 = '';
-  let fotoTipo = '';
+  let fotoTipo   = '';
   let fotoTamanhoBytes = 0;
   let fotoGeo = null;
 
-  const photoInput = document.getElementById('foto_input');
-  const photoBlock = document.getElementById('photoBlock');
-  const photoEmpty = document.getElementById('photoEmpty');
+  const photoInput   = document.getElementById('foto_input');
+  const photoBlock   = document.getElementById('photoBlock');
+  const photoEmpty   = document.getElementById('photoEmpty');
   const photoPreview = document.getElementById('photoPreview');
-  const photoImg = document.getElementById('photoImg');
-  const photoInfo = document.getElementById('photoInfo');
+  const photoImg     = document.getElementById('photoImg');
+  const photoInfo    = document.getElementById('photoInfo');
   const photoLoading = document.getElementById('photoLoading');
 
   function renderFotoUI(){
     if(!photoBlock) return;
     const temFoto = !!fotoBase64;
     photoBlock.classList.toggle('has-photo', temFoto);
-    if(photoEmpty) photoEmpty.style.display = temFoto ? 'none' : '';
-    if(photoPreview) photoPreview.style.display = temFoto ? '' : 'none';
-    if(photoLoading) photoLoading.style.display = 'none';
+    photoEmpty.style.display   = temFoto ? 'none' : '';
+    photoPreview.style.display = temFoto ? '' : 'none';
+    photoLoading.style.display = 'none';
   }
   function setFotoLoading(on){
-    if(photoLoading) photoLoading.style.display = on ? '' : 'none';
-    if(photoEmpty) photoEmpty.style.display = on ? 'none' : (fotoBase64 ? 'none' : '');
-    if(photoPreview) photoPreview.style.display = on ? 'none' : (fotoBase64 ? '' : 'none');
+    photoLoading.style.display = on ? '' : 'none';
+    photoEmpty.style.display   = on ? 'none' : (fotoBase64 ? 'none' : '');
+    photoPreview.style.display = on ? 'none' : (fotoBase64 ? '' : 'none');
   }
   function setFotoLoadingTexto(txt){
     if(!photoLoading) return;
     photoLoading.innerHTML = '<span class="spinner"></span> ' + esc(String(txt || ''));
   }
+
   function resetFoto(){
-    fotoBase64 = ''; fotoTipo = ''; fotoTamanhoBytes = 0; fotoGeo = null;
+    fotoBase64 = '';
+    fotoTipo = '';
+    fotoTamanhoBytes = 0;
+    fotoGeo = null;
     if(photoImg) photoImg.removeAttribute('src');
     if(photoInput) photoInput.value = '';
     if(photoBlock) photoBlock.classList.remove('invalid');
     renderFotoUI();
   }
+
   document.getElementById('btnTirarFoto')?.addEventListener('click', () => photoInput && photoInput.click());
   document.getElementById('btnTrocarFoto')?.addEventListener('click', () => photoInput && photoInput.click());
   document.getElementById('btnRemoverFoto')?.addEventListener('click', () => {
@@ -1292,113 +1205,152 @@ function initFormulario(){
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(file);
       const img = new Image();
-      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
       img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img_load')); };
       img.src = url;
     });
   }
   function canvasToBlob(canvas, type, quality){
-    return new Promise(resolve => { canvas.toBlob(b => resolve(b), type, quality); });
+    return new Promise(resolve => {
+      canvas.toBlob(b => resolve(b), type, quality);
+    });
   }
   function blobToBase64(blob){
     return new Promise((resolve, reject) => {
       const r = new FileReader();
-      r.onload = () => resolve(String(r.result).split(',')[1] || '');
+      r.onload  = () => resolve(String(r.result).split(',')[1] || '');
       r.onerror = reject;
       r.readAsDataURL(blob);
     });
   }
-  function suportaWebP(){
-    try {
-      const c = document.createElement('canvas'); c.width = 1; c.height = 1;
-      return c.toDataURL('image/webp').startsWith('data:image/webp');
-    } catch(e){ return false; }
-  }
-
-  function obterLocalizacaoPrecisa(opts){
-    const cfg = opts || {};
-    const timeoutMs = Number(cfg.timeoutMs) > 0 ? Number(cfg.timeoutMs) : 8000;
-    const alvoPrecisao = Number(cfg.alvoPrecisao) > 0 ? Number(cfg.alvoPrecisao) : 8;
-    const onUpdate = typeof cfg.onUpdate === 'function' ? cfg.onUpdate : null;
-
-    return new Promise(resolve => {
-      if(!('geolocation' in navigator)){ resolve(null); return; }
-      let melhor = null, watchId = null, encerrado = false;
-      const inicio = Date.now();
-      let timer = null;
-      const finalizar = () => {
-        if(encerrado) return;
-        encerrado = true;
-        if(watchId !== null){ try { navigator.geolocation.clearWatch(watchId); } catch(e){} watchId = null; }
-        if(timer) clearTimeout(timer);
-        resolve(melhor);
-      };
-      timer = setTimeout(finalizar, timeoutMs);
-      try {
-        watchId = navigator.geolocation.watchPosition(
-          pos => {
-            const acc = Number(pos.coords.accuracy);
-            const amostra = { lat: pos.coords.latitude, lng: pos.coords.longitude,
-              precisao: Number.isFinite(acc) ? acc : null, horario: pos.timestamp || Date.now() };
-            if(melhor === null || (amostra.precisao != null && (melhor.precisao == null || amostra.precisao < melhor.precisao))){
-              melhor = amostra;
-            }
-            if(onUpdate){ try { onUpdate(melhor, Date.now() - inicio); } catch(e){} }
-            if(melhor && melhor.precisao != null && melhor.precisao <= alvoPrecisao){ finalizar(); }
-          },
-          () => { finalizar(); },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: timeoutMs }
-        );
-      } catch(e){ finalizar(); }
-    });
-  }
-
   function desenharEmCanvas(img, w, h, geo){
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
     const ctx = c.getContext('2d');
     ctx.drawImage(img, 0, 0, w, h);
-    if(geo){
-      const barH = Math.max(30, Math.round(h * 0.085));
-      ctx.save();
-      ctx.fillStyle = 'rgba(0,0,0,0.58)';
-      ctx.fillRect(0, h - barH, w, barH);
-      const fonteBase = Math.max(11, Math.round(w / 34));
-      const pad = Math.round(fonteBase * 0.7);
-      const linha1 = '📍 ' + geo.lat.toFixed(6) + ', ' + geo.lng.toFixed(6) +
-        (geo.precisao ? ' (±' + Math.round(geo.precisao) + 'm)' : '');
-      const linha2 = new Date(geo.horario).toLocaleString('pt-BR');
-      ctx.fillStyle = '#ffffff';
-      ctx.textBaseline = 'middle';
-      if(barH >= fonteBase * 2.3){
-        ctx.font = fonteBase + 'px -apple-system, Arial, sans-serif';
-        ctx.fillText(linha1, pad, h - barH + barH * 0.32);
-        ctx.font = Math.round(fonteBase * 0.86) + 'px -apple-system, Arial, sans-serif';
-        ctx.fillText(linha2, pad, h - barH + barH * 0.74);
-      } else {
-        ctx.font = fonteBase + 'px -apple-system, Arial, sans-serif';
-        ctx.fillText(linha1 + '  ·  ' + linha2, pad, h - barH / 2);
-      }
-      ctx.restore();
-    }
+    carimbarLocalizacao(ctx, w, h, geo);
     return c;
+  }
+  function suportaWebP(){
+    try {
+      const c = document.createElement('canvas');
+      c.width = 1; c.height = 1;
+      return c.toDataURL('image/webp').startsWith('data:image/webp');
+    } catch(e){ return false; }
+  }
+
+  function obterLocalizacaoPrecisa(opts){
+    const cfg          = opts || {};
+    const timeoutMs    = Number(cfg.timeoutMs)    > 0 ? Number(cfg.timeoutMs)    : 8000;
+    const alvoPrecisao = Number(cfg.alvoPrecisao) > 0 ? Number(cfg.alvoPrecisao) : 8;
+    const onUpdate     = typeof cfg.onUpdate === 'function' ? cfg.onUpdate : null;
+
+    return new Promise(resolve => {
+      if(!('geolocation' in navigator)){ resolve(null); return; }
+
+      let melhor    = null;
+      let watchId   = null;
+      let encerrado = false;
+      const inicio  = Date.now();
+      let timer     = null;
+
+      const finalizar = () => {
+        if(encerrado) return;
+        encerrado = true;
+        if(watchId !== null){
+          try { navigator.geolocation.clearWatch(watchId); } catch(e){}
+          watchId = null;
+        }
+        if(timer) clearTimeout(timer);
+        resolve(melhor);
+      };
+
+      timer = setTimeout(finalizar, timeoutMs);
+
+      try {
+        watchId = navigator.geolocation.watchPosition(
+          pos => {
+            const acc = Number(pos.coords.accuracy);
+            const amostra = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              precisao: Number.isFinite(acc) ? acc : null,
+              horario: pos.timestamp || Date.now()
+            };
+
+            if(melhor === null
+               || (amostra.precisao != null &&
+                   (melhor.precisao == null || amostra.precisao < melhor.precisao))){
+              melhor = amostra;
+            }
+
+            if(onUpdate){
+              try { onUpdate(melhor, Date.now() - inicio); } catch(e){}
+            }
+
+            if(melhor && melhor.precisao != null && melhor.precisao <= alvoPrecisao){
+              finalizar();
+            }
+          },
+          () => { finalizar(); },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: timeoutMs
+          }
+        );
+      } catch(e){
+        finalizar();
+      }
+    });
+  }
+
+  function carimbarLocalizacao(ctx, w, h, geo){
+    if(!geo) return;
+    const barH = Math.max(30, Math.round(h * 0.085));
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.58)';
+    ctx.fillRect(0, h - barH, w, barH);
+
+    const fonteBase = Math.max(11, Math.round(w / 34));
+    const pad = Math.round(fonteBase * 0.7);
+    const linha1 = '📍 ' + geo.lat.toFixed(6) + ', ' + geo.lng.toFixed(6) +
+      (geo.precisao ? ' (±' + Math.round(geo.precisao) + 'm)' : '');
+    const linha2 = new Date(geo.horario).toLocaleString('pt-BR');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.textBaseline = 'middle';
+    if(barH >= fonteBase * 2.3){
+      ctx.font = fonteBase + 'px -apple-system, Arial, sans-serif';
+      ctx.fillText(linha1, pad, h - barH + barH * 0.32);
+      ctx.font = Math.round(fonteBase * 0.86) + 'px -apple-system, Arial, sans-serif';
+      ctx.fillText(linha2, pad, h - barH + barH * 0.74);
+    } else {
+      ctx.font = fonteBase + 'px -apple-system, Arial, sans-serif';
+      ctx.fillText(linha1 + '  ·  ' + linha2, pad, h - barH / 2);
+    }
+    ctx.restore();
   }
 
   async function comprimirImagemParaBase64(file, maxBytes, geo){
     const alvo = maxBytes || (150 * 1024);
     const img = await loadImageFromFile(file);
+
     const MAX_DIM = 1600;
-    let w = img.naturalWidth || img.width;
+    let w = img.naturalWidth  || img.width;
     let h = img.naturalHeight || img.height;
     if(w > MAX_DIM || h > MAX_DIM){
       const r = Math.min(MAX_DIM / w, MAX_DIM / h);
       w = Math.max(1, Math.round(w * r));
       h = Math.max(1, Math.round(h * r));
     }
+
     const usaWebP = suportaWebP();
     const formatoPrimario = usaWebP ? 'image/webp' : 'image/jpeg';
-    const fallback = 'image/jpeg';
+    const fallback        = 'image/jpeg';
+
     let melhorBlob = null;
+
     const qualidades = [0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.28, 0.22];
     for(const q of qualidades){
       const canvas = desenharEmCanvas(img, w, h, geo);
@@ -1408,20 +1360,25 @@ function initFormulario(){
       if(!melhorBlob || blob.size < melhorBlob.size) melhorBlob = blob;
       if(blob.size <= alvo){ melhorBlob = blob; break; }
     }
+
     let tentativas = 0;
     while(melhorBlob && melhorBlob.size > alvo && tentativas < 6){
       tentativas++;
       const escala = Math.sqrt(alvo / melhorBlob.size) * 0.92;
       w = Math.max(320, Math.round(w * escala));
       h = Math.max(320, Math.round(h * escala));
+
       const canvas = desenharEmCanvas(img, w, h, geo);
       let blob = await canvasToBlob(canvas, formatoPrimario, 0.72);
       if(!blob && formatoPrimario !== fallback) blob = await canvasToBlob(canvas, fallback, 0.72);
       if(!blob) break;
-      if(blob.size < melhorBlob.size) melhorBlob = blob; else break;
+      if(blob.size < melhorBlob.size) melhorBlob = blob;
+      else break;
     }
+
     if(!melhorBlob) throw new Error('compress_fail');
-    const base64 = await blobToBase64(melhorBlob);
+
+    const base64  = await blobToBase64(melhorBlob);
     const tipoReal = melhorBlob.type || formatoPrimario;
     return { base64, tipo: tipoReal, tamanho: melhorBlob.size, width: w, height: h };
   }
@@ -1434,10 +1391,13 @@ function initFormulario(){
       photoInput.value = '';
       return;
     }
+
     setFotoLoading(true);
     setFotoLoadingTexto('Localizando… buscando sinal de GPS');
+
     const geo = await obterLocalizacaoPrecisa({
-      timeoutMs: 8000, alvoPrecisao: 8,
+      timeoutMs: 8000,
+      alvoPrecisao: 8,
       onUpdate: (melhor, decorridoMs) => {
         const restante = Math.max(0, Math.round((8000 - decorridoMs) / 1000));
         if(!melhor || melhor.precisao == null){
@@ -1445,31 +1405,40 @@ function initFormulario(){
           return;
         }
         const p = Math.round(melhor.precisao);
-        setFotoLoadingTexto('Localizando… precisão ' + p + ' m (restam ' + restante + 's)');
+        setFotoLoadingTexto('Localizando… precisão atual ' + p + ' m (restam ' + restante + 's)');
       }
     });
+
     setFotoLoadingTexto('Processando imagem…');
+
     try {
       const res = await comprimirImagemParaBase64(file, 150 * 1024, geo);
       fotoBase64 = res.base64;
-      fotoTipo = res.tipo;
+      fotoTipo   = res.tipo;
       fotoTamanhoBytes = res.tamanho;
       fotoGeo = geo;
       photoImg.src = 'data:' + res.tipo + ';base64,' + res.base64;
-      photoBlock.classList.remove('invalid');
+      if(photoBlock) photoBlock.classList.remove('invalid');
+
       const fmtLabel = /webp/i.test(res.tipo) ? 'WebP' : 'JPEG';
-      let infoHtml = 'Tamanho final: <strong>' + (res.tamanho / 1024).toFixed(1) + ' KB</strong> · ' +
-        res.width + '×' + res.height + ' px · ' + fmtLabel;
+      let infoHtml =
+        'Tamanho final: <strong>' + (res.tamanho / 1024).toFixed(1) + ' KB</strong>' +
+        ' · ' + res.width + '×' + res.height + ' px · ' + fmtLabel;
+
       if(geo){
         infoHtml += '<br>📍 ' + geo.lat.toFixed(6) + ', ' + geo.lng.toFixed(6) +
           (geo.precisao ? ' <span style="color:var(--muted)">(±' + Math.round(geo.precisao) + ' m)</span>' : '');
+        if(geo.precisao && geo.precisao > 30){
+          infoHtml += '<br><span style="color:var(--danger)">Precisão acima de 30 m — se possível, refaça a foto em área mais aberta.</span>';
+        }
       } else {
-        infoHtml += '<br><span style="color:var(--danger)">Localização não incluída.</span>';
+        infoHtml += '<br><span style="color:var(--danger)">Localização não incluída (ative o GPS/permissão e tire a foto novamente, se necessário).</span>';
       }
       photoInfo.innerHTML = infoHtml;
+
       renderFotoUI();
       updateProgress();
-      toast('Foto processada.', 'success');
+      toast(geo ? 'Foto processada com localização.' : 'Foto processada (sem localização).', 'success');
     } catch(err){
       console.error('[foto]', err);
       renderFotoUI();
@@ -1478,19 +1447,223 @@ function initFormulario(){
     }
   });
 
-  /* ============================================================
-     STEPS
-     ============================================================ */
+  function configurarChips(){
+    document.querySelectorAll('.chip').forEach(function(chip){
+      const input = chip.querySelector('input[type="checkbox"]');
+      if(!input) return;
+
+      const syncVisual = function(){
+        chip.classList.toggle('active', !!input.checked);
+      };
+      syncVisual();
+
+      chip.addEventListener('click', function(e){
+        if(e.target === input) return;
+        e.preventDefault();
+        input.checked = !input.checked;
+        syncVisual();
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+
+      chip.addEventListener('keydown', function(e){
+        if(e.key === ' ' || e.key === 'Enter'){
+          e.preventDefault();
+          input.checked = !input.checked;
+          syncVisual();
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+
+      input.addEventListener('change', syncVisual);
+    });
+  }
+
+  function parseDecimal(v){
+    v = String(v == null ? '' : v).replace(/[^\d,.-]/g,'');
+    if(!v) return 0;
+    if(v.indexOf(',') >= 0) return Number(v.replace(/\./g,'').replace(',','.')) || 0;
+    return Number(v) || 0;
+  }
+  function formatArea(n){ return (Number(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  function validarCPF(cpf){
+    cpf = String(cpf).replace(/\D/g,'');
+    if(cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+    let s = 0;
+    for(let i = 0; i < 9; i++) s += parseInt(cpf[i]) * (10 - i);
+    let r = (s * 10) % 11; if(r === 10 || r === 11) r = 0;
+    if(r !== parseInt(cpf[9])) return false;
+    s = 0;
+    for(let i = 0; i < 10; i++) s += parseInt(cpf[i]) * (11 - i);
+    r = (s * 10) % 11; if(r === 10 || r === 11) r = 0;
+    return r === parseInt(cpf[10]);
+  }
+  function validarCNPJ(cnpj){
+    cnpj = String(cnpj).replace(/\D/g,'');
+    if(cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
+    let t = 12, n = cnpj.substring(0,t), d = cnpj.substring(t), s = 0, p = t - 7;
+    for(let i = t; i >= 1; i--){ s += parseInt(n.charAt(t-i)) * p--; if(p < 2) p = 9; }
+    let r = s % 11 < 2 ? 0 : 11 - (s % 11);
+    if(r !== parseInt(d.charAt(0))) return false;
+    t = 13; n = cnpj.substring(0,t); s = 0; p = t - 7;
+    for(let i = t; i >= 1; i--){ s += parseInt(n.charAt(t-i)) * p--; if(p < 2) p = 9; }
+    r = s % 11 < 2 ? 0 : 11 - (s % 11);
+    return r === parseInt(d.charAt(1));
+  }
+  function validarCpfCnpj(valor){
+    const d = String(valor).replace(/\D/g,'');
+    if(d.length === 11) return validarCPF(valor);
+    if(d.length === 14) return validarCNPJ(valor);
+    return false;
+  }
+  const cpfInput = document.getElementById('cpf_cnpj');
+  const cpfWrap  = document.getElementById('wrap_cpf');
+  function checarCpfVisual(){
+    const digits = cpfInput.value.replace(/\D/g,'');
+    cpfWrap.classList.remove('valid','invalid');
+    if(!digits.length) return;
+    if(digits.length === 11 || digits.length === 14){
+      cpfWrap.classList.add(validarCpfCnpj(cpfInput.value) ? 'valid' : 'invalid');
+    } else if(digits.length > 11 && digits.length !== 14){
+      cpfWrap.classList.add('invalid');
+    }
+  }
+  cpfInput.addEventListener('input', checarCpfVisual);
+  cpfInput.addEventListener('blur',  checarCpfVisual);
+
+  function getBairroInfo(nome){ return getBairros().find(x => x.nome === nome) || null; }
+  function gerarInscricao(){
+    const bairro = document.getElementById('bairro_imovel').value;
+    const quadra = document.getElementById('quadra_imovel').value;
+    const lote   = document.getElementById('lote_letra').value;
+    const insc   = document.getElementById('inscricao_anterior');
+    if(!bairro || !quadra || !lote){ insc.value = ''; return; }
+    const info = getBairroInfo(bairro);
+    const b = (info && info.numero ? String(info.numero) : '000').padStart(3,'0');
+    insc.value = '00.00.' + String(quadra).padStart(3,'0') + '.' + String(lote).padStart(3,'0') + '.' + b;
+  }
+
+  function calcAreas(){
+    const g = id => document.getElementById(id);
+    const num = id => { const el = g(id); return el ? parseDecimal(el.value) : 0; };
+
+    const ft = num('frente_terreno'), fu = num('fundo_terreno');
+    const areaTerreno = (ft > 0 && fu > 0) ? ft * fu : 0;
+    if(g('area_terreno')) g('area_terreno').value = areaTerreno > 0 ? formatArea(areaTerreno) : '';
+
+    const fe = num('frente_edif'), fo = num('fundo_edif');
+    const areaEdif = (fe > 0 && fo > 0) ? fe * fo : 0;
+    if(g('area_edificada')) g('area_edificada').value = areaEdif > 0 ? formatArea(areaEdif) : '';
+
+    const andares = Number(g('num_andares') ? g('num_andares').value : 0) || 0;
+    const areaTotal = (areaEdif > 0 && andares > 0) ? areaEdif * andares : 0;
+    if(g('area_total_edificada')) g('area_total_edificada').value = areaTotal > 0 ? formatArea(areaTotal) : '';
+  }
+
+  function bindCep(cepId, cidadeId, ufId, bairroTargetId, logradouroTargetId, extra){
+    const cepEl = document.getElementById(cepId); if(!cepEl) return;
+    let timer = null, ultimo = '';
+    cepEl.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const cep = cepEl.value.replace(/\D/g,'');
+        if(cep.length !== 8 || cep === ultimo) return;
+        ultimo = cep;
+        fetch('https://viacep.com.br/ws/' + cep + '/json/').then(r => r.json()).then(data => {
+          if(data.erro){ toast('CEP não encontrado.', 'error'); return; }
+          const cid = document.getElementById(cidadeId);
+          const uf  = document.getElementById(ufId);
+          const bEl = bairroTargetId ? document.getElementById(bairroTargetId) : null;
+          const lEl = logradouroTargetId ? document.getElementById(logradouroTargetId) : null;
+
+          if(cid && !cid.value.trim()) cid.value = (data.localidade || '').toUpperCase();
+          if(uf  && !uf.value.trim())  uf.value  = (data.uf || '').toUpperCase();
+
+          if(bEl && !bEl.value && data.bairro){
+            const opt = [...bEl.options].find(o => o.value.toLowerCase() === data.bairro.toLowerCase());
+            if(opt){
+              bEl.value = opt.value;
+              if(bairroTargetId === 'bairro_imovel') popularLogradouros('imovel');
+              else if(bairroTargetId === 'bairro_prop') popularLogradouros('prop');
+            }
+          }
+
+          if(lEl && !lEl.value && data.logradouro){
+            const opt = [...lEl.options].find(o => o.value.toLowerCase() === data.logradouro.toLowerCase());
+            if(opt) lEl.value = opt.value;
+          }
+
+          if(typeof extra === 'function') extra();
+        }).catch(()=>{});
+      }, 600);
+    });
+  }
+  bindCep('cep','cidade','uf', null, 'logradouro_prop', () => { calcAreas(); });
+  bindCep('cep_imovel','cidade_imovel','uf_imovel', 'bairro_imovel', 'logradouro_imovel', () => { gerarInscricao(); });
+
+  function preencherDataEmissao(){
+    const dr = document.getElementById('data_registro'); if(!dr) return;
+    const hoje = new Date();
+    dr.value = new Date(hoje.getTime() - hoje.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  }
+  preencherDataEmissao();
+  (function marcarObrigatorios(){
+    document.querySelectorAll('[required]').forEach(el => {
+      const wrap = el.closest('.field'); if(!wrap) return;
+      const label = wrap.querySelector('label');
+      if(!label || label.querySelector('.req')) return;
+      const star = document.createElement('span'); star.className = 'req'; star.textContent = ' *';
+      label.appendChild(star);
+    });
+  })();
+
+  function atualizarCampoSenha(){
+    const respEl     = document.getElementById('responsavel');
+    const wrap       = document.getElementById('wrap_senha_resp');
+    const senhaEl    = document.getElementById('senha_responsavel');
+    const logadoWrap = document.getElementById('wrap_responsavel_logado');
+    if(!respEl || !wrap || !senhaEl) return;
+
+    const logado = getResponsavelLogado();
+
+    if(respEl.value && logado && logado === respEl.value){
+      wrap.style.display = 'none';
+      senhaEl.removeAttribute('required');
+      senhaEl.value = '';
+      wrap.classList.remove('invalid','valid');
+      if(logadoWrap){
+        logadoWrap.style.display = '';
+        const nomeEl = logadoWrap.querySelector('.logado-nome');
+        if(nomeEl) nomeEl.textContent = logado;
+      }
+      return;
+    }
+
+    if(logadoWrap) logadoWrap.style.display = 'none';
+
+    if(respEl.value){
+      wrap.style.display = '';
+      senhaEl.setAttribute('required','');
+    } else {
+      wrap.style.display = 'none';
+      senhaEl.removeAttribute('required');
+      senhaEl.value = '';
+      wrap.classList.remove('invalid','valid');
+    }
+  }
+  document.getElementById('responsavel').addEventListener('change', function(){
+    atualizarCampoSenha(); updateProgress();
+  });
+  document.getElementById('linkTrocarResponsavel').addEventListener('click', function(e){
+    e.preventDefault();
+    limparResponsavelLogado();
+    atualizarCampoSenha();
+    const senhaEl = document.getElementById('senha_responsavel');
+    if(senhaEl) setTimeout(() => { try { senhaEl.focus(); } catch(err){} }, 50);
+  });
+
   const TOTAL_STEPS = 7;
-  const STEP_TITLES = [
-    'Localização e Dados Gerais',
-    'Medidas e Áreas',
-    'Área Construída Complementar',
-    'Endereço e Foto',
-    'Titulares',
-    'Registro e Cartório',
-    'ITBI'
-  ];
+  const STEP_TITLES = ['Dados do Proprietário','Terreno / Edificação','Dados do Imóvel','Dados do Logradouro','Dados do Terreno','Dados da Edificação','Responsável e Data'];
   let currentStep = 1;
   const completedSteps = new Set();
 
@@ -1507,11 +1680,9 @@ function initFormulario(){
     });
   }
   function renderStep(){
-    document.querySelectorAll('.step-panel').forEach(p => {
-      p.classList.toggle('active', Number(p.dataset.step) === currentStep);
-    });
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.toggle('active', Number(p.dataset.step) === currentStep));
     document.getElementById('stepCounter').textContent = 'Etapa ' + currentStep + ' de ' + TOTAL_STEPS;
-    document.getElementById('stepTitle').textContent = STEP_TITLES[currentStep - 1];
+    document.getElementById('stepTitle').textContent   = STEP_TITLES[currentStep - 1];
     document.getElementById('btnPrev').style.display = currentStep === 1 ? 'none' : '';
     document.getElementById('btnNext').style.display = currentStep === TOTAL_STEPS ? 'none' : '';
     document.getElementById('btnSave').style.display = currentStep === TOTAL_STEPS ? '' : 'none';
@@ -1520,369 +1691,251 @@ function initFormulario(){
   }
   function showFieldError(err){
     toast(err.msg, 'error');
-    if(!err.el) return;
+    const el = err.el;
+    if(!el) return;
     setTimeout(() => {
-      try { err.el.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(e){}
-      setTimeout(() => { try { err.el.focus({ preventScroll:true }); } catch(e){} }, 320);
+      try { el.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(e){}
+      setTimeout(() => { try { el.focus({ preventScroll:true }); } catch(e){} }, 320);
     }, 60);
   }
+
   async function goToStep(n, force){
     n = Math.max(1, Math.min(TOTAL_STEPS, n));
     if(n === currentStep) return true;
+
     if(n > currentStep && !force){
-      const errs = validarEtapa(currentStep);
+      const errs = await validarEtapa(currentStep);
       if(errs.length){ showFieldError(errs[0]); return false; }
       completedSteps.add(currentStep);
     }
+
     currentStep = n;
     renderStep();
     try { window.scrollTo({ top:0, behavior:'smooth' }); } catch(e){ window.scrollTo(0,0); }
     return true;
   }
+
   document.querySelectorAll('.step').forEach(s => {
-    s.addEventListener('click', async () => {
+    s.addEventListener('click', async function(){
       const n = Number(s.dataset.step);
       if(n === currentStep) return;
       if(n < currentStep || completedSteps.has(n)) await goToStep(n, true);
     });
   });
-  document.getElementById('btnNext').addEventListener('click', () => goToStep(currentStep + 1));
-  document.getElementById('btnPrev').addEventListener('click', () => goToStep(currentStep - 1, true));
+  document.getElementById('btnNext').addEventListener('click', async () => { await goToStep(currentStep + 1); });
+  document.getElementById('btnPrev').addEventListener('click', async () => { await goToStep(currentStep - 1, true); });
 
-  /* ---------- PROGRESSO ---------- */
   function getFields(){
-    return [...form.querySelectorAll(
-      'input[required]:not([type="checkbox"]):not([type="radio"]):not([readonly]), select[required]'
-    )].filter(el => !!el.name && !el.disabled);
+    return [...form.querySelectorAll('input[required]:not([type="checkbox"]):not([type="radio"]):not([readonly]), select[required]')].filter(el => !!el.name);
   }
   function updateProgress(){
-    const fields = getFields();
-    if(!fields.length) return;
+    const fields = getFields(); if(!fields.length) return;
     const filled = fields.filter(el => String(el.value).trim() !== '').length;
     const pct = Math.round((filled / fields.length) * 100);
     const el = document.getElementById('stepProgress');
     if(el) el.textContent = pct + '%';
   }
 
-  /* ---------- TOAST ---------- */
+  function collect(includePhoto){
+    const data = {};
+    const IGNORAR_UPPER = ['senha_responsavel','nascimento','data_registro'];
+    form.querySelectorAll('[name]').forEach(el => {
+      if(el.name === 'senha_responsavel') return;
+      if(el.type === 'checkbox'){ data[el.name] = el.checked; return; }
+      if(el.type === 'radio'){ if(el.checked) data[el.name] = el.value; return; }
+
+      let v = el.value;
+      if(typeof v === 'string' && v && !IGNORAR_UPPER.includes(el.name)){
+        v = v.toUpperCase();
+      }
+      data[el.name] = v;
+    });
+    data.area_terreno_num = parseDecimal(document.getElementById('area_terreno').value);
+    data.area_edificada_num = parseDecimal(document.getElementById('area_edificada').value);
+    data.area_total_edificada_num = parseDecimal(document.getElementById('area_total_edificada').value);
+
+    if(includePhoto !== false && fotoBase64){
+      data.foto_base64        = fotoBase64;
+      data.foto_tipo          = fotoTipo;
+      data.foto_tamanho_bytes = fotoTamanhoBytes;
+      if(fotoGeo){
+        data.foto_latitude       = fotoGeo.lat;
+        data.foto_longitude      = fotoGeo.lng;
+        data.foto_precisao_m     = fotoGeo.precisao;
+        data.foto_geo_horario    = fotoGeo.horario;
+      }
+    }
+    return data;
+  }
+  function clearForm(){
+    form.reset();
+    resetFoto();
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.field.invalid,.field.valid').forEach(f => f.classList.remove('invalid','valid'));
+    document.getElementById('inscricao_anterior').value = '';
+    popularResponsaveis(); popularBairros(); popularRuas();
+    atualizarQuadras('prop'); atualizarQuadras('imovel');
+    atualizarCampoSenha();
+    preencherDataEmissao();
+    calcAreas();
+    atualizarAlertaImovel();
+    atualizarAlertaProprietario();
+    completedSteps.clear();
+    currentStep = 1;
+    renderStep();
+    updateProgress();
+    refreshTitles();
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+  }
+
   let toastTimer = null;
   function toast(msg, type){
     toastEl.textContent = msg;
     toastEl.className = 'toast show' + (type ? ' ' + type : '');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      toastEl.className = 'toast' + (type ? ' ' + type : '');
-    }, 3000);
+    toastTimer = setTimeout(() => { toastEl.className = 'toast' + (type ? ' ' + type : ''); }, 3000);
   }
 
-  /* ---------- VALIDAÇÃO ---------- */
-  function validarEtapa(stepNum){
+  async function validarEtapa(stepNum){
     const panel = document.querySelector('.step-panel[data-step="' + stepNum + '"]');
     if(!panel) return [];
     const invalidos = [];
     panel.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
 
     panel.querySelectorAll('[required]').forEach(el => {
-      if(el.disabled) return;
+      if(el.name === 'senha_responsavel') return;
       const wrap = el.closest('.field');
       const val = String(el.value || '').trim();
       if(!val){
         if(wrap) wrap.classList.add('invalid');
         const labelEl = wrap ? wrap.querySelector('label') : null;
         const labelTxt = labelEl ? labelEl.textContent.trim().replace(/\s*\*$/,'') : el.name;
-        invalidos.push({ el, msg: 'Campo obrigatório: ' + labelTxt });
+        invalidos.push({ el: el, msg: 'Campo obrigatório: ' + labelTxt });
       }
     });
 
-    const g = n => { const el = form.querySelector('[name="' + n + '"]'); return el ? el.value : ''; };
-    const q = n => form.querySelector('[name="' + n + '"]');
+    if(panel.contains(cpfInput) && cpfInput.value.trim() && !validarCpfCnpj(cpfInput.value)){
+      cpfWrap.classList.add('invalid'); cpfWrap.classList.remove('valid');
+      invalidos.push({ el: cpfInput, msg: 'CPF/CNPJ inválido.' });
+    }
 
     if(stepNum === 1){
-      const bairro = g('bairro_imovel');
-      const quadra = String(g('quadra_imovel') || '').trim();
-      const lote   = String(g('lote_letra') || '').trim();
-
-      if(!bairro) invalidos.push({ el: q('bairro_imovel'), msg: 'Selecione o bairro (localização cadastral).' });
-      if(!quadra) invalidos.push({ el: q('quadra_imovel'), msg: 'Informe a quadra (3 dígitos).' });
-      else if(!/^\d{3}$/.test(quadra)) invalidos.push({ el: q('quadra_imovel'), msg: 'Quadra deve ter exatamente 3 dígitos.' });
-      if(!lote) invalidos.push({ el: q('lote_letra'), msg: 'Informe o lote (3 dígitos).' });
-      else if(!/^\d{3}$/.test(lote)) invalidos.push({ el: q('lote_letra'), msg: 'Lote deve ter exatamente 3 dígitos.' });
-
-      const tipo = g('tipoImovel');
-      if(!tipo) invalidos.push({ el: q('tipoImovel'), msg: 'Selecione o tipo de imóvel.' });
-      if(tipo === '2' && !g('tpArquitetonico')) invalidos.push({ el: q('tpArquitetonico'), msg: 'Tipo arquitetônico é obrigatório para imóvel predial.' });
-      if(tipo === '2' && !g('idParcela')) invalidos.push({ el: q('idParcela'), msg: 'ID da parcela é obrigatório para imóvel predial.' });
-      if(tipo === '2' && !g('anoConstrutivo')) invalidos.push({ el: q('anoConstrutivo'), msg: 'Ano construtivo é obrigatório para imóvel predial.' });
-      if(tipo === '1' && g('anoConstrutivo')) invalidos.push({ el: q('anoConstrutivo'), msg: 'Ano construtivo não deve ser informado para territorial.' });
-      if(tipo === '1' && g('idParcela')) invalidos.push({ el: q('idParcela'), msg: 'ID da parcela não deve ser informado para territorial.' });
-      if(tipo === '3' && !g('bice')) invalidos.push({ el: q('bice'), msg: 'BICE é obrigatório para bem especial.' });
-      if(tipo && tipo !== '1' && !g('destinacaoImovel')) invalidos.push({ el: q('destinacaoImovel'), msg: 'Destinação é obrigatória, exceto para territorial.' });
-    }
-    if(stepNum === 2){
-      const tipo = g('tipoImovel');
-      if(parseDecimal(g('areaTerreno')) <= 0) invalidos.push({ el: q('areaTerreno'), msg: 'Informe Frente e Fundo do terreno (Área do Terreno).' });
-      if(tipo === '2'){
-        if(parseDecimal(g('areaConstruida')) <= 0) invalidos.push({ el: q('areaConstruida'), msg: 'Informe Frente e Fundo da edificação (Área Construída).' });
+      const bairro = document.getElementById('bairro_prop').value;
+      const quadra = document.getElementById('quadra_prop').value;
+      const lote   = document.getElementById('lote_prop').value;
+      const unidade= document.getElementById('unidade_prop').value;
+      if(bairro && quadra && lote){
+        const registradas = await consultarLoteNaNuvem(bairro, quadra, lote, unidade);
+        if(registradas.length > 0){
+          atualizarAlertaProprietario();
+          invalidos.push({
+            el: document.getElementById('lote_prop'),
+            msg: 'Este lote já possui cadastro. Selecione outro lote.'
+          });
+        }
       }
     }
-    if(stepNum === 4){
-      if(!g('tipoLogradouro')) invalidos.push({ el: q('tipoLogradouro'), msg: 'Selecione o tipo de logradouro.' });
-      if(!g('nomeLogradouro')) invalidos.push({ el: q('nomeLogradouro'), msg: 'Informe o nome do logradouro.' });
-      if(document.getElementById('temBairro').checked && !g('bairro')){
-        invalidos.push({ el: q('bairro'), msg: 'Bairro é obrigatório quando há divisão política.' });
+
+    if(stepNum === 3){
+      const bairro = document.getElementById('bairro_imovel').value;
+      const quadra = document.getElementById('quadra_imovel').value;
+      const lote   = document.getElementById('lote_letra').value;
+      const unidade= document.getElementById('unidade_imovel').value;
+      if(bairro && quadra && lote){
+        const registradas = await consultarLoteNaNuvem(bairro, quadra, lote, unidade);
+        if(registradas.length > 0){
+          atualizarAlertaImovel();
+          const uTxt = normalizarUnidade(unidade)
+            ? 'unidade ' + normalizarUnidade(unidade)
+            : 'sem unidade';
+          invalidos.push({
+            el: document.getElementById('lote_letra'),
+            msg: 'Já existe cadastro para este lote (' + uTxt + ').'
+          });
+        }
       }
-      const cepVal = g('cep').replace(/\D/g,'');
-      if(!cepVal) invalidos.push({ el: q('cep'), msg: 'Informe o CEP.' });
-      else if(!/^\d{8}$/.test(cepVal)) invalidos.push({ el: q('cep'), msg: 'CEP deve conter 8 dígitos.' });
+
+      const photoBlock = document.getElementById('photoBlock');
+      const PRECISAO_MAX_M = 30;
+
       if(!fotoBase64){
-        photoBlock.classList.add('invalid');
-        invalidos.push({ el: document.getElementById('btnTirarFoto'), msg: 'A foto do imóvel é obrigatória.' });
-      }
-    }
-    if(stepNum === 5){
-      const rows = [...document.querySelectorAll('#titulares .list-item')];
-      rows.forEach((r, i) => {
-        const niEl  = r.querySelector('[name=niTitular]');
-        const nomeEl = r.querySelector('[name=nomeTitular]');
-        const ni = niEl.value.trim();
-        const nome = nomeEl.value.trim();
-        if(!ni && !nome) return;
-
-        if(ni && !validarCPFouCNPJ(ni)){
-          const wrap = niEl.closest('.field');
-          if(wrap) wrap.classList.add('invalid');
-          invalidos.push({ el: niEl, msg: 'Titular ' + (i+1) + ': CPF/CNPJ inválido.' });
-        }
-
-        ['percTitular','dtAquisicaoTitular','tipoTitularidade','docTitularidade'].forEach(f => {
-          const inp = r.querySelector('[name=' + f + ']');
-          if(inp && !String(inp.value).trim()){
-            invalidos.push({ el: inp, msg: 'Titular ' + (i+1) + ': preencha todos os campos.' });
-          }
+        if(photoBlock) photoBlock.classList.add('invalid');
+        invalidos.push({
+          el: document.getElementById('btnTirarFoto') || photoBlock,
+          msg: 'A foto do imóvel é obrigatória.'
         });
-      });
+      } else if(photoBlock){
+        photoBlock.classList.remove('invalid');
 
-      if(rows.length >= 2){
-        let soma = 0;
-        rows.forEach(r => {
-          const v = r.querySelector('[name=percTitular]').value;
-          soma += parseFloat(String(v).replace(',', '.')) || 0;
-        });
-        if(Math.abs(soma - 100) > 0.01){
-          invalidos.push({ el: rows[0].querySelector('[name=percTitular]'), msg: 'A soma das participações deve ser 100% (atual: ' + round4(soma) + '%).' });
+        if(fotoGeo && fotoGeo.precisao != null && fotoGeo.precisao > PRECISAO_MAX_M){
+          photoBlock.classList.add('invalid');
+          invalidos.push({
+            el: document.getElementById('btnTirarFoto') || photoBlock,
+            msg: 'Localização com precisão fraca (±' + Math.round(fotoGeo.precisao) +
+                 ' m). Vá para uma área mais aberta, aguarde o GPS travar e tire a foto novamente.'
+          });
         }
       }
     }
-    if(stepNum === 7){
-      document.querySelectorAll('#transmitentes .list-item').forEach((r, i) => {
-        const inp = r.querySelector('[name=idTransmitenteITBI]');
-        const v = inp.value.trim();
-        if(v && !validarCPFouCNPJ(v)){
-          const wrap = inp.closest('.field');
-          if(wrap) wrap.classList.add('invalid');
-          invalidos.push({ el: inp, msg: 'Transmitente ' + (i+1) + ': CPF/CNPJ inválido.' });
-        }
-      });
-      document.querySelectorAll('#adquirentes .list-item').forEach((r, i) => {
-        const inp = r.querySelector('[name=idAdquirenteITBI]');
-        const v = inp.value.trim();
-        if(v && !validarCPFouCNPJ(v)){
-          const wrap = inp.closest('.field');
-          if(wrap) wrap.classList.add('invalid');
-          invalidos.push({ el: inp, msg: 'Adquirente ' + (i+1) + ': CPF/CNPJ inválido.' });
-        }
-      });
 
-      const itbiFields = ['baseCalculITBI','valorRefITBI','dtTransacaoITBI','tpTransacaoITBI','percTransacionadoITBI'];
-      const anyItbi = itbiFields.some(k => g(k));
-      if(anyItbi){
-        itbiFields.forEach(k => { if(!g(k)) invalidos.push({ el: q(k), msg: 'ITBI incompleto. Preencha todos os campos de ITBI.' }); });
+    const respEl  = document.getElementById('responsavel');
+    const senhaEl = document.getElementById('senha_responsavel');
+    if(respEl && panel.contains(respEl) && respEl.value){
+      const wrap = senhaEl ? senhaEl.closest('.field') : null;
+      const logado = getResponsavelLogado();
+      if(logado && logado === respEl.value){
+        const func = grupoAtivo('funcionarios').find(o => o.label === respEl.value);
+        if(!func){
+          limparResponsavelLogado();
+          atualizarCampoSenha();
+          invalidos.push({ el: respEl, msg: 'Responsável inativo ou não cadastrado.' });
+        }
+      } else if(!senhaEl || !senhaEl.value.trim()){
+        if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
+        invalidos.push({ el: senhaEl || respEl, msg: 'Digite a senha de acesso do responsável.' });
+      } else {
+        const func = grupoAtivo('funcionarios').find(o => o.label === respEl.value);
+        if(!func){
+          if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
+          invalidos.push({ el: senhaEl, msg: 'Responsável inativo ou não cadastrado.' });
+        } else if(!func.senha){
+          if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
+          invalidos.push({ el: senhaEl, msg: 'Responsável sem senha cadastrada. Contate o administrador.' });
+        } else if(String(func.senha) !== senhaEl.value){
+          if(wrap){ wrap.classList.remove('valid'); wrap.classList.add('invalid'); }
+          invalidos.push({ el: senhaEl, msg: 'Senha incorreta para ' + respEl.value + '.' });
+        } else {
+          if(wrap){ wrap.classList.remove('invalid'); wrap.classList.add('valid'); }
+          setResponsavelLogado(respEl.value);
+          atualizarCampoSenha();
+        }
       }
     }
+
     return invalidos;
   }
 
-  /* ---------- HELPERS DE CONVERSÃO ---------- */
-  function toNum(v){
-    if(v === '' || v == null) return null;
-    const s = String(v).replace(/\s/g,'').replace(',', '.');
-    const n = Number(s);
-    return Number.isFinite(n) ? n : null;
-  }
-  function toInt(v){
-    const n = toNum(v);
-    return n == null ? null : Math.trunc(n);
-  }
-  function toDateOrNull(v){
-    const s = String(v == null ? '' : v).trim();
-    return s ? s : null;
-  }
-
-  /* ---------- COLETA ---------- */
-  function collect(){
-    const up = v => String(v == null ? '' : v).toUpperCase();
-    const g  = n => {
-      const el = form.querySelector('[name="' + n + '"]');
-      if(!el) return '';
-      return el.type === 'checkbox' ? el.checked : el.value;
-    };
-    const cepOnlyDigits = String(g('cep') || '').replace(/\D/g,'');
-    const onlyDigits = v => String(v == null ? '' : v).replace(/\D/g, '');
-
-    const dadosImovel = {};
-
-    dadosImovel.DadosGeraisImovel = {
-      inscricaoImobiliaria: up(g('inscricaoImobiliaria')),
-      tipoImovel:           toInt(g('tipoImovel')),
-      tpArquitetonico:      toInt(g('tpArquitetonico')),
-      destinacaoImovel:     toInt(g('destinacaoImovel')),
-      idParcela:            up(g('idParcela')),
-      areaTerreno:          toNum(g('areaTerreno')),
-      areaConstruida:       toNum(g('areaConstruida')),
-      bice:                 toInt(g('bice')),
-      anoConstrutivo:       toInt(g('anoConstrutivo')),
-      valorVenal:           toNum(g('valorVenal')),
-      dtUltimoValorVenal:   toDateOrNull(g('dtUltimoValorVenal')),
-      padraoConstrutivo:    toInt(g('padraoConstrutivo')),
-      qtdGaragem:           toInt(g('qtdGaragem')),
-      temPiscina:           !!g('temPiscina'),
-      valorRefMercado:      toNum(g('valorRefMercado')),
-      dataUltVlrMercado:    toDateOrNull(g('dataUltVlrMercado'))
-    };
-
-    dadosImovel.AreaConstruidaCompl = {
-      areaPrivativa: toNum(g('areaPrivativa')),
-      areaComum:     toNum(g('areaComum')),
-      fraIdeal:      toNum(g('fraIdeal'))
-    };
-
-    dadosImovel.EnderecoImovel = {
-      tipoLogradouro:  toInt(g('tipoLogradouro')),
-      nomeLogradouro:  up(g('nomeLogradouro')),
-      temBairro:       !!g('temBairro'),
-      bairro:          up(g('bairro')),
-      cep:             cepOnlyDigits,
-      numeroImovel:    up(g('numeroImovel')),
-      complNroImovel:  up(g('complNroImovel')),
-      complEndereco:   up(g('complEndereco'))
-    };
-
-    dadosImovel.Titular = [...document.querySelectorAll('#titulares .list-item')].map(r => ({
-      niTitular:            onlyDigits(r.querySelector('[name=niTitular]').value),
-      nomeTitular:          up(r.querySelector('[name=nomeTitular]').value),
-      percTitularidade:     toNum(r.querySelector('[name=percTitular]').value),
-      dtAquisicaoTitular:   toDateOrNull(r.querySelector('[name=dtAquisicaoTitular]').value),
-      tipoTitularidade:     toInt(r.querySelector('[name=tipoTitularidade]').value),
-      docTitularidade:      toInt(r.querySelector('[name=docTitularidade]').value)
-    }));
-
-    dadosImovel.ServicoRegistroImovel = {
-      nomeServentiaRI:  up(g('nomeServentiaRI')),
-      cnsRI:            toInt(g('cnsRI')),
-      cnmRI:            toNum(g('cnmRI')),
-      numMatriculaRI:   up(g('numMatriculaRI')),
-      numUltimoAtoRI:   up(g('numUltimoAtoRI')),
-      lvCartRI:         up(g('lvCartRI')),
-      flCartRI:         up(g('flCartRI')),
-      dtUltAtualizacao: toDateOrNull(g('dtUltAtualizacao'))
-    };
-
-    dadosImovel.CartorioNotas = {
-      nomeServentiaNotas: up(g('nomeServentiaNotas')),
-      cnsNotas:           toInt(g('cnsNotas')),
-      lvCartNotas:        up(g('lvCartNotas')),
-      flCartNotas:        up(g('flCartNotas'))
-    };
-
-    dadosImovel.ITBI = {
-      baseCalculITBI:          toNum(g('baseCalculITBI')),
-      dtTransacaoITBI:         toDateOrNull(g('dtTransacaoITBI')),
-      tpTransacaoITBI:         toInt(g('tpTransacaoITBI')),
-      percTransacionadoITBI:   toNum(g('percTransacionadoITBI')),
-      TransmitenteITBI: [...document.querySelectorAll('#transmitentes .list-item')].map(r => ({
-        nomeTransmitenteITBI: up(r.querySelector('[name=nomeTransmitenteITBI]').value),
-        idTransmitenteITBI:   onlyDigits(r.querySelector('[name=idTransmitenteITBI]').value)
-      })),
-      AdquirenteITBI: [...document.querySelectorAll('#adquirentes .list-item')].map(r => ({
-        nomeAdquirenteITBI:          up(r.querySelector('[name=nomeAdquirenteITBI]').value),
-        idAdquirenteITBI:            onlyDigits(r.querySelector('[name=idAdquirenteITBI]').value),
-        percTransacAdquirenteITBI:   toNum(r.querySelector('[name=percTransacAdquirenteITBI]').value)
-      })),
-      valorRefITBI:            toNum(g('valorRefITBI'))
-    };
-
-    dadosImovel.DadosComplementares = {
-      localizacaoCadastral: {
-        bairro: up(g('bairro_imovel')),
-        quadra: up(g('quadra_imovel')),
-        lote:   up(g('lote_letra'))
-      },
-      medidasTerreno: {
-        frente:       toNum(g('frente_terreno')),
-        fundo:        toNum(g('fundo_terreno')),
-        ladoDireito:  toNum(g('lado_dir_terreno')),
-        ladoEsquerdo: toNum(g('lado_esq_terreno'))
-      },
-      medidasEdificacao: {
-        frente:       toNum(g('frente_edif')),
-        fundo:        toNum(g('fundo_edif')),
-        ladoDireito:  toNum(g('lado_dir_edif')),
-        ladoEsquerdo: toNum(g('lado_esq_edif'))
-      },
-      construcao: {
-        numFrentes: toInt(g('num_frentes')),
-        numAndares: toInt(g('num_andares'))
-      },
-      foto: fotoBase64 ? {
-        base64:                 fotoBase64,
-        tipo:                   fotoTipo || null,
-        tamanhoBytes:           fotoTamanhoBytes || null,
-        latitude:               fotoGeo ? fotoGeo.lat : null,
-        longitude:              fotoGeo ? fotoGeo.lng : null,
-        precisaoM:              fotoGeo ? fotoGeo.precisao : null,
-        geolocalizacaoHorario:  fotoGeo ? fotoGeo.horario : null
-      } : null,
-      status: 'pendente',
-      origem: 'sinter'
-    };
-
-    return { dados_imovel: dadosImovel };
-  }
-
-  function clearForm(){
-    form.reset();
-    resetFoto();
-    document.querySelectorAll('.field.invalid,.field.valid').forEach(f => f.classList.remove('invalid','valid'));
-    ['titulares','transmitentes','adquirentes'].forEach(k => {
-      lists[k].el.innerHTML = '';
-    });
-    addRow('titulares'); addRow('transmitentes'); addRow('adquirentes');
-
-    popularBairros();
-    popularRuas();
-    popularBairrosDatalist();
-    syncLocalizacao();
-    calcAreas();
-    syncTipo();
-    syncBairro();
-    completedSteps.clear();
-    currentStep = 1;
-    renderStep();
-    updateProgress();
-    try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
-  }
-
-  /* ---------- BOTÃO SALVAR ---------- */
-  document.getElementById('btnSave').addEventListener('click', async function(){
+  document.getElementById('btnSave').addEventListener('click', async function () {
     let primeiroErro = null;
     for(let s = 1; s <= TOTAL_STEPS; s++){
-      const errs = validarEtapa(s);
+      const errs = await validarEtapa(s);
       if(!errs.length) completedSteps.add(s);
       else if(!primeiroErro) primeiroErro = { step: s, err: errs[0] };
     }
     if(primeiroErro){
       await goToStep(primeiroErro.step, true);
       setTimeout(() => showFieldError(primeiroErro.err), 140);
+      return;
+    }
+
+    const bairro = document.getElementById('bairro_imovel').value;
+    const quadra = document.getElementById('quadra_imovel').value;
+    const lote   = document.getElementById('lote_letra').value;
+    const unidade= document.getElementById('unidade_imovel').value;
+    const registradas = await consultarLoteNaNuvem(bairro, quadra, lote, unidade);
+    if(registradas.length > 0){
+      toast('Este lote/unidade já possui cadastro.', 'error');
+      await goToStep(3, true);
       return;
     }
 
@@ -1906,67 +1959,124 @@ function initFormulario(){
     }
   });
 
-  /* ---------- LIMPAR ---------- */
-  document.getElementById('btnClear').addEventListener('click', function(){
+  document.getElementById('btnClear').addEventListener('click', function () {
     if(!window.confirm('Deseja realmente limpar todos os campos da ficha?')) return;
     clearForm();
     toast('Ficha limpa.', 'success');
     window.scrollTo({ top:0, behavior:'smooth' });
   });
 
-  /* ---------- DRAFT ---------- */
   let saveTimer = null;
   function agendarRascunho(){
     updateProgress();
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(collect())); } catch(e){}
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(collect(false))); } catch(e){}
     }, 700);
   }
-  form.addEventListener('input', () => { agendarRascunho(); });
-  form.addEventListener('change', () => { agendarRascunho(); });
+  form.addEventListener('input',  function(){ refreshTitles(); agendarRascunho(); });
+  form.addEventListener('change', function(){ gerarInscricao(); refreshTitles(); agendarRascunho(); });
 
-  /* ---------- EVENTOS ESPECÍFICOS ---------- */
+  document.getElementById('bairro_prop').addEventListener('change', function(){
+    atualizarQuadras('prop');
+    popularLogradouros('prop');
+  });
+  document.getElementById('quadra_prop').addEventListener('change', function(){
+    atualizarLotes('prop');
+  });
+  document.getElementById('lote_prop').addEventListener('change', function(){
+    atualizarAlertaProprietario();
+  });
+  document.getElementById('unidade_prop').addEventListener('input', function(){
+    atualizarAlertaProprietario();
+  });
+
   document.getElementById('bairro_imovel').addEventListener('change', function(){
-    syncLocalizacao();
-    const b = document.querySelector('[name=bairro]');
-    if(b && !b.value) b.value = this.value.toUpperCase();
+    atualizarQuadras('imovel');
+    gerarInscricao();
+    popularLogradouros('imovel');
+  });
+  document.getElementById('quadra_imovel').addEventListener('change', function(){
+    atualizarLotes('imovel');
+    gerarInscricao();
+  });
+  document.getElementById('lote_letra').addEventListener('change', function(){
+    gerarInscricao();
+    atualizarAlertaImovel();
+  });
+  document.getElementById('unidade_imovel').addEventListener('input', function(){
+    atualizarAlertaImovel();
   });
 
-  ['frente_terreno','fundo_terreno','frente_edif','fundo_edif'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.addEventListener('input', calcAreas);
+  ['frente_terreno','fundo_terreno','frente_edif','fundo_edif','num_andares'].forEach(id => {
+    const el = document.getElementById(id); if(!el) return;
+    el.addEventListener('input', calcAreas);
+    el.addEventListener('change', calcAreas);
   });
 
-  /* ---------- FIRESTORE LISTENERS ---------- */
-  onSnapshot(doc(db,'config','listas'), snap => {
-    const data = snap.exists() ? (snap.data().grupos || {}) : {};
-    const bairrosFs = Array.isArray(data.bairros) ? data.bairros : [];
-    const ruasFs = Array.isArray(data.ruas) ? data.ruas : [];
-    LISTAS = {
-      bairros: bairrosFs.length ? bairrosFs : BAIRROS_PADRAO.map((nome,i)=>({label:nome, numero:String(i+1).padStart(3,'0'), ativo:true})),
-      ruas: ruasFs.length ? ruasFs : RUAS_PADRAO.slice()
-    };
-    popularBairros();
-    popularRuas();
-    popularBairrosDatalist();
-  }, err => {
-    console.warn('[listas] falha:', err);
-    popularBairros();
-    popularRuas();
-    popularBairrosDatalist();
-  });
+  (function init(){
+    configurarChips();
 
-  /* ---------- INIT ---------- */
-  renderStep();
-  calcAreas();
-  popularBairros();
-  popularRuas();
-  popularBairrosDatalist();
-  syncLocalizacao();
-  updateProgress();
-  renderFotoUI();
-  atualizarTitularesUI();
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch(e){}
+    if(draft){
+      const temDados = Object.keys(draft).some(k => draft[k] && draft[k] !== false);
+      if(temDados){
+        form.querySelectorAll('[name]').forEach(el => {
+          if(el.name === 'senha_responsavel') return;
+          if(!(el.name in draft)) return;
+          if(el.type === 'checkbox') el.checked = !!draft[el.name];
+          else if(el.type === 'radio') el.checked = (el.value === draft[el.name]);
+          else el.value = draft[el.name];
+        });
+        document.querySelectorAll('.chip').forEach(function(chip){
+          const input = chip.querySelector('input[type="checkbox"]');
+          if(input) chip.classList.toggle('active', !!input.checked);
+        });
+      }
+    }
+
+    escutarListas();
+    escutarQuadras();
+    escutarLotes();
+    escutarFichas();
+
+    setTimeout(() => {
+      atualizarQuadras('prop');
+      atualizarQuadras('imovel');
+      popularLogradouros('prop');
+      popularLogradouros('imovel');
+      if(draft){
+        const qp = draft.quadra_prop, lp = draft.lote_prop;
+        const qi = draft.quadra_imovel, li = draft.lote_letra;
+        if(qp){
+          document.getElementById('quadra_prop').value = qp;
+          atualizarLotes('prop');
+          if(lp) document.getElementById('lote_prop').value = lp;
+        }
+        if(qi){
+          document.getElementById('quadra_imovel').value = qi;
+          atualizarLotes('imovel');
+          if(li) document.getElementById('lote_letra').value = li;
+        }
+      }
+      checarCpfVisual();
+      gerarInscricao();
+      calcAreas();
+      atualizarCampoSenha();
+      atualizarAlertaImovel();
+      atualizarAlertaProprietario();
+      updateProgress();
+      refreshTitles();
+    }, 500);
+
+    preencherDataEmissao();
+    atualizarCampoSenha();
+    calcAreas();
+    renderFotoUI();
+    renderStep();
+    refreshTitles();
+  })();
 
 })();
 }
