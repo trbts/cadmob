@@ -112,7 +112,7 @@ ul{ list-style:none; }
 .card-head p{ font-size:12px; color:var(--muted); }
 .card-body{ padding:20px; }
 
-.stat-grid{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-bottom:22px; }
+.stat-grid{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; margin-bottom:22px; }
 .stat{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 20px; position:relative; overflow:hidden; box-shadow:var(--shadow-sm); }
 .stat::after{ content:""; position:absolute; right:-30px; top:-30px; width:110px; height:110px; border-radius:99px; background:var(--primary-light); opacity:.55; }
 .stat-ico{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; color:#fff; position:relative; z-index:1; }
@@ -125,7 +125,7 @@ ul{ list-style:none; }
 .stat-label{ font-size:12.5px; color:var(--muted); font-weight:600; position:relative; z-index:1; }
 .stat-trend{ display:inline-flex; align-items:center; gap:4px; margin-top:8px; font-size:11.5px; font-weight:600; color:var(--success); position:relative; z-index:1; }
 .stat-trend.down{ color:var(--danger); }
-.dash-grid{ display:grid; grid-template-columns:1.15fr .85fr; gap:16px; margin-bottom:16px; }
+.dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
 .mini-list{ display:flex; flex-direction:column; }
 .mini-item{ display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
 .mini-item:last-child{ border-bottom:0; }
@@ -408,8 +408,8 @@ ul{ list-style:none; }
       </div>
       <div class="nav-label" id="navLabelSistema">Sistema</div>
       <div class="nav-item" data-page="dados">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
-        <span>Dados & Backup</span>
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <span>Configuração</span>
       </div>
     </nav>
   </aside>
@@ -448,12 +448,12 @@ ul{ list-style:none; }
         <div class="stat-grid" id="statGrid"></div>
         <div class="dash-grid">
           <div class="card">
-            <div class="card-head"><div><h3>Registros por Status</h3><p>Distribuição das fichas no sistema</p></div></div>
-            <div class="card-body" id="chartBars"></div>
+            <div class="card-head"><div><h3>Ruas por Bairro</h3><p>Quantidade de ruas cadastradas em cada bairro</p></div></div>
+            <div class="card-body" id="ruasPorBairro" style="max-height:420px;overflow-y:auto;"></div>
           </div>
           <div class="card">
-            <div class="card-head"><div><h3>Atividade Recente</h3><p>Últimos cadastros enviados</p></div></div>
-            <div class="card-body"><div class="mini-list" id="recentList"></div></div>
+            <div class="card-head"><div><h3>Lotes por Bairro</h3><p>Quantidade de lotes cadastrados em cada bairro</p></div></div>
+            <div class="card-body" id="lotesPorBairro" style="max-height:420px;overflow-y:auto;"></div>
           </div>
         </div>
       </section>
@@ -477,7 +477,7 @@ ul{ list-style:none; }
 
       <section class="page" id="page-dados">
         <div class="page-head">
-          <div><h2>Dados & Backup</h2><p>Exporte ou importe os dados do sistema.</p></div>
+          <div><h2>Configuração</h2><p>Exportação, importação e informações do sistema.</p></div>
           <div style="display:flex;gap:10px;">
             <button class="btn btn-ghost" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar</button>
             <label class="btn btn-ghost" style="cursor:pointer;">
@@ -531,6 +531,8 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 const ROLE_LEVELS = { user:0, funcionario:1, admin:2, superadmin:3 };
+/* A aba "Configuração" é exclusiva do desenvolvedor (superadmin).
+   O perfil administrativo (admin) NÃO tem acesso a ela. */
 const ROLE_PAGES = {
   user:        [],
   funcionario: [],
@@ -538,7 +540,7 @@ const ROLE_PAGES = {
   superadmin:  ['dashboard', 'registros', 'dados']
 };
 const ROLE_LABEL = {
-  user:'Pendente', funcionario:'Funcionário', admin:'Administrador', superadmin:'Super Admin'
+  user:'Pendente', funcionario:'Funcionário', admin:'Administrador', superadmin:'Desenvolvedor'
 };
 
 let CurrentUser = null;
@@ -580,7 +582,7 @@ function setUserChip(user, nome, role){
 const PAGE_INFO = {
   dashboard: { title:'Dashboard',       subtitle:'Visão geral do sistema' },
   registros: { title:'Registros',       subtitle:'Fichas de cadastro imobiliário' },
-  dados:     { title:'Dados & Backup',  subtitle:'Fichas e configurações' }
+  dados:     { title:'Configuração',    subtitle:'Exportação, importação e informações do sistema' }
 };
 function navigate(page){
   if(!PAGE_INFO[page]) return;
@@ -605,7 +607,7 @@ function navigate(page){
    ============================================================ */
 const State = {
   registros: [],
-  hier: { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'', filterCompletude:'' },
+  hier: { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' },
   page: 'dashboard'
 };
 
@@ -731,7 +733,7 @@ function normalizarFicha(raw){
     foto_tamanho_bytes: ft ? ft.tamanhoBytes         : undefined,
     foto_latitude:      ft ? ft.latitude             : undefined,
     foto_longitude:     ft ? ft.longitude            : undefined,
-    foto_precisao_m:    ft ? ft.precisaoM            : undefined,
+    foto_precisao_m:    ft ? ft.precisaM            : undefined,
     foto_geo_horario:   ft ? ft.geolocalizacaoHorario: undefined
   });
 }
@@ -809,8 +811,7 @@ const FIELD_PATHS = {
   lote_letra:     'lote_letra',
   unidade_imovel: 'unidade_imovel',
   status:         'status',
-  responsavel:    'responsavel',
-  data_registro:  'data_registro'
+  responsavel:    'responsavel'
 };
 
 /* ============================================================
@@ -907,23 +908,6 @@ function labelFromOptions(optKey, val){
 function statusLabel(s){ return labelFromOptions('status', s || 'pendente'); }
 function normalizeStatus(s){ return (s === 'aprovado') ? 'aprovado' : 'pendente'; }
 function getStatusFromReg(r){ return normalizeStatus(r.status); }
-
-/* ============================================================
-   CRITÉRIO DE COMPLETUDE
-   ============================================================ */
-const CAMPOS_COMPLETOS = [
-  'inscricaoImobiliaria',
-  'tipoImovel',
-  'areaTerreno',
-  'tipoLogradouro',
-  'nomeLogradouro',
-  'cep'
-];
-function fichaCompleta(r){
-  return CAMPOS_COMPLETOS.every(function(f){
-    return String(r[f] || '').trim() !== '';
-  });
-}
 
 /* ============================================================
    FOTO
@@ -1058,6 +1042,10 @@ function escutarFichas(){
 /* ============================================================
    DASHBOARD
    ============================================================ */
+function getBairroNome(r){
+  return norm(r.bairro_imovel) || norm(r.bairro) || 'SEM BAIRRO';
+}
+
 function renderDashboard(){
   const regs = State.registros;
   const total = regs.length;
@@ -1068,7 +1056,6 @@ function renderDashboard(){
   });
   const aprov = regs.filter(function(r){ return getStatusFromReg(r) === 'aprovado'; }).length;
   const pend  = total - aprov;
-  const completas = regs.filter(fichaCompleta).length;
 
   document.getElementById('statGrid').innerHTML = [
     { ico:'i1', label:'Total de Fichas', value: total,
@@ -1079,42 +1066,56 @@ function renderDashboard(){
       svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' },
     { ico:'i3', label:'Pendentes', value: pend,
       trend: pend>0?'Aguardando análise':'Tudo em dia', down: pend>0,
-      svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' },
-    { ico:'i4', label:'Fichas Completas', value: completas,
-      trend: total ? Math.round(completas/total*100)+'% com campos obrigatórios' : '—',
-      svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' }
+      svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' }
   ].map(function(s){
     return '<div class="stat"><div class="stat-ico ' + s.ico + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + s.svg + '</svg></div>' +
     '<div class="stat-value">' + s.value + '</div><div class="stat-label">' + s.label + '</div>' +
     '<div class="stat-trend' + (s.down?' down':'') + '">' + s.trend + '</div></div>';
   }).join('');
 
-  const maxV = Math.max(total, 1);
-  document.getElementById('chartBars').innerHTML = [
-    { label:'Aprovado', value:aprov, color:'linear-gradient(90deg,#10b981,#34d399)' },
-    { label:'Pendente', value:pend,  color:'linear-gradient(90deg,#f59e0b,#fbbf24)' }
-  ].map(function(b){
-    return '<div style="display:grid;grid-template-columns:120px 1fr 48px;align-items:center;gap:12px;padding:8px 0;">' +
-    '<div style="font-size:12.5px;font-weight:600;color:var(--muted);">' + b.label + '</div>' +
-    '<div style="height:10px;background:var(--bg);border-radius:99px;overflow:hidden;"><div style="height:100%;width:' + ((b.value/maxV)*100) + '%;background:' + b.color + ';border-radius:99px;"></div></div>' +
-    '<div style="font-size:12.5px;font-weight:700;text-align:right;">' + b.value + '</div></div>';
-  }).join('');
+  /* ----- Agrupamentos por bairro: ruas e lotes ----- */
+  const ruasPorBairro  = {};
+  const lotesPorBairro = {};
+  regs.forEach(function(r){
+    const b = getBairroNome(r);
+    if(!b) return;
+    lotesPorBairro[b] = (lotesPorBairro[b] || 0) + 1;
+    const rua = norm(r.nomeLogradouro);
+    if(rua){
+      if(!ruasPorBairro[b]) ruasPorBairro[b] = new Set();
+      ruasPorBairro[b].add(rua);
+    }
+  });
+  const bairrosOrdenados = Object.keys(lotesPorBairro).sort(function(a,b){ return a.localeCompare(b, 'pt-BR'); });
+  const maxRuas  = Math.max(1, ...bairrosOrdenados.map(function(b){ return ruasPorBairro[b] ? ruasPorBairro[b].size : 0; }));
+  const maxLotes = Math.max(1, ...bairrosOrdenados.map(function(b){ return lotesPorBairro[b] || 0; }));
 
-  const recent = regs.slice(0, 5);
-  document.getElementById('recentList').innerHTML = recent.length
-    ? recent.map(function(r){
-        const nomeProp = (Array.isArray(r.Titular) && r.Titular[0] && r.Titular[0].nomeTitular) || r.nome || 'Sem proprietário';
-        const ini = String(nomeProp).split(' ').map(function(w){ return w[0]; }).slice(0,2).join('').toUpperCase();
-        const st = getStatusFromReg(r);
-        const comp = fichaCompleta(r);
-        return '<div class="mini-item"><div class="mini-avatar">' + esc(ini) + '</div>' +
-          '<div class="mini-info"><strong>' + esc(nomeProp) + '</strong>' +
-          '<span>' + esc(r.bairro_imovel||r.bairro||'—') + ' · Q ' + esc(r.quadra_imovel||'—') + ' · L ' + esc(r.lote_letra||'—') + '</span></div>' +
-          '<span class="badge ' + esc(st) + '">' + statusLabel(st) + '</span>' +
-          '<span class="badge ' + (comp ? 'aprovado' : 'pendente') + '">' + (comp ? 'Completo' : 'Incompleto') + '</span>' +
-          '</div>';
-      }).join('')
-    : '<div class="empty"><strong>Nenhuma ficha cadastrada</strong><span>Aguardando envio do formulário mobile.</span></div>';
+  function renderLista(containerId, mapa, maxVal, corGrad){
+    const el = document.getElementById(containerId);
+    if(!el) return;
+    if(!bairrosOrdenados.length){
+      el.innerHTML = '<div class="empty" style="padding:40px 20px;"><strong>Nenhum dado</strong><span>Aguardando envio do formulário.</span></div>';
+      return;
+    }
+    el.innerHTML = bairrosOrdenados.map(function(b){
+      let v = mapa[b];
+      if(v instanceof Set) v = v.size;
+      v = v || 0;
+      const pct = Math.min(100, Math.round((v / maxVal) * 100));
+      return '<div style="padding:10px 0;border-bottom:1px dashed var(--border);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:10px;">' +
+          '<strong style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(b) + '</strong>' +
+          '<span style="font-size:13px;font-weight:800;color:var(--primary);flex:0 0 auto;">' + v + '</span>' +
+        '</div>' +
+        '<div style="height:6px;background:var(--bg);border-radius:99px;overflow:hidden;">' +
+          '<div style="height:100%;width:' + pct + '%;background:' + corGrad + ';border-radius:99px;"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  renderLista('ruasPorBairro',  ruasPorBairro,  maxRuas,  'linear-gradient(90deg,#4f46e5,#8b5cf6)');
+  renderLista('lotesPorBairro', lotesPorBairro, maxLotes, 'linear-gradient(90deg,#10b981,#34d399)');
 }
 
 /* ============================================================
@@ -1122,14 +1123,13 @@ function renderDashboard(){
    ============================================================ */
 const Pages = { registros:{} };
 
-Pages.registros.goRoot   = function(){ State.hier = { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'', filterCompletude:'' }; renderRegistros(); };
+Pages.registros.goRoot   = function(){ State.hier = { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' }; renderRegistros(); };
 Pages.registros.goBairro = function(b){ State.hier.bairro = b; State.hier.quadra = null; renderRegistros(); };
 Pages.registros.goBairroLevel = function(){ State.hier.quadra = null; renderRegistros(); };
 Pages.registros.goQuadra = function(q){ State.hier.quadra = q; renderRegistros(); };
 Pages.registros.setSortQuadras = function(v){ State.hier.sortQuadras = v; renderRegistros(); };
 Pages.registros.setSortLotes  = function(v){ State.hier.sortLotes  = v; renderRegistros(); };
 Pages.registros.setFilterStatus = function(v){ State.hier.filterStatus = v; renderRegistros(); };
-Pages.registros.setFilterCompletude = function(v){ State.hier.filterCompletude = v; renderRegistros(); };
 
 function renderRegistros(){
   renderBreadcrumb();
@@ -1161,9 +1161,6 @@ function renderBreadcrumb(){
   });
 }
 
-function getBairroNome(r){
-  return norm(r.bairro_imovel) || norm(r.bairro) || 'SEM BAIRRO';
-}
 function getQuadraNome(r){ return norm(r.quadra_imovel) || 'SEM QUADRA'; }
 function getLoteNome(r){ return norm(r.lote_letra) || '—'; }
 function getNomeProprietario(r){
@@ -1258,11 +1255,6 @@ function renderLotesView(){
     return getBairroNome(r) === bairro && getQuadraNome(r) === quadra;
   });
 
-  if(State.hier.filterCompletude === 'completo'){
-    fichas = fichas.filter(fichaCompleta);
-  } else if(State.hier.filterCompletude === 'incompleto'){
-    fichas = fichas.filter(function(f){ return !fichaCompleta(f); });
-  }
   if(State.hier.filterStatus){
     fichas = fichas.filter(function(f){ return getStatusFromReg(f) === State.hier.filterStatus; });
   }
@@ -1288,12 +1280,6 @@ function renderLotesView(){
         '<option value="pendente"' + (State.hier.filterStatus === 'pendente' ? ' selected' : '') + '>Pendente</option>' +
         '<option value="aprovado"' + (State.hier.filterStatus === 'aprovado' ? ' selected' : '') + '>Aprovado</option>' +
       '</select>' +
-      '<label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Completude:</label>' +
-      '<select id="filterCompletude">' +
-        '<option value=""'           + (State.hier.filterCompletude === ''           ? ' selected' : '') + '>Todas</option>' +
-        '<option value="completo"'   + (State.hier.filterCompletude === 'completo'   ? ' selected' : '') + '>Completas</option>' +
-        '<option value="incompleto"' + (State.hier.filterCompletude === 'incompleto' ? ' selected' : '') + '>Incompletas</option>' +
-      '</select>' +
       '<label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>Ordenar:</label>' +
       '<select id="sortLotesSel">' +
         '<option value="lote_asc"'  + (sortL === 'lote_asc'  ? ' selected' : '') + '>Lote: A → Z</option>' +
@@ -1307,7 +1293,6 @@ function renderLotesView(){
     '</div>';
 
   document.getElementById('filterStatus').addEventListener('change', function(e){ Pages.registros.setFilterStatus(e.target.value); });
-  document.getElementById('filterCompletude').addEventListener('change', function(e){ Pages.registros.setFilterCompletude(e.target.value); });
   document.getElementById('sortLotesSel').addEventListener('change', function(e){ Pages.registros.setSortLotes(e.target.value); });
 
   if(!fichas.length){
@@ -1317,9 +1302,7 @@ function renderLotesView(){
 
   document.getElementById('hierContent').innerHTML = '<div class="lote-list">' + fichas.map(function(l){
     const status = getStatusFromReg(l);
-    const completo = fichaCompleta(l);
     const nomeProp = getNomeProprietario(l);
-    const st = getStatusFromReg(l);
     const unid = l.unidade_imovel ? ' · Unid. ' + esc(l.unidade_imovel) : '';
     const endereco = (l.nomeLogradouro || l.logradouro_imovel || '') + (l.numeroImovel ? ', ' + l.numeroImovel : '');
     return '<div class="lote-card" data-id="' + esc(l.id) + '">' +
@@ -1329,7 +1312,6 @@ function renderLotesView(){
         '<div class="lc-sub">' + esc(endereco || '—') + unid + '</div>' +
       '</div>' +
       '<span class="badge ' + esc(status) + '">' + statusLabel(status) + '</span>' +
-      '<span class="badge ' + (completo ? 'aprovado' : 'pendente') + '" style="margin-left:4px;">' + (completo ? 'Completo' : 'Incompleto') + '</span>' +
       '<div class="lote-actions">' +
         '<button class="action-btn" data-action="view" title="Ver ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
         '<button class="action-btn" data-action="edit" title="Editar ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
@@ -1396,7 +1378,6 @@ function dSection(title, svg){
 Pages.registros.view = function(id){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   const st = getStatusFromReg(r);
-  const completo = fichaCompleta(r);
   const dataUrl = fotoDataUrl(r);
   const tipoLabel = /webp/i.test(r.foto_tipo || '') ? 'WebP' : 'JPEG';
   const tamanhoLabel = r.foto_tamanho_bytes ? (r.foto_tamanho_bytes / 1024).toFixed(1) + ' KB' : '—';
@@ -1554,9 +1535,7 @@ Pages.registros.view = function(id){
     dSection('Auditoria', SVG_ICONS.info) +
     '<div class="detail-grid">' +
       dItem('Status atual', statusLabel(st)) +
-      dItem('Completude', completo ? 'Completo' : 'Incompleto') +
       dItem('Responsável', r.responsavel) +
-      dItem('Data de Registro', r.data_registro) +
       dItem('Criado em', fmtDateTime(r.criado_em)) +
       dItem('Criado por (email)', r.criado_por_email, { full:true }) +
       dItem('Criado por (UID)', r.criado_por_uid, { mono:true, full:true }) +
@@ -1592,11 +1571,7 @@ Pages.registros.view = function(id){
   const nomeProp = getNomeProprietario(r);
   const headerExtra =
     '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
-      '<span class="badge ' + esc(st) + '">' + statusLabel(st) + '</span>' +
-      '<span class="badge ' + (completo ? 'aprovado' : 'pendente') + '">' + (completo ? 'Completo' : 'Incompleto') + '</span>' +
-      (dataUrl ? '<span class="badge" style="background:var(--primary-light);color:var(--primary);border-color:#c7d9f0;">Foto anexada</span>' : '') +
-      (r.criado_por_email ? '<span class="badge" style="background:var(--info-bg);color:#1d4ed8;border-color:#bfdbfe;">' + esc(r.criado_por_email) + '</span>' : '') +
-      '<button type="button" class="btn btn-primary btn-sm" id="btnEditarFicha" style="margin-left:8px;">' +
+      '<button type="button" class="btn btn-primary btn-sm" id="btnEditarFicha">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.edit + '</svg>' +
         'Editar ficha' +
       '</button>' +
@@ -1744,7 +1719,6 @@ const EDIT_SCHEMA = {
   auditoria: [
     { section:'Registro da Ficha', icon:SVG_ICONS.info, fields: [
       { n:'responsavel', l:'Responsável pelo preenchimento', t:'text' },
-      { n:'data_registro', l:'Data de Registro', t:'date' },
       { n:'status', l:'Status', t:'select', opt:'status' }
     ]}
   ]
@@ -1872,7 +1846,7 @@ Pages.registros.edit = function(id){
         const name = el.dataset.editField;
         if(el.type === 'checkbox'){ flatUpdates[name] = !!el.checked; return; }
         let v = el.value;
-        if(typeof v === 'string' && v && !['dtUltimoValorVenal','dataUltVlrMercado','dtUltAtualizacao','dtTransacaoITBI','data_registro','status','tipoImovel','tpArquitetonico','destinacaoImovel','padraoConstrutivo','bice','tipoLogradouro','tpTransacaoITBI','cep'].includes(name)){
+        if(typeof v === 'string' && v && !['dtUltimoValorVenal','dataUltVlrMercado','dtUltAtualizacao','dtTransacaoITBI','status','tipoImovel','tpArquitetonico','destinacaoImovel','padraoConstrutivo','bice','tipoLogradouro','tpTransacaoITBI','cep'].includes(name)){
           v = v.toUpperCase();
         }
         flatUpdates[name] = v;
@@ -2017,13 +1991,9 @@ function getPrintCSS(){
 
 function montarHTMLFichaParaImpressao(r){
   const st = getStatusFromReg(r);
-  const completo = fichaCompleta(r);
   const dataUrl = fotoDataUrl(r);
   const dt = new Date();
-  const dataEmissao = r.data_registro ? (function(){
-    const p = String(r.data_registro).split('-');
-    return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : r.data_registro;
-  })() : dt.toLocaleDateString('pt-BR');
+  const dataEmissao = dt.toLocaleDateString('pt-BR');
 
   function row(label, value){
     const v = (value === undefined || value === null || value === '') ? '—' : String(value);
@@ -2071,7 +2041,6 @@ function montarHTMLFichaParaImpressao(r){
       '</div>' +
       '<div class="doc-meta">' +
         '<div><span>Status</span><strong class="badge-' + esc(st) + '">' + esc(statusLabel(st)) + '</strong></div>' +
-        '<div><span>Completude</span><strong>' + (completo ? 'Completo' : 'Incompleto') + '</strong></div>' +
         '<div><span>Emissão</span><strong>' + esc(dataEmissao) + '</strong></div>' +
       '</div>' +
     '</header>' +
@@ -2198,12 +2167,10 @@ Pages.registros.imprimirPDF = function(id){
 
 /* ============================================================
    EXPORTAÇÃO — prefere a estrutura aninhada do Firestore
-   (r.dados_imovel.*) e cai para o formato flat se necessário.
    ============================================================ */
 function toExportModel(r){
   if(!r || typeof r !== 'object') return null;
 
-  // Fonte preferida: estrutura aninhada gravada pelo Worker
   const src = (r.dados_imovel && typeof r.dados_imovel === 'object') ? r.dados_imovel : null;
 
   const S = v => (v == null) ? '' : String(v);
@@ -2218,7 +2185,6 @@ function toExportModel(r){
   const D = v => { const s = S(v).trim(); return s || null; };
   const C = v => String(v || '').replace(/\D/g, '');
 
-  // Pega campo: prefere nested, senão flat
   const pick = (block, field) => {
     if(src && src[block] && src[block][field] !== undefined && src[block][field] !== null && src[block][field] !== ''){
       return src[block][field];
@@ -2321,7 +2287,7 @@ function toExportModel(r){
 }
 
 /* ============================================================
-   DADOS & BACKUP
+   CONFIGURAÇÃO / BACKUP
    ============================================================ */
 const Data = {
   exportJSON(){
@@ -2340,7 +2306,6 @@ const Data = {
       fichas
     };
 
-    // Diagnóstico — abra o Console (F12) para inspecionar o que foi lido
     try {
       console.groupCollapsed('[export] payload (' + fichas.length + ' ficha(s))');
       console.log('Primeira ficha:', fichas[0]);
@@ -2432,18 +2397,17 @@ function renderStorageInfo(){
     if(r.bairro_imovel && r.quadra_imovel) qSet.add(norm(r.bairro_imovel)+'|'+norm(r.quadra_imovel));
   });
   const comFoto = State.registros.filter(function(r){ return !!r.foto_base64; }).length;
-  const completas = State.registros.filter(fichaCompleta).length;
   const aprov = State.registros.filter(function(r){ return getStatusFromReg(r) === 'aprovado'; }).length;
 
   const info = [
     ['Fonte oficial', 'Firebase Firestore'],
     ['Coleção', 'fichas'],
     ['Total de Fichas', State.registros.length],
-    ['Fichas completas', completas],
     ['Fichas aprovadas', aprov],
     ['Fichas com foto', comFoto],
     ['Bairros', bSet.size],
-    ['Quadras', qSet.size]
+    ['Quadras', qSet.size],
+    ['Exportado em', new Date().toLocaleString('pt-BR')]
   ];
   document.getElementById('storageInfo').innerHTML = info.map(function(pair){
     return '<div style="padding:9px 0;border-bottom:1px dashed var(--border);"><div style="font-size:10.5px;text-transform:uppercase;font-weight:700;color:var(--muted);">' + esc(pair[0]) + '</div><div style="font-size:13.5px;font-weight:600;margin-top:3px;">' + esc(pair[1]) + '</div></div>';
@@ -2502,14 +2466,12 @@ function bindEvents(){
       document.getElementById('hierContent').innerHTML = matches.length
         ? '<div class="lote-list">' + matches.slice(0, 80).map(function(l){
             const status = getStatusFromReg(l);
-            const comp = fichaCompleta(l);
             const nomeProp = getNomeProprietario(l);
             return '<div class="lote-card" data-id="' + esc(l.id) + '">' +
               '<div class="lc-badge"><div><small>Lote</small>' + esc(getLoteNome(l)) + '</div></div>' +
               '<div class="lc-info"><div class="lc-title">' + esc(nomeProp) + '</div>' +
               '<div class="lc-sub">' + esc(l.bairro_imovel||l.bairro||'—') + ' · Q ' + esc(l.quadra_imovel||'—') + ' · ' + esc(l.nomeLogradouro||l.logradouro_imovel||'—') + '</div></div>' +
               '<span class="badge ' + esc(status) + '">' + statusLabel(status) + '</span>' +
-              '<span class="badge ' + (comp ? 'aprovado' : 'pendente') + '" style="margin-left:4px;">' + (comp ? 'Completo' : 'Incompleto') + '</span>' +
               '<div class="lote-actions">' +
                 '<button class="action-btn" data-action="view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
                 '<button class="action-btn" data-action="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
@@ -2543,7 +2505,7 @@ function bootApp(){
   escutarFichas();
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[Admin v4.4 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[Admin v4.5 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){
