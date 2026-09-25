@@ -750,7 +750,199 @@ function initFormulario(){
     try { localStorage.removeItem(RESP_LOGIN_KEY); } catch(e){}
   }
 
-  let LISTAS = { funcionarios: [], bairros: [], ruas: [] };
+  /* ============================================================
+     BAIRROS E LOGRADOUROS — 100% DA RAIZ (dados fixos do código)
+     ------------------------------------------------------------
+     Estes dados NÃO são lidos nem gravados no Firestore. Eles são
+     a única fonte de verdade para bairros e ruas no formulário.
+     Para alterar, edite este arquivo e publique novamente.
+
+     Código do logradouro → prefixo define o bairro:
+       1xx CENTRO · 2xx SEBASTIÃO BORGES · 3xx NOVO
+       4xx NOVA ESPERANÇA · 5xx VISTA ALEGRE · 6xx NOVO HORIZONTE
+       7xx BAIRRO DA PAZ · 8xx CONJ. SIZIRNANDO LUIZ DE MOURA
+       9xx DISTRITO
+     ============================================================ */
+  const BAIRROS_RAIZ = [
+    { numero: '100', label: 'CENTRO' },
+    { numero: '200', label: 'SEBASTIÃO BORGES' },
+    { numero: '300', label: 'NOVO' },
+    { numero: '400', label: 'NOVA ESPERANÇA' },
+    { numero: '500', label: 'VISTA ALEGRE' },
+    { numero: '600', label: 'NOVO HORIZONTE' },
+    { numero: '700', label: 'BAIRRO DA PAZ' },
+    { numero: '800', label: 'CONJUNTO SIZIRNANDO LUIZ DE MOURA' },
+    { numero: '900', label: 'DISTRITO' }
+  ];
+
+  const LOGRADOUROS_RAIZ = [
+    /* 1xx — CENTRO */
+    ['101','RUA MANOEL ROCHA DOS SANTOS'],
+    ['102','AV. ADAIL DE SÁ'],
+    ['103','RUA ÁGUA BRANCA'],
+    ['104','RUA DORVANE FERREIRA DE SOUZA'],
+    ['105','RUA MARIA DIVA CAMPOS'],
+    ['106','RUA ARAÇATUBA'],
+    ['107','RUA ARUANÂ'],
+    ['108','RUA BEIRA RIO'],
+    ['109','RUA CAAPIRANGA'],
+    ['110','RUA CAMBIXE'],
+    ['111','RUA CURARI'],
+    ['112','RUA CURUÇA'],
+    ['113','RUA FRANCISCA RIBEIRO DA COSTA'],
+    ['114','RUA RAIMUNDA NONATA SILVA REIS'],
+    ['115','RUA IRACEMA'],
+    ['116','RUA GILMAR NOGUEIRA DE CASTRO'],
+    ['117','RUA JARAQUI'],
+    ['118','RUA LANTERIAMA'],
+    ['119','RUA CLAUDIO FRANCISCO DA VICTORIA'],
+    ['120','RUA TEREZINHA TEIXEIRA DE SOUZA'],
+    ['121','RUA MANAQUIRI'],
+    ['122','RUA MIRACAUERA'],
+    ['123','RUA MORAPIRANGA'],
+    ['124','RUA MOSQUETEIRO'],
+    ['125','RUA JOÃO SANTIAGO DA SILVA (ANTIGA MURUMURUTUBA)'],
+    ['126','RUA MANOEL ALMEIDA LEITE'],
+    ['127','RUA PORTO DA BALSA'],
+    ['128','RUA PASTOR JOSÉ AQUINO DE MORAES'],
+    ['129','RUA PURUPURU'],
+    ['130','RUA TABOCAL'],
+    ['131','RUA PROFESSORA SOCORRO GUIMARÃES'],
+    ['132','RUA AREOLINO MORAES'],
+    ['133','RUA ALMIR NONATO DA COSTA'],
+    /* 2xx — SEBASTIÃO BORGES */
+    ['201','RUA 13 DE MAIO'],
+    ['202','RUA 05 DE SETEMBRO'],
+    ['203','RUA 07 DE SETEMBRO'],
+    ['204','RUA AURORA'],
+    ['205','RUA BELÉM'],
+    ['206','RUA BOM SUCESSO'],
+    ['207','RUA BURITI'],
+    ['208','AV. COSME CARNEIRO DE CASTRO'],
+    ['210','RUA DOM BOSCO'],
+    ['211','RUA JOSINO MATOS FILHO'],
+    ['212','RUA SATURNINO LIRA DOS SANTOS'],
+    ['213','RUA LUCIANO FERNANDES'],
+    ['215','RUA NOSSA SRª DE FÁTIMA'],
+    ['217','RUA PROF. VICENTE DE PAULA'],
+    ['218','AV. RAIMUNDO CAVALCANTE'],
+    ['219','RUA SANTA HELENA'],
+    ['220','RUA SANTO ANTONIO'],
+    ['221','RUA SÃO JORGE'],
+    ['222','RUA SÃO SEBASTIÃO'],
+    ['223','RUA TEFÉ'],
+    ['225','RUA WAGNER DE BARROS'],
+    ['226','RUA 04'],
+    /* 3xx — NOVO */
+    ['301','BECO ÁGUA BRANCA'],
+    ['302','RUA ATURIÁ'],
+    ['303','RUA CALAFATE'],
+    ['304','RUA CASTANHO'],
+    ['305','RUA MOISÉS TORRES DE SOUZA'],
+    ['306','RUA JACAMIM'],
+    ['307','RUA MANCHETERIA'],
+    ['308','RUA MANOEL SALES'],
+    ['309','BECO PACOVA'],
+    ['310','RUA MIRAUA'],
+    ['311','RUA PACOVA'],
+    ['312','RUA PARICATUBA'],
+    ['313','RUA ERIVALDO GONZAGA'],
+    ['314','RUA PROF. ANTONIO SOARES'],
+    ['315','RUA RIO NEGRO'],
+    ['316','RUA TAQUARA'],
+    ['317','RUA VITÓRIA'],
+    ['318','RUA WALDEMAR BARROS'],
+    ['319','ZERO'],
+    ['320','BECO ZUMBI DOS PALMARES'],
+    ['321','BECO RIO NEGRO'],
+    /* 4xx — NOVA ESPERANÇA */
+    ['401','RUA 15 DE MAIO'],
+    ['402','RUA ENCONTRO DAS AGUAS'],
+    ['403','RUA FRANCISCO NOGUEIRA'],
+    ['404','RUA JOÃO SILVESTRE'],
+    ['405','RUA JOSE RODRIGUES DE ARRUDA'],
+    ['406','RUA LÍRIO DO VALE'],
+    ['407','RUA NOVA ESPERANÇA'],
+    ['408','RUA NOVA OLINDA'],
+    ['409','RUA OTACÍLIO DE SOUZA'],
+    ['410','RUA NOVA'],
+    ['411','RUA SOLIMÕES'],
+    ['412','RUA TAPAJÓS'],
+    /* 5xx — VISTA ALEGRE */
+    ['501','RUA 31 DE MAIO'],
+    ['503','RUA SATURNINO BARRETO MORAES'],
+    ['505','RUA BARRO ALTO'],
+    ['506','RUA MARIA MARTINS'],
+    ['507','RUA CURARIZINHO'],
+    ['508','RUA MARIA ANTONIA'],
+    ['509','RUA MARIMBA'],
+    ['510','RUA MURATU'],
+    ['511','RUA DOS REIS'],
+    ['512','RUA MARIA DAILIS BRAGA'],
+    ['514','RUA TAPAGEM'],
+    /* 6xx — NOVO HORIZONTE */
+    ['601','RUA AZALEIA'],
+    ['602','RUA DAS ORQUÍDEAS'],
+    ['603','RUA LOURENÇO ALVES DE SOUZA'],
+    ['604','RUA GIRASSOL'],
+    ['605','RUA JASMIM'],
+    ['606','RUA MARGARIDA'],
+    ['607','RUA PAPOULA'],
+    ['608','RUA TULIPA'],
+    /* 7xx — BAIRRO DA PAZ */
+    ['701','RUA JULIA CONDE MARTINS (ANTIGA RUA 01)'],
+    ['702','RAIMUNDO CARLOS QUEIROZ VIANA (ANTIGA RUA 02)'],
+    ['703','RUA 03'],
+    ['704','RUA 04'],
+    /* 8xx — CONJUNTO SIZIRNANDO LUIZ DE MOURA */
+    ['801','RUA POÇÃO'],
+    ['802','AV. ANTONIO DINIZ DE CARVALHO'],
+    ['803','AV. VOLMAR LAURENTINO'],
+    ['804','RUA NITEROI'],
+    ['805','RUA PARQUE DAS CASTANHEIRA'],
+    ['806','RUA OCIMAR DE MELO ALMEIDA'],
+    ['807','AV. AIRTON SENNA'],
+    ['808','AV. MARIO JORGE GUEDES DA SILVA'],
+    ['809','AV. SARGENTO NONATO BRITO'],
+    ['810','RUA HUMBERTO BASTO DE OLIVEIRA'],
+    /* 9xx — DISTRITO */
+    ['901','RUA 2'],
+    ['902','RUA 3'],
+    ['903','RUA 4'],
+    ['904','RUA 5'],
+    ['905','RUA 6'],
+    ['906','RUA 7'],
+    ['907','RUA 8'],
+    ['908','RUA A'],
+    ['909','RUA VILA AMAZONAS'],
+    ['910','AV. ELÇAMIR B. DA COSTA'],
+    ['911','AV. MANOEL GADELHA NETO']
+  ];
+
+  /* Monta os arrays de bairros e ruas no mesmo formato esperado
+     pelas funções de popular selects. */
+  function buildBairrosRaiz(){
+    return BAIRROS_RAIZ.map(b => ({
+      label: b.label,
+      numero: b.numero,
+      ativo: true
+    }));
+  }
+  function buildRuasRaiz(){
+    const prefBairro = {};
+    BAIRROS_RAIZ.forEach(b => { prefBairro[b.numero[0]] = b.label; });
+    return LOGRADOUROS_RAIZ.map(([cod, label]) => ({
+      label: label,
+      bairro: prefBairro[cod[0]] || '',
+      ativo: true
+    }));
+  }
+
+  /* Arrays fixos — resolvidos uma única vez */
+  const BAIRROS_FIXOS = buildBairrosRaiz();
+  const RUAS_FIXAS    = buildRuasRaiz();
+
+  let LISTAS = { funcionarios: [], bairros: BAIRROS_FIXOS, ruas: RUAS_FIXAS };
   let QUADRAS = [];
   let LOTES = [];
   let FICHAS = [];
@@ -1081,13 +1273,29 @@ function initFormulario(){
       'Este lote ainda não possui cadastro.';
   }
 
+  /* ============================================================
+     ESCUTA config/listas
+     ------------------------------------------------------------
+     ATENÇÃO: bairros e logradouros são 100% da raiz (fixos no
+     código). Deste documento do Firestore só lemos a lista de
+     FUNCIONÁRIOS (que precisam de senha e podem ser ativados/
+     desativados). Nada é gravado aqui.
+     ============================================================ */
   function escutarListas(){
     onSnapshot(doc(db,'config','listas'), snap => {
       const data = snap.exists() ? (snap.data().grupos || {}) : {};
       LISTAS = {
         funcionarios: Array.isArray(data.funcionarios) ? data.funcionarios : [],
-        bairros:      Array.isArray(data.bairros)      ? data.bairros      : [],
-        ruas:         Array.isArray(data.ruas)         ? data.ruas         : []
+        bairros: BAIRROS_FIXOS,
+        ruas:    RUAS_FIXAS
+      };
+      popularResponsaveis(); popularBairros(); popularRuas();
+    }, err => {
+      console.warn('[listas] Falha ao ler funcionários; seguindo só com dados da raiz:', err);
+      LISTAS = {
+        funcionarios: [],
+        bairros: BAIRROS_FIXOS,
+        ruas:    RUAS_FIXAS
       };
       popularResponsaveis(); popularBairros(); popularRuas();
     });
