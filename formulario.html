@@ -618,7 +618,7 @@ body{
       <div class="card"><div class="card-body">
         <p class="sub-note">
           <strong>Última etapa.</strong> Tire uma foto do imóvel. As informações do formulário
-          (titular, bairro/quadra/lote, logradouro/número e georreferenciamento) serão gravadas
+          (bairro/quadra/lote, logradouro/número e georreferenciamento) serão gravadas
           automaticamente no canto inferior esquerdo da imagem.
         </p>
 
@@ -1370,23 +1370,19 @@ function initFormulario(){
       const el = document.querySelector(sel);
       return el ? String(el.value || '').trim() : '';
     };
-    const primeiroTitular = first('#titulares .list-item [name=nomeTitular]');
     const bairroCad = first('#bairro_imovel');
     const quadra    = first('#quadra_imovel');
     const lote      = first('#lote_letra');
     const logradouro= first('#nomeLogradouro');
     const numero    = first('#numeroImovel');
     const complemento = first('#complNroImovel');
-    return { primeiroTitular, bairroCad, quadra, lote, logradouro, numero, complemento };
+    return { bairroCad, quadra, lote, logradouro, numero, complemento };
   }
 
-  /* ---------- 4 LINHAS COMPACTAS (GPS + DATA JUNTOS) ---------- */
+  /* ---------- 3 LINHAS COMPACTAS (SEM TITULAR) ---------- */
   function montarLinhasFoto(info, geo){
     const linhas = [];
     if(info){
-      if(info.primeiroTitular){
-        linhas.push({ texto: 'Titular: ' + info.primeiroTitular.toUpperCase(), bold: true });
-      }
       const partes = [];
       if(info.bairroCad) partes.push('Bairro: ' + info.bairroCad.toUpperCase());
       if(info.quadra)    partes.push('Quadra: ' + info.quadra);
@@ -1419,7 +1415,6 @@ function initFormulario(){
     const linhas = montarLinhasFoto(info, geo);
     if(!linhas.length) return c;
 
-    // -------- TAMANHOS COMPACTOS --------
     const fontMain  = Math.max(11, Math.round(w / 78));
     const fontSmall = Math.max(10, Math.round(fontMain * 0.86));
     const linhaH    = Math.round(fontMain * 1.16);
@@ -1432,7 +1427,6 @@ function initFormulario(){
     const x0        = margem;
     const y0        = h - alturaBox - margem;
 
-    // largura do box com base no maior texto
     let maxW = 0;
     linhas.forEach(l => {
       const fsize = l.bold ? fontMain : fontSmall;
@@ -1443,14 +1437,12 @@ function initFormulario(){
     });
     const larguraBox = Math.min(w - x0 * 2, Math.ceil(maxW + padH * 2));
 
-    // fundo semitransparente compacto
     ctx.save();
     roundRectPath(ctx, x0, y0, larguraBox, alturaBox, raio);
     ctx.fillStyle = 'rgba(0,0,0,0.38)';
     ctx.fill();
     ctx.restore();
 
-    // textos: branco + contorno preto suave
     ctx.save();
     ctx.textBaseline = 'top';
     ctx.lineJoin     = 'round';
@@ -1513,16 +1505,11 @@ function initFormulario(){
     const info = coletarInfoFoto();
     const itens = [];
 
-    if(info.primeiroTitular) itens.push({ lbl:'Titular', val:info.primeiroTitular });
     if(info.bairroCad) itens.push({ lbl:'Bairro', val:info.bairroCad });
     if(info.quadra || info.lote) itens.push({ lbl:'Quadra / Lote', val:(info.quadra||'—') + ' / ' + (info.lote||'—') });
     if(info.logradouro) itens.push({ lbl:'Logradouro', val:info.logradouro + (info.numero ? ', Nº ' + info.numero : '') });
     itens.push({ lbl:'Georreferenciamento', val:'Capturado no momento da foto (GPS de alta precisão)' });
 
-    if(!itens.length){
-      photoInfoList.innerHTML = '<li><span class="empty">Preencha as etapas anteriores para visualizar.</span></li>';
-      return;
-    }
     photoInfoList.innerHTML = itens.map(it =>
       '<li><span class="lbl">' + esc(it.lbl) + '</span><span class="val">' + esc(it.val) + '</span></li>'
     ).join('');
