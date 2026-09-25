@@ -372,6 +372,32 @@ ul{ list-style:none; }
 .filters-bar .filters-count{ margin-left:auto; font-size:12px; color:var(--muted); font-weight:600; }
 .filters-bar .filters-count strong{ color:var(--text); }
 
+/* Foto na pré-visualização da ficha */
+.ficha-photo-frame{
+  display:flex; justify-content:center; align-items:center;
+  padding:8px 0 4px; cursor:zoom-in; position:relative;
+}
+.ficha-photo-frame img{
+  max-width:100%; max-height:380px; width:auto; height:auto;
+  object-fit:contain; border-radius:12px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  transition:transform .18s ease, box-shadow .18s ease;
+  display:block;
+}
+.ficha-photo-frame:hover img{ transform:scale(1.01); box-shadow:var(--shadow-lg); }
+.ficha-photo-frame .pv-overlay{
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  background:rgba(15,23,42,.72); color:#fff; font-size:11.5px;
+  padding:5px 12px; border-radius:99px; font-weight:600;
+  letter-spacing:.3px; pointer-events:none;
+}
+.ficha-photo-empty{
+  padding:48px 20px; text-align:center; color:var(--muted);
+  background:#f8fafc; border:1px dashed var(--border);
+  border-radius:12px; font-size:13px;
+}
+
 @media (max-width:1200px){
   .stat-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
   .dash-grid{ grid-template-columns:1fr; }
@@ -740,7 +766,7 @@ function normalizarFicha(raw){
     foto_tamanho_bytes: ft ? ft.tamanhoBytes         : undefined,
     foto_latitude:      ft ? ft.latitude             : undefined,
     foto_longitude:     ft ? ft.longitude            : undefined,
-    foto_precisao_m:    ft ? ft.precisaM            : undefined,
+    foto_precisao_m:    ft ? ft.precisaoM            : undefined,
     foto_geo_horario:   ft ? ft.geolocalizacaoHorario: undefined
   });
 }
@@ -1992,7 +2018,34 @@ function getPrintCSS(){
     .photo-empty { padding: 20px; text-align: center; color: #94a3b8; font-size: 9.5pt; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 6px; }
     .arr-row { padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 9.5pt; }
     .arr-row strong { color: #0f172a; }
-    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .doc-head { break-inside: avoid; } }
+
+    .print-fab {
+      position: fixed; top: 18px; right: 18px; z-index: 99;
+      background: #0d5cab; color: #fff; border: 0;
+      padding: 10px 16px; border-radius: 8px;
+      font-size: 10.5pt; font-weight: 700; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 8px 20px rgba(13,92,171,.3);
+      font-family: inherit; letter-spacing: .3px;
+    }
+    .print-fab:hover { background: #0a4784; }
+
+    @media screen {
+      body { background: #f1f5f9; padding: 24px 16px; }
+      .doc-page {
+        max-width: 900px; margin: 0 auto; background: #fff;
+        padding: 32px 36px; border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(15,23,42,.08);
+      }
+    }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact;
+             padding: 0; background: #fff; }
+      .doc-page { max-width: none; margin: 0; padding: 0;
+                  box-shadow: none; border-radius: 0; }
+      .print-fab { display: none !important; }
+      .doc-head { break-inside: avoid; }
+    }
   `;
 }
 
@@ -2039,6 +2092,13 @@ function montarHTMLFichaParaImpressao(r){
     '<title>Ficha de Cadastro Imobiliário</title>' +
     '<style>' + getPrintCSS() + '</style>' +
     '</head><body>' +
+
+    '<button class="print-fab" type="button" onclick="window.print()">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>' +
+      'Imprimir / Salvar PDF' +
+    '</button>' +
+
+    '<div class="doc-page">' +
 
     '<header class="doc-head">' +
       '<div>' +
@@ -2156,7 +2216,7 @@ function montarHTMLFichaParaImpressao(r){
 
     section('12. Foto do Imóvel') + fotoBloco +
 
-    '<script>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},500);});<\/script>' +
+    '</div>' +
     '</body></html>';
 }
 
@@ -2169,7 +2229,7 @@ Pages.registros.imprimirPDF = function(id){
   w.document.open();
   w.document.write(html);
   w.document.close();
-  toast('Preparando impressão…', 'info');
+  toast('Documento pronto. Use o botão "Imprimir / Salvar PDF".', 'info');
 };
 
 /* ============================================================
@@ -2424,6 +2484,15 @@ function renderStorageInfo(){
 /* ============================================================
    NAV / EVENTOS
    ============================================================ */
+function updateNavForRole(){
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    const page = n.dataset.page;
+    n.style.display = hasAccess(page) ? '' : 'none';
+  });
+  const lbl = document.getElementById('navLabelSistema');
+  if(lbl) lbl.style.display = hasAccess('dados') ? '' : 'none';
+}
+
 function bindEvents(){
   document.querySelectorAll('.nav-item').forEach(function(n){
     n.addEventListener('click', function(){ navigate(n.dataset.page); });
@@ -2508,6 +2577,7 @@ function bindEvents(){
 function bootApp(){
   if(AppBooted) return;
   AppBooted = true;
+  updateNavForRole();
   bindEvents();
   escutarFichas();
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
