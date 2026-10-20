@@ -522,7 +522,7 @@ ul{ list-style:none; }
         </div>
         <div class="card">
           <div class="card-head">
-            <div><h3>Informações do Armazenamento</h3><p>Resumo do que está persistido no Firebase</p></div>
+            <div><h3>Informações do Armazenamento</h3><p>Resumo do que está persistido no banco de dados</p></div>
           </div>
           <div class="card-body"><div id="storageInfo" style="display:grid;grid-template-columns:1fr 1fr;gap:0 22px;"></div></div>
         </div>
@@ -545,10 +545,6 @@ ul{ list-style:none; }
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import {
-  getFirestore, collection, doc, getDoc, onSnapshot,
-  addDoc, deleteDoc, updateDoc, query, orderBy, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDgJC2zYMBW6zKOPDnxUkIxP-ko_NTaNjw",
@@ -561,7 +557,42 @@ const firebaseConfig = {
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db   = getFirestore(app);
+const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
+
+/* Chamada autenticada ao Worker (banco de dados no Cloudflare D1).
+   A autenticação continua no Firebase Auth: enviamos o ID Token. */
+async function api(method, path, body){
+  const u = auth.currentUser;
+  if(!u){
+    const e = new Error('sem_sessao');
+    e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
+    throw e;
+  }
+  const idToken = await u.getIdToken();
+  const headers = { 'Authorization': 'Bearer ' + idToken };
+  if(body !== undefined) headers['Content-Type'] = 'application/json';
+  let resp;
+  try {
+    resp = await fetch(WORKER_URL + path, {
+      method: method,
+      headers: headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined
+    });
+  } catch(netErr){
+    const e = new Error('falha_rede');
+    e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
+    throw e;
+  }
+  let data = null;
+  try { data = await resp.json(); } catch(_){}
+  if(!resp.ok){
+    const e = new Error((data && data.error) || 'erro_worker_' + resp.status);
+    e.status = resp.status;
+    e.mensagemUsuario = (data && data.message) || 'Falha ao comunicar com o servidor.';
+    throw e;
+  }
+  return data;
+}
 
 const ROLE_LEVELS = { user:0, funcionario:1, admin:2, superadmin:3 };
 /* A aba "Configuração" é exclusiva do desenvolvedor (superadmin).
@@ -655,6 +686,12 @@ function fmtDateTime(s){
     if(isNaN(d.getTime())) return String(s);
     return d.toLocaleString('pt-BR');
   }catch(e){ return String(s); }
+}
+function tsOf(v){
+  if(!v) return 0;
+  if(typeof v === 'object' && v.toDate) return v.toDate().getTime();
+  const t = new Date(v).getTime();
+  return isNaN(t) ? 0 : t;
 }
 function todayISO(){
   const d = new Date();
@@ -1043,32 +1080,38 @@ const Modal = {
 };
 
 /* ============================================================
-   ESCUTA DE FICHAS — Firebase
+   CARREGAMENTO DE FICHAS — Cloudflare D1 (via Worker)
    ============================================================ */
+let _fichasVersao = null;
+function renderPaginaAtual(){
+  if(State.page === 'dashboard' && hasAccess('dashboard')) renderDashboard();
+  if(State.page === 'registros' && hasAccess('registros')) renderRegistros();
+  if(State.page === 'dados'     && hasAccess('dados'))     renderStorageInfo();
+}
+
+/* Busca a "versão" das fichas (1 leitura barata no D1) e só baixa a lista
+   completa quando algo mudou. force=true ignora a versão e baixa sempre. */
+async function recarregarFichas(force){
+  try {
+    const v = await api('GET', '/fichas/versao');
+    if(!force && v.versao === _fichasVersao) return;
+    const r = await api('GET', '/fichas');
+    _fichasVersao = v.versao;
+    State.registros = (r.fichas || []).map(normalizarFicha);
+    renderPaginaAtual();
+  } catch(err){
+    console.warn('[fichas] falha ao carregar:', err);
+    if(force) toast('Não foi possível carregar as fichas.', 'error', err.mensagemUsuario || '');
+  }
+}
+
 function escutarFichas(){
-  const q = query(collection(db,'fichas'), orderBy('criado_em','desc'));
-  onSnapshot(q, function(snap){
-    const arr = [];
-    snap.forEach(function(d){ arr.push(normalizarFicha(Object.assign({ id:d.id }, d.data()))); });
-    State.registros = arr;
-    if(State.page === 'dashboard' && hasAccess('dashboard')) renderDashboard();
-    if(State.page === 'registros' && hasAccess('registros')) renderRegistros();
-    if(State.page === 'dados'     && hasAccess('dados'))     renderStorageInfo();
-  }, function(err){
-    console.warn('[fichas] onSnapshot com orderBy falhou, tentando sem ordenação:', err);
-    onSnapshot(collection(db,'fichas'), function(snap2){
-      const arr2 = [];
-      snap2.forEach(function(d){ arr2.push(normalizarFicha(Object.assign({ id:d.id }, d.data()))); });
-      arr2.sort(function(a,b){
-        const ta = a.criado_em && a.criado_em.toDate ? a.criado_em.toDate() : new Date(a.criado_em||0);
-        const tb = b.criado_em && b.criado_em.toDate ? b.criado_em.toDate() : new Date(b.criado_em||0);
-        return tb - ta;
-      });
-      State.registros = arr2;
-      if(State.page === 'dashboard' && hasAccess('dashboard')) renderDashboard();
-      if(State.page === 'registros' && hasAccess('registros')) renderRegistros();
-      if(State.page === 'dados'     && hasAccess('dados'))     renderStorageInfo();
-    });
+  recarregarFichas(true);
+  setInterval(function(){
+    if(document.visibilityState === 'visible') recarregarFichas(false);
+  }, 30000);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') recarregarFichas(false);
   });
 }
 
@@ -1299,8 +1342,8 @@ function renderLotesView(){
       case 'lote_desc': return String(b.lote_letra||'').localeCompare(String(a.lote_letra||''), 'pt-BR', { numeric:true });
       case 'nome_asc':  return getNomeProprietario(a).localeCompare(getNomeProprietario(b), 'pt-BR');
       case 'nome_desc': return getNomeProprietario(b).localeCompare(getNomeProprietario(a), 'pt-BR');
-      case 'data_asc':  return (a.criado_em && a.criado_em.toDate ? a.criado_em.toDate() : 0) - (b.criado_em && b.criado_em.toDate ? b.criado_em.toDate() : 0);
-      case 'data_desc': return (b.criado_em && b.criado_em.toDate ? b.criado_em.toDate() : 0) - (a.criado_em && a.criado_em.toDate ? a.criado_em.toDate() : 0);
+      case 'data_asc':  return tsOf(a.criado_em) - tsOf(b.criado_em);
+      case 'data_desc': return tsOf(b.criado_em) - tsOf(a.criado_em);
       default: return 0;
     }
   });
@@ -1918,11 +1961,12 @@ Pages.registros.edit = function(id){
       }
 
       try {
-        await updateDoc(doc(db, 'fichas', id), updates);
+        await api('PATCH', '/fichas/' + encodeURIComponent(id), { updates: updates });
+        await recarregarFichas(false);
         toast('Ficha atualizada com sucesso.', 'success');
       } catch(err){
         console.error('[editar] falha:', err);
-        toast('Não foi possível salvar as alterações.', 'error');
+        toast('Não foi possível salvar as alterações.', 'error', err.mensagemUsuario || '');
         return false;
       }
     }
@@ -1964,11 +2008,17 @@ Pages.registros.openStatus = function(id){
       '</select></div>',
     onConfirm: async function(modal){
       const v = modal.querySelector('#newStatus').value;
-      await updateDoc(doc(db,'fichas', id), {
-        'status': v,
-        'dados_imovel.DadosComplementares.status': v
-      });
-      toast('Status atualizado.', 'success');
+      try {
+        await api('PATCH', '/fichas/' + encodeURIComponent(id), {
+          updates: { 'status': v, 'dados_imovel.DadosComplementares.status': v }
+        });
+        await recarregarFichas(false);
+        toast('Status atualizado.', 'success');
+      } catch(err){
+        console.error('[status] falha:', err);
+        toast('Não foi possível atualizar o status.', 'error', err.mensagemUsuario || '');
+        return false;
+      }
     }
   });
 };
@@ -1984,8 +2034,14 @@ Pages.registros.remove = function(id){
     confirmText:'Remover',
     danger:true,
     onConfirm: async function(){
-      await deleteDoc(doc(db,'fichas', id));
-      toast('Ficha removida.', 'success');
+      try {
+        await api('DELETE', '/fichas/' + encodeURIComponent(id));
+        await recarregarFichas(false);
+        toast('Ficha removida.', 'success');
+      } catch(err){
+        console.error('[remover] falha:', err);
+        toast('Não foi possível remover a ficha.', 'error', err.mensagemUsuario || '');
+      }
     }
   });
 };
@@ -2233,7 +2289,7 @@ Pages.registros.imprimirPDF = function(id){
 };
 
 /* ============================================================
-   EXPORTAÇÃO — prefere a estrutura aninhada do Firestore
+   EXPORTAÇÃO — prefere a estrutura aninhada (dados_imovel)
    ============================================================ */
 function toExportModel(r){
   if(!r || typeof r !== 'object') return null;
@@ -2426,26 +2482,26 @@ const Data = {
 
         Modal.confirm({
           title:'Importar dados?',
-          message:'Serão gravadas ' + lista.length + ' ficha(s) no Firebase.',
+          message:'Serão enviadas ' + lista.length + ' ficha(s) para o banco de dados (fichas já existentes no mesmo lote serão ignoradas).',
           confirmText:'Importar',
           onConfirm: async function(){
-            for(const f of lista){
-              const dadosImovel = f.dados_imovel ? f.dados_imovel : f;
-              const loc = (dadosImovel.DadosComplementares &&
-                           dadosImovel.DadosComplementares.localizacaoCadastral) || {};
-              const docToSave = {
-                dados_imovel: dadosImovel,
-                bairro_imovel:  loc.bairro  || '',
-                quadra_imovel:  loc.quadra  || '',
-                lote_letra:     loc.lote    || '',
-                unidade_imovel: loc.unidade || '',
-                status:  'pendente',
-                origem:  'import',
-                criado_em: serverTimestamp()
-              };
-              await addDoc(collection(db,'fichas'), docToSave);
+            let importadas = 0, ignoradas = 0, erros = 0;
+            try {
+              for(let i = 0; i < lista.length; i += 10){
+                const r = await api('POST', '/fichas/importar', { fichas: lista.slice(i, i + 10) });
+                importadas += r.importadas || 0;
+                ignoradas  += r.ignoradas  || 0;
+                erros      += r.erros      || 0;
+              }
+            } catch(err){
+              console.error('[import] falha:', err);
+              toast('A importação foi interrompida.', 'error', err.mensagemUsuario || '');
             }
-            toast('Importação concluída.', 'success');
+            await recarregarFichas(false);
+            toast('Importação concluída.', erros ? 'warning' : 'success',
+              importadas + ' importada(s)' +
+              (ignoradas ? ' · ' + ignoradas + ' já existia(m)' : '') +
+              (erros ? ' · ' + erros + ' com erro' : ''));
           }
         });
       }catch(err){
@@ -2467,7 +2523,7 @@ function renderStorageInfo(){
   const aprov = State.registros.filter(function(r){ return getStatusFromReg(r) === 'aprovado'; }).length;
 
   const info = [
-    ['Fonte oficial', 'Firebase Firestore'],
+    ['Fonte oficial', 'Cloudflare D1'],
     ['Coleção', 'fichas'],
     ['Total de Fichas', State.registros.length],
     ['Fichas aprovadas', aprov],
@@ -2580,6 +2636,9 @@ function bootApp(){
   updateNavForRole();
   bindEvents();
   escutarFichas();
+  api('GET', '/config/listas').then(function(r){ State.listas = r; }).catch(function(e){
+    console.warn('[listas] falha:', e);
+  });
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
   console.log('%c[Admin v4.5 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
@@ -2590,12 +2649,7 @@ onAuthStateChanged(auth, async function(user){
   CurrentUser = user;
   showGate({ loading:true, message:'Carregando permissões…' });
   try {
-    const snap = await getDoc(doc(db, 'usuarios', user.uid));
-    if(!snap.exists()){
-      showGate({ title:'Perfil não encontrado', message:'Contate o administrador do sistema.', showLogout:true });
-      return;
-    }
-    const data = snap.data();
+    const data = await api('POST', '/me', { nome: user.displayName || '' });
     let role = String(data.role || 'user').toLowerCase();
     if(!Object.prototype.hasOwnProperty.call(ROLE_LEVELS, role)) role = 'user';
     CurrentRole = role;

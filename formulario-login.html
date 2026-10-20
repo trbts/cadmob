@@ -211,9 +211,6 @@ import {
   onAuthStateChanged, updateProfile,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, setDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDgJC2zYMBW6zKOPDnxUkIxP-ko_NTaNjw",
@@ -226,7 +223,42 @@ const firebaseConfig = {
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db   = getFirestore(app);
+const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
+
+/* Chamada autenticada ao Worker (banco de dados no Cloudflare D1).
+   A autenticação continua no Firebase Auth: enviamos o ID Token. */
+async function api(method, path, body){
+  const u = auth.currentUser;
+  if(!u){
+    const e = new Error('sem_sessao');
+    e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
+    throw e;
+  }
+  const idToken = await u.getIdToken();
+  const headers = { 'Authorization': 'Bearer ' + idToken };
+  if(body !== undefined) headers['Content-Type'] = 'application/json';
+  let resp;
+  try {
+    resp = await fetch(WORKER_URL + path, {
+      method: method,
+      headers: headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined
+    });
+  } catch(netErr){
+    const e = new Error('falha_rede');
+    e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
+    throw e;
+  }
+  let data = null;
+  try { data = await resp.json(); } catch(_){}
+  if(!resp.ok){
+    const e = new Error((data && data.error) || 'erro_worker_' + resp.status);
+    e.status = resp.status;
+    e.mensagemUsuario = (data && data.message) || 'Falha ao comunicar com o servidor.';
+    throw e;
+  }
+  return data;
+}
 
 /* Roles com acesso ao Painel de Formulários */
 const FORM_ROLES = ['funcionario', 'admin', 'superadmin'];
@@ -292,34 +324,18 @@ function setLoading(btn, on, label){
   }
 }
 
-/* ---------- Garante doc do usuário com role 'user' (pendente) ---------- */
-async function ensureUserDoc(user){
-  const ref = doc(db, 'usuarios', user.uid);
-  const snap = await getDoc(ref);
-  if(!snap.exists()){
-    await setDoc(ref, {
-      email: user.email || '',
-      nome: user.displayName || (user.email || '').split('@')[0] || 'Usuário',
-      role: 'user',                          // ← role inicial: pendente
-      criado_em: serverTimestamp()
-    });
-  }
+/* ---------- Cria o usuário (role 'user' = pendente) se não existir e devolve a role ---------- */
+async function obterRole(user){
+  const me = await api('POST', '/me', { nome: user.displayName || '' });
+  return String((me && me.role) || 'user').toLowerCase();
 }
 
 /* ---------- Após autenticar, decide se entra ou mostra "pendente" ---------- */
 async function rotearAposLogin(user){
-  // 1) Garante doc do usuário
-  try { await ensureUserDoc(user); }
-  catch(e){ console.warn('[ensureUserDoc] falhou:', e.code, e.message); }
-
-  // 2) Lê a role
+  // 1) Garante o cadastro do usuário e lê a role (uma única chamada)
   let role = 'user';
-  try {
-    const snap = await getDoc(doc(db, 'usuarios', user.uid));
-    if(snap.exists()) role = String(snap.data().role || 'user').toLowerCase();
-  } catch(e){
-    console.warn('[role] falhou:', e);
-  }
+  try { role = await obterRole(user); }
+  catch(e){ console.warn('[role] falhou:', e); }
 
   // 3) Se já tem permissão, vai direto para o formulário
   if(FORM_ROLES.includes(role)){
@@ -408,7 +424,7 @@ document.getElementById('formSignup').addEventListener('submit', async e => {
     redirecting = false;
     const cred = await createUserWithEmailAndPassword(auth, email, s1);
     try { await updateProfile(cred.user, { displayName: nome }); } catch(e){}
-    try { await ensureUserDoc(cred.user); } catch(e){ console.warn(e); }
+    try { await obterRole(cred.user); } catch(e){ console.warn(e); }
     // onAuthStateChanged cuida do roteamento (mostrará "pendente")
   } catch(err){
     console.error('[Signup]', err.code, err);

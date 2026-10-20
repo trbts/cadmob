@@ -21,11 +21,11 @@
  * ------------------------------------------------------------------
  */
 
-// v3: bumpada junto com as mudanças no fluxo de autenticação
+// v4: banco de dados migrado para o Cloudflare D1 (HTMLs agora usam o Worker como API).
 // (formulario-login.html + formulario.html). Ao subir uma nova
 // versão do app, basta incrementar este número para forçar a
 // invalidação de todo o cache antigo no activate.
-const CACHE_NAME = 'cadmob-form-v3';
+const CACHE_NAME = 'cadmob-form-v4';
 
 const APP_SHELL = [
   './index.html',

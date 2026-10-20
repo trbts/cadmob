@@ -685,9 +685,6 @@ body{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import {
-  getFirestore, doc, onSnapshot
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -699,10 +696,44 @@ const firebaseConfig = {
   appId: "1:301431109388:web:e487b8e8236a6bee9a7b29"
 };
 const app  = initializeApp(firebaseConfig);
-const db   = getFirestore(app);
 const auth = getAuth(app);
 
 const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
+
+/* Chamada autenticada ao Worker (banco de dados no Cloudflare D1).
+   A autenticação continua no Firebase Auth: enviamos o ID Token. */
+async function api(method, path, body){
+  const u = auth.currentUser;
+  if(!u){
+    const e = new Error('sem_sessao');
+    e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
+    throw e;
+  }
+  const idToken = await u.getIdToken();
+  const headers = { 'Authorization': 'Bearer ' + idToken };
+  if(body !== undefined) headers['Content-Type'] = 'application/json';
+  let resp;
+  try {
+    resp = await fetch(WORKER_URL + path, {
+      method: method,
+      headers: headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined
+    });
+  } catch(netErr){
+    const e = new Error('falha_rede');
+    e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
+    throw e;
+  }
+  let data = null;
+  try { data = await resp.json(); } catch(_){}
+  if(!resp.ok){
+    const e = new Error((data && data.error) || 'erro_worker_' + resp.status);
+    e.status = resp.status;
+    e.mensagemUsuario = (data && data.message) || 'Falha ao comunicar com o servidor.';
+    throw e;
+  }
+  return data;
+}
 
 async function enviarFichaViaWorker(payload){
   if(!auth.currentUser){
@@ -772,11 +803,8 @@ onAuthStateChanged(auth, async (user) => {
 
   let role = 'user';
   try {
-    const { getDoc } = await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js");
-    const snap = await getDoc(doc(db, 'usuarios', user.uid));
-    if(snap.exists()){
-      role = String(snap.data().role || 'user').toLowerCase();
-    }
+    const me = await api('POST', '/me', { nome: user.displayName || '' });
+    role = String((me && me.role) || 'user').toLowerCase();
   } catch(err){
     console.error('[gate] erro ao ler role:', err);
     gateShow({
@@ -2181,23 +2209,35 @@ function initFormulario(){
     if(el) el.addEventListener('input', calcAreas);
   });
 
-  /* ---------- FIRESTORE LISTENERS ---------- */
-  onSnapshot(doc(db,'config','listas'), snap => {
-    const data = snap.exists() ? (snap.data().grupos || {}) : {};
-    const bairrosFs = Array.isArray(data.bairros) ? data.bairros : [];
-    const ruasFs = Array.isArray(data.ruas) ? data.ruas : [];
-    LISTAS = {
-      bairros: bairrosFs.length ? bairrosFs : BAIRROS_PADRAO.map((nome,i)=>({label:nome, numero:String(i+1).padStart(3,'0'), ativo:true})),
-      ruas: ruasFs.length ? ruasFs : RUAS_PADRAO.slice()
-    };
-    popularBairros();
-    popularRuas();
-    popularBairrosDatalist();
-  }, err => {
-    console.warn('[listas] falha:', err);
-    popularBairros();
-    popularRuas();
-    popularBairrosDatalist();
+  /* ---------- LISTAS (bairros/ruas) — Cloudflare D1 via Worker ---------- */
+  let listasAssinatura = null;
+  async function carregarListas(){
+    try {
+      const r = await api('GET', '/config/listas');
+      const data = (r && r.grupos) || {};
+      const assinatura = JSON.stringify(data);
+      if(assinatura === listasAssinatura) return;   // nada mudou: não mexe nos selects
+      listasAssinatura = assinatura;
+
+      const bairrosFs = Array.isArray(data.bairros) ? data.bairros : [];
+      const ruasFs = Array.isArray(data.ruas) ? data.ruas : [];
+      LISTAS = {
+        bairros: bairrosFs.length ? bairrosFs : BAIRROS_PADRAO.map((nome,i)=>({label:nome, numero:String(i+1).padStart(3,'0'), ativo:true})),
+        ruas: ruasFs.length ? ruasFs : RUAS_PADRAO.slice()
+      };
+      popularBairros();
+      popularRuas();
+      popularBairrosDatalist();
+    } catch(err){
+      console.warn('[listas] falha:', err);
+      popularBairros();
+      popularRuas();
+      popularBairrosDatalist();
+    }
+  }
+  carregarListas();
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') carregarListas();
   });
 
   /* ---------- INIT ---------- */
