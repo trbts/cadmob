@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=1280">
 <link rel="icon" href="logo.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<title>Painel Administrativo · Cadastro Imobiliário</title>
+<title>YMOB · Painel Administrativo</title>
 <style>
 :root{
   --primary:#4f46e5; --primary-dark:#4338ca; --primary-light:#eef2ff;
@@ -409,6 +409,40 @@ ul{ list-style:none; }
   .sidebar .brand-text, .sidebar .nav-label, .sidebar .nav-item > span:not(.ico){ display:none; }
   .topbar-search{ width:200px; }
 }
+
+/* ===== Imagens: download, lado a lado, galeria fotográfica ===== */
+.dl-btn{
+  position:absolute; top:12px; right:12px; z-index:2;
+  width:36px; height:36px; border-radius:10px; border:0; cursor:pointer;
+  display:grid; place-items:center; color:#fff;
+  background:rgba(15,23,42,.72); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+  transition:background .15s, transform .15s;
+}
+.dl-btn:hover{ background:var(--primary); transform:translateY(-1px); }
+.dl-btn svg{ width:18px; height:18px; }
+.foto-compare{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+.foto-compare .foto-col{ min-width:0; }
+.foto-compare .ficha-photo-frame{ padding:8px 0 4px; }
+.foto-compare .ficha-photo-frame img{ max-height:340px; }
+.foto-compare .extra-photos-grid{ grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+.extra-wrap{ position:relative; }
+.extra-wrap .extra-thumb{ display:block; }
+.extra-wrap .dl-btn{ top:8px; right:8px; width:32px; height:32px; }
+@media (max-width:860px){ .foto-compare{ grid-template-columns:1fr; } }
+
+.foto-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; }
+.foto-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column; }
+.foto-card .fc-img{ position:relative; aspect-ratio:4/3; background:#0f172a0d; cursor:zoom-in; }
+.foto-card .fc-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+.foto-card .fc-tag{ position:absolute; left:10px; bottom:10px; background:rgba(15,23,42,.75); color:#fff; font-size:11px; font-weight:700; padding:4px 10px; border-radius:99px; }
+.foto-card .fc-body{ padding:12px 14px 6px; flex:1; min-width:0; }
+.foto-card .fc-title{ font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.foto-card .fc-sub{ font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.foto-card .fc-geo{ font-size:11px; color:var(--muted); margin-top:6px; font-variant-numeric:tabular-nums; }
+.foto-card .fc-actions{ display:flex; gap:8px; padding:10px 14px 14px; }
+.foto-card .fc-actions button{ flex:1; height:34px; border-radius:9px; border:1px solid var(--border); background:#fff; color:var(--text); font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+.foto-card .fc-actions button:hover{ background:var(--primary-light); color:var(--primary); border-color:var(--primary); }
+.foto-card .fc-actions svg{ width:15px; height:15px; }
 </style>
 </head>
 <body>
@@ -425,10 +459,10 @@ ul{ list-style:none; }
 <div class="app" id="appShell" style="display:none;">
   <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="brand-icon"><img src="logo.png" alt="Cadastro Imobiliário"></div>
+      <div class="brand-icon"><img src="logo.png" alt="YMOB"></div>
       <div class="brand-text">
-        <div class="brand-name">Careiro Admin</div>
-        <div class="brand-sub">Cadastro Imobiliário</div>
+        <div class="brand-name">YMOB</div>
+        <div class="brand-sub">Painel Administrativo</div>
       </div>
     </div>
     <nav class="nav">
@@ -440,6 +474,10 @@ ul{ list-style:none; }
       <div class="nav-item" data-page="registros">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></span>
         <span>Registros</span>
+      </div>
+      <div class="nav-item" data-page="fotos">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+        <span>Registros Fotográficos</span>
       </div>
       <div class="nav-label" id="navLabelSistema">Sistema</div>
       <div class="nav-item" data-page="dados">
@@ -507,6 +545,23 @@ ul{ list-style:none; }
             <div id="hierExtra"></div>
           </div>
           <div class="card-body" id="hierContent"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-fotos">
+        <div class="page-head">
+          <div><h2>Registros Fotográficos</h2><p>Fotografias dos imóveis, separadas dos documentos e demais anexos.</p></div>
+        </div>
+        <nav class="breadcrumb" id="fotosBreadcrumb"></nav>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3 id="fotosTitle">Bairros</h3>
+              <p id="fotosSubtitle">Selecione um bairro para visualizar as quadras.</p>
+            </div>
+            <div id="fotosExtra"></div>
+          </div>
+          <div class="card-body" id="fotosContent"></div>
         </div>
       </section>
 
@@ -602,8 +657,8 @@ const ROLE_LEVELS = { user:0, funcionario:1, admin:2, superadmin:3 };
 const ROLE_PAGES = {
   user:        [],
   funcionario: [],
-  admin:       ['dashboard', 'registros'],
-  superadmin:  ['dashboard', 'registros', 'dados']
+  admin:       ['dashboard', 'registros', 'fotos'],
+  superadmin:  ['dashboard', 'registros', 'fotos', 'dados']
 };
 const ROLE_LABEL = {
   user:'Pendente', funcionario:'Funcionário', admin:'Administrador', superadmin:'Desenvolvedor'
@@ -648,6 +703,7 @@ function setUserChip(user, nome, role){
 const PAGE_INFO = {
   dashboard: { title:'Dashboard',       subtitle:'Visão geral do sistema' },
   registros: { title:'Registros',       subtitle:'Fichas de cadastro imobiliário' },
+  fotos:     { title:'Registros Fotográficos', subtitle:'Fotografias dos imóveis cadastrados' },
   dados:     { title:'Configuração',    subtitle:'Exportação, importação e informações do sistema' }
 };
 function navigate(page){
@@ -665,6 +721,7 @@ function navigate(page){
   State.page = page;
   if(page === 'dashboard') renderDashboard();
   if(page === 'registros') renderRegistros();
+  if(page === 'fotos')     renderFotos();
   if(page === 'dados')     renderStorageInfo();
 }
 
@@ -674,6 +731,7 @@ function navigate(page){
 const State = {
   registros: [],
   hier: { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' },
+  fotosHier: { bairro:null, quadra:null },
   page: 'dashboard'
 };
 
@@ -739,6 +797,7 @@ function normalizarFicha(raw){
     tpArquitetonico:      dg.tpArquitetonico,
     destinacaoImovel:     dg.destinacaoImovel,
     idParcela:            dg.idParcela,
+    cib:                  dg.cib,
     areaTerreno:          dg.areaTerreno,
     areaConstruida:       dg.areaConstruida,
     bice:                 dg.bice,
@@ -833,6 +892,7 @@ const FIELD_PATHS = {
   tpArquitetonico:      'dados_imovel.DadosGeraisImovel.tpArquitetonico',
   destinacaoImovel:     'dados_imovel.DadosGeraisImovel.destinacaoImovel',
   idParcela:            'dados_imovel.DadosGeraisImovel.idParcela',
+  cib:                  'dados_imovel.DadosGeraisImovel.cib',
   areaTerreno:          'dados_imovel.DadosGeraisImovel.areaTerreno',
   areaConstruida:       'dados_imovel.DadosGeraisImovel.areaConstruida',
   bice:                 'dados_imovel.DadosGeraisImovel.bice',
@@ -1006,6 +1066,46 @@ function fotoDataUrl(reg){
   return 'data:' + (reg.foto_tipo || 'image/jpeg') + ';base64,' + reg.foto_base64;
 }
 
+/* ---------- Download de imagens ---------- */
+const ICON_DOWNLOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+function extDeTipo(t){
+  t = String(t || '').toLowerCase();
+  if(/webp/.test(t)) return 'webp';
+  if(/png/.test(t))  return 'png';
+  return 'jpg';
+}
+function slugArquivo(s){
+  return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase();
+}
+function nomeArquivoImagem(r, prefixo, tipo){
+  const partes = [prefixo, slugArquivo(r.bairro_imovel || r.bairro), r.quadra_imovel ? 'q' + slugArquivo(r.quadra_imovel) : '',
+    r.lote_letra ? 'l' + slugArquivo(r.lote_letra) : '', r.unidade_imovel ? 'u' + slugArquivo(r.unidade_imovel) : '']
+    .filter(Boolean);
+  return partes.join('_') + '.' + extDeTipo(tipo);
+}
+function baixarImagem(base64, tipo, nomeArquivo){
+  try{
+    const bin = atob(base64);
+    const bytes = new Uint8Array(bin.length);
+    for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([bytes], { type: tipo || 'image/jpeg' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = nomeArquivo;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }catch(e){
+    console.error('[download]', e);
+    toast('Não foi possível baixar a imagem.', 'error');
+  }
+}
+function fmtTelefone(v){
+  const d = String(v == null ? '' : v).replace(/\D/g, '');
+  if(d.length === 11) return '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+  if(d.length === 10) return '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6);
+  return String(v == null ? '' : v);
+}
+
 const Lightbox = {
   el: document.getElementById('lightbox'),
   open(src, caption){
@@ -1105,6 +1205,7 @@ let _fichasVersao = null;
 function renderPaginaAtual(){
   if(State.page === 'dashboard' && hasAccess('dashboard')) renderDashboard();
   if(State.page === 'registros' && hasAccess('registros')) renderRegistros();
+  if(State.page === 'fotos'     && hasAccess('fotos'))     renderFotos();
   if(State.page === 'dados'     && hasAccess('dados'))     renderStorageInfo();
 }
 
@@ -1433,6 +1534,153 @@ function renderLotesView(){
 }
 
 /* ============================================================
+   REGISTROS FOTOGRÁFICOS — mesmo fluxo: Bairro → Quadra → Fotos
+   Só entram fichas com foto do imóvel (foto principal). Anexos e
+   documentos NÃO aparecem aqui; ficam na ficha completa.
+   ============================================================ */
+Pages.fotos = {};
+Pages.fotos.goRoot   = function(){ State.fotosHier = { bairro:null, quadra:null }; renderFotos(); };
+Pages.fotos.goBairro = function(b){ State.fotosHier = { bairro:b, quadra:null }; renderFotos(); };
+Pages.fotos.goBairroLevel = function(){ State.fotosHier.quadra = null; renderFotos(); };
+Pages.fotos.goQuadra = function(q){ State.fotosHier.quadra = q; renderFotos(); };
+
+function fichasComFoto(){
+  return State.registros.filter(function(r){ return !!r.foto_base64; });
+}
+
+function renderFotos(){
+  const h = State.fotosHier, b = h.bairro, q = h.quadra;
+  const home = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;">' + SVG_ICONS.cam + '</svg>';
+  const bc = document.getElementById('fotosBreadcrumb');
+  const parts = [];
+  if(!b){ parts.push('<span class="current">' + home + 'Bairros</span>'); }
+  else if(!q){
+    parts.push('<button data-fnav="root">' + home + 'Bairros</button>');
+    parts.push('<span class="sep">›</span><span class="current">' + esc(b) + '</span>');
+  } else {
+    parts.push('<button data-fnav="root">' + home + 'Bairros</button>');
+    parts.push('<span class="sep">›</span><button data-fnav="bairro">' + esc(b) + '</button>');
+    parts.push('<span class="sep">›</span><span class="current">Quadra ' + esc(q) + '</span>');
+  }
+  bc.innerHTML = parts.join('');
+  bc.querySelectorAll('[data-fnav]').forEach(function(el){
+    el.addEventListener('click', function(){
+      if(el.dataset.fnav === 'root') Pages.fotos.goRoot();
+      if(el.dataset.fnav === 'bairro') Pages.fotos.goBairroLevel();
+    });
+  });
+
+  if(!b) renderFotosBairros();
+  else if(!q) renderFotosQuadras();
+  else renderFotosGaleria();
+}
+
+function renderFotosBairros(){
+  document.getElementById('fotosTitle').textContent = 'Bairros';
+  document.getElementById('fotosSubtitle').textContent = 'Selecione um bairro para visualizar as quadras com fotografias.';
+  document.getElementById('fotosExtra').innerHTML = '';
+  const grouped = {};
+  fichasComFoto().forEach(function(r){
+    const bn = getBairroNome(r);
+    if(!grouped[bn]) grouped[bn] = { quadras:new Set(), fotos:0 };
+    grouped[bn].quadras.add(getQuadraNome(r));
+    grouped[bn].fotos++;
+  });
+  const bairros = Object.keys(grouped).sort();
+  const el = document.getElementById('fotosContent');
+  if(!bairros.length){
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' + SVG_ICONS.cam + '</svg>' +
+      '<strong>Nenhuma fotografia cadastrada</strong><span>As fotos dos imóveis enviadas pelo formulário aparecerão aqui.</span></div>';
+    return;
+  }
+  el.innerHTML = '<div class="grid-cards">' + bairros.map(function(bn){
+    const i = grouped[bn];
+    return '<div class="bairro-card" data-bairro="' + esc(bn) + '">' +
+      '<div class="bc-name"><span class="bc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.cam + '</svg></span>' + esc(bn) + '</div>' +
+      '<div class="bc-stats"><div class="bc-stat"><strong>' + i.quadras.size + '</strong>Quadras</div>' +
+      '<div class="bc-stat"><strong>' + i.fotos + '</strong>Fotos</div></div></div>';
+  }).join('') + '</div>';
+  el.querySelectorAll('.bairro-card').forEach(function(c){
+    c.addEventListener('click', function(){ Pages.fotos.goBairro(c.dataset.bairro); });
+  });
+}
+
+function renderFotosQuadras(){
+  const bairro = State.fotosHier.bairro;
+  document.getElementById('fotosTitle').textContent = 'Quadras · ' + bairro;
+  document.getElementById('fotosSubtitle').textContent = 'Selecione uma quadra para visualizar as fotografias.';
+  document.getElementById('fotosExtra').innerHTML = '';
+  const grouped = {};
+  fichasComFoto().filter(function(r){ return getBairroNome(r) === bairro; }).forEach(function(r){
+    const qn = getQuadraNome(r);
+    grouped[qn] = (grouped[qn] || 0) + 1;
+  });
+  const quadras = Object.keys(grouped).sort(function(a, b){
+    return a.localeCompare(b, 'pt-BR', { numeric:true, sensitivity:'base' });
+  });
+  const el = document.getElementById('fotosContent');
+  if(!quadras.length){
+    el.innerHTML = '<div class="empty"><strong>Nenhuma quadra</strong><span>Este bairro não possui fotografias.</span></div>';
+    return;
+  }
+  el.innerHTML = '<div class="grid-cards">' + quadras.map(function(qn){
+    return '<div class="bairro-card" data-quadra="' + esc(qn) + '">' +
+      '<div class="bc-name"><span class="bc-icon" style="background:var(--info-bg);color:#1d4ed8;">' + esc(qn).slice(0,3) + '</span>Quadra ' + esc(qn) + '</div>' +
+      '<div class="bc-stats"><div class="bc-stat"><strong>' + grouped[qn] + '</strong>Fotos</div></div></div>';
+  }).join('') + '</div>';
+  el.querySelectorAll('.bairro-card').forEach(function(c){
+    c.addEventListener('click', function(){ Pages.fotos.goQuadra(c.dataset.quadra); });
+  });
+}
+
+function renderFotosGaleria(){
+  const bairro = State.fotosHier.bairro, quadra = State.fotosHier.quadra;
+  document.getElementById('fotosTitle').textContent = 'Fotografias · Quadra ' + quadra;
+  document.getElementById('fotosSubtitle').textContent = 'Bairro ' + bairro;
+  const fichas = fichasComFoto().filter(function(r){
+    return getBairroNome(r) === bairro && getQuadraNome(r) === quadra;
+  }).sort(function(a, b){
+    return String(a.lote_letra||'').localeCompare(String(b.lote_letra||''), 'pt-BR', { numeric:true });
+  });
+  document.getElementById('fotosExtra').innerHTML =
+    '<div class="filters-bar"><span class="filters-count"><strong>' + fichas.length + '</strong> foto' + (fichas.length === 1 ? '' : 's') + '</span></div>';
+  const el = document.getElementById('fotosContent');
+  if(!fichas.length){
+    el.innerHTML = '<div class="empty"><strong>Nenhuma fotografia</strong><span>Esta quadra não possui fotografias.</span></div>';
+    return;
+  }
+  el.innerHTML = '<div class="foto-grid">' + fichas.map(function(r){
+    const endereco = (r.nomeLogradouro || r.logradouro_imovel || '') + (r.numeroImovel ? ', ' + r.numeroImovel : '');
+    const unid = r.unidade_imovel ? ' · Unid. ' + esc(r.unidade_imovel) : '';
+    const geo = (r.foto_latitude != null && r.foto_longitude != null && r.foto_latitude !== '')
+      ? '<div class="fc-geo">' + Number(r.foto_latitude).toFixed(6) + ', ' + Number(r.foto_longitude).toFixed(6) +
+        (r.foto_precisao_m ? ' · ±' + Math.round(Number(r.foto_precisao_m)) + ' m' : '') + '</div>' : '';
+    return '<div class="foto-card" data-id="' + esc(r.id) + '">' +
+      '<div class="fc-img" data-act="zoom"><img loading="lazy" src="' + fotoDataUrl(r) + '" alt="Foto do imóvel">' +
+        '<span class="fc-tag">Lote ' + esc(getLoteNome(r)) + '</span></div>' +
+      '<div class="fc-body">' +
+        '<div class="fc-title">' + esc(getNomeProprietario(r)) + '</div>' +
+        '<div class="fc-sub">' + esc(endereco || '—') + unid + '</div>' + geo +
+      '</div>' +
+      '<div class="fc-actions">' +
+        '<button type="button" data-act="download" title="Baixar foto">' + ICON_DOWNLOAD + 'Baixar</button>' +
+        '<button type="button" data-act="ficha" title="Abrir ficha completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.doc + '</svg>Ficha</button>' +
+      '</div></div>';
+  }).join('') + '</div>';
+  el.querySelectorAll('.foto-card').forEach(function(card){
+    const r = State.registros.find(function(x){ return x.id === card.dataset.id; });
+    if(!r) return;
+    card.querySelector('[data-act="zoom"]').addEventListener('click', function(){
+      Lightbox.open(fotoDataUrl(r), getNomeProprietario(r) + ' · ' + bairro + ' Q' + quadra + ' L' + getLoteNome(r));
+    });
+    card.querySelector('[data-act="download"]').addEventListener('click', function(){
+      baixarImagem(r.foto_base64, r.foto_tipo, nomeArquivoImagem(r, 'foto', r.foto_tipo));
+    });
+    card.querySelector('[data-act="ficha"]').addEventListener('click', function(){ Pages.registros.view(r.id); });
+  });
+}
+
+/* ============================================================
    HELPERS DE RENDER — FICHA
    ============================================================ */
 const SVG_ICONS = {
@@ -1483,6 +1731,8 @@ Pages.registros.view = function(id){
           '<div class="detail-grid">' +
             dItem('CPF/CNPJ', t.niTitular, { mono:true }) +
             dItem('Nome', t.nomeTitular, { full:true }) +
+            dItem('Contato', fmtTelefone(t.contatoTitular)) +
+            dItem('E-mail', t.emailTitular) +
             dItem('% Participação', t.percTitularidade) +
             dItem('Data de Aquisição', t.dtAquisicaoTitular) +
             dItem('Tipo de Titularidade', labelFromOptions('tipoTitularidade', t.tipoTitularidade)) +
@@ -1519,6 +1769,7 @@ Pages.registros.view = function(id){
       dItem('Padrão Construtivo', labelFromOptions('padraoConstrutivo', r.padraoConstrutivo)) +
       dItem('Qtd. Garagens', r.qtdGaragem) +
       dItem('ID da Parcela/Lote', r.idParcela) +
+      dItem('CIB', r.cib, { mono:true }) +
       dItem('Ano Construtivo', r.anoConstrutivo) +
       dItem('Valor Venal', r.valorVenal) +
       dItem('Último Valor Venal', r.dtUltimoValorVenal) +
@@ -1618,6 +1869,7 @@ Pages.registros.view = function(id){
 
   const fotoBloco = dataUrl
     ? '<div class="ficha-photo-frame" id="photoFrame">' +
+        '<button type="button" class="dl-btn" data-dl="main" title="Baixar foto do imóvel">' + ICON_DOWNLOAD + '</button>' +
         '<img src="' + dataUrl + '" alt="Foto do imóvel" id="photoViewImg">' +
         '<div class="pv-overlay"><span>' + tamanhoLabel + ' · ' + tipoLabel + '</span></div>' +
       '</div>'
@@ -1625,16 +1877,22 @@ Pages.registros.view = function(id){
 
   const extras = Array.isArray(r.fotos_adicionais) ? r.fotos_adicionais.filter(function(f){ return f && f.base64; }) : [];
   const extrasHTML = extras.length
-    ? dSection('Fotos adicionais', SVG_ICONS.cam) +
-      '<div class="extra-photos-grid">' +
+    ? '<div class="extra-photos-grid">' +
         extras.map(function(f, i){
-          return '<img class="extra-thumb" data-extra="' + i + '" src="data:' + (f.tipo || 'image/jpeg') + ';base64,' + f.base64 + '" alt="Foto adicional ' + (i+1) + '">';
+          return '<div class="extra-wrap">' +
+            '<button type="button" class="dl-btn" data-dl="extra-' + i + '" title="Baixar anexo ' + (i+1) + '">' + ICON_DOWNLOAD + '</button>' +
+            '<img class="extra-thumb" data-extra="' + i + '" src="data:' + (f.tipo || 'image/jpeg') + ';base64,' + f.base64 + '" alt="Anexo ' + (i+1) + '">' +
+          '</div>';
         }).join('') +
       '</div>'
-    : '';
+    : '<div class="ficha-photo-empty">Nenhum anexo nesta ficha.</div>';
 
+  /* Foto do imóvel (esquerda) e anexos (direita), lado a lado */
   const tabFoto =
-    dSection('Foto do Imóvel', SVG_ICONS.cam) + fotoBloco + extrasHTML;
+    '<div class="foto-compare">' +
+      '<div class="foto-col">' + dSection('Foto do Imóvel', SVG_ICONS.cam) + fotoBloco + '</div>' +
+      '<div class="foto-col">' + dSection('Anexos (' + extras.length + ')', SVG_ICONS.doc) + extrasHTML + '</div>' +
+    '</div>';
 
   const tabAuditoria =
     dSection('Auditoria', SVG_ICONS.info) +
@@ -1654,7 +1912,7 @@ Pages.registros.view = function(id){
     { key:'titulares',   label:'Titulares',   icon:SVG_ICONS.users, html:tabTitulares },
     { key:'registro',    label:'Registro',    icon:SVG_ICONS.doc,   html:tabRegistro },
     { key:'itbi',        label:'ITBI',        icon:SVG_ICONS.money, html:tabITBI },
-    { key:'foto',        label:'Foto',        icon:SVG_ICONS.cam,   html:tabFoto },
+    { key:'foto',        label:'Fotos e Anexos', icon:SVG_ICONS.cam, html:tabFoto },
     { key:'auditoria',   label:'Auditoria',   icon:SVG_ICONS.info,  html:tabAuditoria }
   ];
 
@@ -1720,7 +1978,21 @@ Pages.registros.view = function(id){
 
   document.querySelectorAll('.extra-thumb').forEach(function(img){
     img.addEventListener('click', function(){
-      Lightbox.open(img.src, 'Foto adicional ' + (Number(img.dataset.extra) + 1));
+      Lightbox.open(img.src, 'Anexo ' + (Number(img.dataset.extra) + 1));
+    });
+  });
+
+  document.querySelectorAll('.ficha-panel [data-dl]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      const k = btn.dataset.dl;
+      if(k === 'main'){
+        baixarImagem(r.foto_base64, r.foto_tipo, nomeArquivoImagem(r, 'foto', r.foto_tipo));
+      } else {
+        const i = Number(k.replace('extra-', ''));
+        const f = extras[i];
+        if(f) baixarImagem(f.base64, f.tipo, nomeArquivoImagem(r, 'anexo-' + (i+1), f.tipo));
+      }
     });
   });
 
@@ -1761,6 +2033,7 @@ const EDIT_SCHEMA = {
       { n:'padraoConstrutivo', l:'Padrão Construtivo', t:'select', opt:'padraoConstrutivo' },
       { n:'qtdGaragem', l:'Qtd. Garagens', t:'number' },
       { n:'idParcela', l:'ID da Parcela/Lote', t:'text' },
+      { n:'cib', l:'CIB', t:'text', max:30 },
       { n:'anoConstrutivo', l:'Ano Construtivo', t:'number' },
       { n:'valorVenal', l:'Valor Venal', t:'number' },
       { n:'dtUltimoValorVenal', l:'Último Valor Venal', t:'date' },
@@ -1890,6 +2163,7 @@ Pages.registros.edit = function(id){
       if(block.custom === 'titularesReadonly'){
         html += eArrReadonly(values.Titular, [
           { n:'niTitular', l:'CPF/CNPJ' }, { n:'nomeTitular', l:'Nome' },
+          { n:'contatoTitular', l:'Contato' }, { n:'emailTitular', l:'E-mail' },
           { n:'percTitularidade', l:'% Participação' }, { n:'dtAquisicaoTitular', l:'Data de Aquisição' },
           { n:'tipoTitularidade', l:'Tipo de Titularidade' }, { n:'docTitularidade', l:'Documento' }
         ]);
@@ -2163,6 +2437,8 @@ function montarHTMLFichaParaImpressao(r){
     ? r.Titular.map(function(t, i){
         return '<div class="arr-row"><strong>Titular ' + (i+1) + ':</strong> ' +
           esc(t.nomeTitular||'—') + ' · CPF/CNPJ: ' + esc(t.niTitular||'—') +
+          ' · Contato: ' + esc(fmtTelefone(t.contatoTitular)||'—') +
+          ' · E-mail: ' + esc(t.emailTitular||'—') +
           ' · %: ' + esc(t.percTitularidade||'—') +
           ' · Tipo: ' + esc(labelFromOptions('tipoTitularidade', t.tipoTitularidade)||'—') + '</div>';
       }).join('')
@@ -2231,6 +2507,7 @@ function montarHTMLFichaParaImpressao(r){
       row('Padrão Construtivo', labelFromOptions('padraoConstrutivo', r.padraoConstrutivo)) +
       row('Qtd. Garagens', r.qtdGaragem) +
       row('ID da Parcela/Lote', r.idParcela) +
+      row('CIB', r.cib) +
       row('Ano Construtivo', r.anoConstrutivo) +
       row('Valor Venal', r.valorVenal) +
       row('Último Valor Venal', r.dtUltimoValorVenal) +
@@ -2369,6 +2646,7 @@ function toExportModel(r){
       tpArquitetonico:      I(pick('DadosGeraisImovel', 'tpArquitetonico')),
       destinacaoImovel:     I(pick('DadosGeraisImovel', 'destinacaoImovel')),
       idParcela:            S(pick('DadosGeraisImovel', 'idParcela')),
+      cib:                  S(pick('DadosGeraisImovel', 'cib')),
       areaTerreno:          N(pick('DadosGeraisImovel', 'areaTerreno')),
       areaConstruida:       N(pick('DadosGeraisImovel', 'areaConstruida')),
       bice:                 I(pick('DadosGeraisImovel', 'bice')),
@@ -2402,6 +2680,8 @@ function toExportModel(r){
     Titular: titularesSrc.map(t => ({
       niTitular:          S(t.niTitular),
       nomeTitular:        S(t.nomeTitular),
+      contatoTitular:     C(t.contatoTitular),
+      emailTitular:       S(t.emailTitular),
       percTitularidade:   N(t.percTitularidade),
       dtAquisicaoTitular: D(t.dtAquisicaoTitular),
       tipoTitularidade:   I(t.tipoTitularidade),
@@ -2619,7 +2899,7 @@ function bindEvents(){
         const titularNome = Array.isArray(r.Titular) ? r.Titular.map(function(t){ return t.nomeTitular||''; }).join(' ') : '';
         const hay = [
           nome, titularNome,
-          r.inscricaoImobiliaria,
+          r.inscricaoImobiliaria, r.cib,
           r.nomeLogradouro, r.logradouro_imovel,
           r.bairro_imovel, r.bairro,
           r.quadra_imovel, r.lote_letra,
@@ -2677,7 +2957,7 @@ function bootApp(){
   });
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[Admin v4.5 — SINTER] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[YMOB Admin v5.0] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){

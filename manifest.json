@@ -1,7 +1,7 @@
 {
-  "name": "Painel de Formulários · Cadastro Imobiliário",
-  "short_name": "Cadastro Imob.",
-  "description": "Ficha de Cadastro Imobiliário — Prefeitura Municipal de Careiro",
+  "name": "YMOB",
+  "short_name": "YMOB",
+  "description": "YMOB — Cadastro Imobiliário · Prefeitura Municipal de Careiro",
   "id": "/index.html",
   "start_url": "./index.html",
   "scope": "./",

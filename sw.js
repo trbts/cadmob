@@ -1,5 +1,5 @@
 /**
- * sw.js — Service Worker do Painel de Formulários (Cadastro Imobiliário)
+ * sw.js — Service Worker do YMOB (Painel de Formulários / Cadastro Imobiliário)
  * ------------------------------------------------------------------
  * Escopo: apenas as páginas do formulário mobile.
  *   index.html            → roteamento (decide login x formulário)
@@ -21,11 +21,11 @@
  * ------------------------------------------------------------------
  */
 
-// v4: banco de dados migrado para o Cloudflare D1 (HTMLs agora usam o Worker como API).
-// (formulario-login.html + formulario.html). Ao subir uma nova
-// versão do app, basta incrementar este número para forçar a
-// invalidação de todo o cache antigo no activate.
-const CACHE_NAME = 'cadmob-form-v5';
+// v6: marca YMOB, novos campos do titular (contato/e-mail), vias em mais de um
+//     bairro e novo manifest. Ao subir uma nova versão do app, basta
+//     incrementar este número para forçar a invalidação de todo o cache
+//     antigo no activate.
+const CACHE_NAME = 'cadmob-form-v6';
 
 const APP_SHELL = [
   './index.html',

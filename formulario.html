@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#0d5cab">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Cadastro Imob.">
+<meta name="apple-mobile-web-app-title" content="YMOB">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="logo.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<title>Cadastro de Unidade Imobiliária — SINTER</title>
+<title>YMOB · Cadastro de Unidade Imobiliária</title>
 <style>
 :root{
   --primary:#0d5cab; --primary-dark:#083d73; --primary-light:#e9f2fb;
@@ -100,6 +100,8 @@ body{
 .field .hint strong{ color:var(--primary); }
 
 .field input[data-mask="cpfcnpj"]{ text-transform:none; letter-spacing:.5px; }
+.field input[type="email"], .field input[data-mask="telefone"]{ text-transform:none; }
+.opt-tag{ font-weight:600; color:var(--muted); font-size:11px; text-transform:none; letter-spacing:0; }
 
 .alert{ display:none; margin-top:12px; padding:12px 14px; border-radius:12px; font-size:13px; font-weight:600; line-height:1.45; }
 .alert.show{ display:block; animation:stepIn .25s ease; }
@@ -221,7 +223,7 @@ body{
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
   </button>
   <div class="header-inner">
-    <h1 class="brand-title">Cadastro de Unidade Imobiliária</h1>
+    <h1 class="brand-title">YMOB · Cadastro Imobiliário</h1>
     <div class="stepper" id="stepper">
       <div class="step" data-step="1"><span class="step-dot">1</span></div>
       <div class="step-line" data-line="1"></div>
@@ -951,6 +953,35 @@ function initFormulario(){
     ]}
   ];
 
+  /* ---------- VIAS QUE ATRAVESSAM MAIS DE UM BAIRRO ----------
+     [código, nome (igual ao cadastro acima), [bairros ADICIONAIS]]
+     A via continua com o código original e passa a aparecer também nos
+     bairros listados aqui, na ordem alfabética da lista de cada bairro. */
+  const VIAS_COMPARTILHADAS = [
+    ['611','Rua Manoel Sales',                ['CENTRO']],
+    ['212','Rua Ocimar de Melo Almeida',      ['NOVO','NOVO HORIZONTE','DISTRITO']],
+    ['503','Av. Volmar Laurentino',           ['NOVA ESPERANÇA']],
+    ['515','Rua Parque das Castanheiras',     ['VISTA ALEGRE']],
+    ['513','Rua Niteroi',                     ['VISTA ALEGRE']],
+    ['130','Rua Poção',                       ['NOVO']],
+    ['203','Rua Airton sena',                 ['NOVO']],
+    ['117','Rua Humberto Bastos de Oliveira', ['NOVO']],
+    ['102','Av. Mario Jorge Guedes',          ['NOVO','VISTA ALEGRE']],
+    ['201','Av. Sargento Nonato Brito',       ['NOVO','DISTRITO','BAIRRO DA PAZ']]
+  ];
+  (function aplicarViasCompartilhadas(){
+    const cmp = (a,b) => a.localeCompare(b, 'pt-BR', { numeric:true, sensitivity:'base' });
+    VIAS_COMPARTILHADAS.forEach(([cod, nome, bairros]) => {
+      bairros.forEach(nomeBairro => {
+        const grupo = BAIRROS_LOGRA.find(b => b.nome === nomeBairro);
+        if(!grupo || grupo.logradouros.some(l => l[1] === nome)) return;
+        let i = grupo.logradouros.findIndex(l => cmp(l[1], nome) > 0);
+        if(i < 0) i = grupo.logradouros.length;
+        grupo.logradouros.splice(i, 0, [cod, nome]);
+      });
+    });
+  })();
+
   let LISTAS  = {
     bairros: BAIRROS_PADRAO.map((nome,i)=>({label:nome, numero:String(i+1).padStart(3,'0'), ativo:true})),
     ruas: RUAS_PADRAO.slice()
@@ -1325,6 +1356,12 @@ function initFormulario(){
       <div class="field"><label>Data de Aquisição <span class="req">*</span></label>
         <input type="date" name="dtAquisicaoTitular"></div>
     </div>
+    <div class="row row-2">
+      <div class="field"><label>Contato <span class="opt-tag">(opcional)</span></label>
+        <input type="tel" name="contatoTitular" data-mask="telefone" inputmode="tel" maxlength="15" autocomplete="off" placeholder="(00) 00000-0000"></div>
+      <div class="field"><label>E-mail <span class="opt-tag">(opcional)</span></label>
+        <input type="email" name="emailTitular" inputmode="email" maxlength="120" autocomplete="off" autocapitalize="off" placeholder="nome@exemplo.com"></div>
+    </div>
     <div class="field"><label>Tipo de Titularidade <span class="req">*</span></label>
       <select name="tipoTitularidade"><option value="">Selecione…</option>
         <option value="1">1 - Proprietário</option><option value="2">2 - Nu proprietário</option>
@@ -1391,6 +1428,16 @@ function initFormulario(){
     if(rm) rm.onclick = () => removerRow(key, node);
 
     node.querySelectorAll('[data-mask="cpfcnpj"]').forEach(setupCpfCnpjInput);
+    node.querySelectorAll('[data-mask="telefone"]').forEach(function(inp){
+      inp.addEventListener('input', function(){
+        let d = inp.value.replace(/\D/g,'').slice(0,11), o = d;
+        if(d.length > 10)      o = '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+        else if(d.length > 6)  o = '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6);
+        else if(d.length > 2)  o = '(' + d.slice(0,2) + ') ' + d.slice(2);
+        else if(d.length)      o = '(' + d;
+        inp.value = o;
+      });
+    });
 
     lists[key].el.appendChild(node);
 
@@ -2034,6 +2081,17 @@ function initFormulario(){
         }
         if(!nome) invalidos.push({ el: nomeEl, msg: pref + 'informe o nome.' });
 
+        const emailEl = r.querySelector('[name=emailTitular]');
+        const email = emailEl ? emailEl.value.trim() : '';
+        if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){
+          invalidos.push({ el: emailEl, msg: pref + 'e-mail inválido.' });
+        }
+        const telEl = r.querySelector('[name=contatoTitular]');
+        const telDig = telEl ? telEl.value.replace(/\D/g,'') : '';
+        if(telDig && (telDig.length < 10 || telDig.length > 11)){
+          invalidos.push({ el: telEl, msg: pref + 'contato deve ter DDD + número (10 ou 11 dígitos).' });
+        }
+
         Object.keys(ROTULOS_TITULAR).forEach(f => {
           const inp = r.querySelector('[name=' + f + ']');
           if(inp && !String(inp.value).trim()){
@@ -2158,6 +2216,8 @@ function initFormulario(){
       nomeTitular:          up(r.querySelector('[name=nomeTitular]').value),
       percTitularidade:     toNum(r.querySelector('[name=percTitular]').value),
       dtAquisicaoTitular:   toDateOrNull(r.querySelector('[name=dtAquisicaoTitular]').value),
+      contatoTitular:       onlyDigits(r.querySelector('[name=contatoTitular]').value),
+      emailTitular:         String(r.querySelector('[name=emailTitular]').value || '').trim().toLowerCase(),
       tipoTitularidade:     toInt(r.querySelector('[name=tipoTitularidade]').value),
       docTitularidade:      toInt(r.querySelector('[name=docTitularidade]').value)
     }));
