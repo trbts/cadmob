@@ -486,12 +486,26 @@ body{
           <label for="tipoLogradouro">Tipo de Logradouro <span class="req">*</span></label>
           <select id="tipoLogradouro" name="tipoLogradouro" required>
             <option value="">Selecione…</option>
-            <option value="250">250 - Rua</option><option value="26">26 - Avenida</option>
-            <option value="273">273 - Travessa</option><option value="10">10 - Alameda</option>
-            <option value="146">146 - Jardim</option><option value="215">215 - Praça</option>
-            <option value="298">298 - Vila</option><option value="82">82 - Conjunto</option>
-            <option value="81">81 - Condomínio</option><option value="117">117 - Estrada</option>
-            <option value="247">247 - Rodovia</option><option value="184">184 - Outros</option>
+            <option value="250">250 - Rua</option>
+            <option value="299">299 - Alagado</option>
+            <option value="300">300 - Área</option>
+            <option value="26">26 - Avenida</option>
+            <option value="301">301 - Bairro</option>
+            <option value="302">302 - Canteiro</option>
+            <option value="303">303 - Chácara</option>
+            <option value="304">304 - Cidade</option>
+            <option value="82">82 - Conjunto</option>
+            <option value="305">305 - Distrito</option>
+            <option value="306">306 - Loteamento</option>
+            <option value="307">307 - Orla</option>
+            <option value="308">308 - Palafita</option>
+            <option value="215">215 - Praça</option>
+            <option value="309">309 - Quadra</option>
+            <option value="310">310 - Ramal</option>
+            <option value="247">247 - Rodovia</option>
+            <option value="311">311 - Sítio</option>
+            <option value="312">312 - Terreno</option>
+            <option value="313">313 - Zona</option>
           </select>
         </div>
         <div class="field">
@@ -1398,11 +1412,17 @@ function initFormulario(){
     const areaC = document.querySelector('[name=areaConstruida]');
     const idP = document.querySelector('[name=idParcela]');
     const bice = document.querySelector('[name=bice]');
+    const ano = document.querySelector('[name=anoConstrutivo]');
     const fsComp = document.getElementById('fs-complementar');
     if(fsComp) fsComp.classList.toggle('hidden', v === '1');
     if(arq) arq.disabled = (v === '1');
     if(areaC) areaC.disabled = (v === '1');
     if(idP) idP.disabled = (v === '1');
+    /* Sem edificação (territorial): Ano Construtivo fica indisponível e é limpo */
+    if(ano){
+      ano.disabled = (v === '1');
+      if(v === '1') ano.value = '';
+    }
     if(bice) bice.disabled = (v !== '3');
   }
   tipoImovel.addEventListener('change', syncTipo); syncTipo();
