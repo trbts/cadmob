@@ -385,6 +385,8 @@ ul{ list-style:none; }
   transition:transform .18s ease, box-shadow .18s ease;
   display:block;
 }
+.extra-photos-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; padding:8px 0; }
+.extra-thumb{ width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:12px; border:1px solid var(--border); box-shadow:var(--shadow); cursor:zoom-in; }
 .ficha-photo-frame:hover img{ transform:scale(1.01); box-shadow:var(--shadow-lg); }
 .ficha-photo-frame .pv-overlay{
   position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
@@ -804,7 +806,8 @@ function normalizarFicha(raw){
     foto_latitude:      ft ? ft.latitude             : undefined,
     foto_longitude:     ft ? ft.longitude            : undefined,
     foto_precisao_m:    ft ? ft.precisaoM            : undefined,
-    foto_geo_horario:   ft ? ft.geolocalizacaoHorario: undefined
+    foto_geo_horario:   ft ? ft.geolocalizacaoHorario: undefined,
+    fotos_adicionais:   Array.isArray(dc.fotosAdicionais) ? dc.fotosAdicionais : []
   });
 }
 
@@ -1604,8 +1607,18 @@ Pages.registros.view = function(id){
       '</div>'
     : '<div class="ficha-photo-empty">Nenhuma foto anexada a esta ficha.</div>';
 
+  const extras = Array.isArray(r.fotos_adicionais) ? r.fotos_adicionais.filter(function(f){ return f && f.base64; }) : [];
+  const extrasHTML = extras.length
+    ? dSection('Fotos adicionais', SVG_ICONS.cam) +
+      '<div class="extra-photos-grid">' +
+        extras.map(function(f, i){
+          return '<img class="extra-thumb" data-extra="' + i + '" src="data:' + (f.tipo || 'image/jpeg') + ';base64,' + f.base64 + '" alt="Foto adicional ' + (i+1) + '">';
+        }).join('') +
+      '</div>'
+    : '';
+
   const tabFoto =
-    dSection('Foto do Imóvel', SVG_ICONS.cam) + fotoBloco;
+    dSection('Foto do Imóvel', SVG_ICONS.cam) + fotoBloco + extrasHTML;
 
   const tabAuditoria =
     dSection('Auditoria', SVG_ICONS.info) +
@@ -1687,6 +1700,12 @@ Pages.registros.view = function(id){
   });
   document.getElementById('btnImprimirPDF').addEventListener('click', function(){
     Pages.registros.imprimirPDF(id);
+  });
+
+  document.querySelectorAll('.extra-thumb').forEach(function(img){
+    img.addEventListener('click', function(){
+      Lightbox.open(img.src, 'Foto adicional ' + (Number(img.dataset.extra) + 1));
+    });
   });
 
   const frame = document.getElementById('photoFrame');

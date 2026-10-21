@@ -25,7 +25,7 @@
 // (formulario-login.html + formulario.html). Ao subir uma nova
 // versão do app, basta incrementar este número para forçar a
 // invalidação de todo o cache antigo no activate.
-const CACHE_NAME = 'cadmob-form-v4';
+const CACHE_NAME = 'cadmob-form-v5';
 
 const APP_SHELL = [
   './index.html',

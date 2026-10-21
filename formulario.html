@@ -145,6 +145,18 @@ body{
 .photo-loading .spinner{ width:18px; height:18px; border-radius:50%; border:2.5px solid rgba(13,92,171,.2); border-top-color:var(--primary); animation:photoSpin .8s linear infinite; }
 @keyframes photoSpin{ to{ transform:rotate(360deg); } }
 
+.extra-photos{ margin-top:18px; border:1px solid var(--border); border-radius:14px; padding:14px; background:#fff; text-align:left; }
+.extra-photos h4{ margin:0 0 4px; font-size:13px; font-weight:800; color:var(--text); }
+.extra-photos h4 .opt{ font-weight:600; color:var(--muted); font-size:11.5px; margin-left:4px; }
+.extra-photos .hint{ margin:8px 0 0; font-size:11.5px; color:var(--muted); }
+.extra-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:10px 0; }
+.extra-grid:empty{ display:none; }
+.extra-item{ display:flex; flex-direction:column; gap:6px; }
+.extra-item img{ width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:10px; border:1px solid var(--border); background:#0f172a0d; }
+.extra-meta{ font-size:11px; color:var(--muted); font-weight:600; text-align:center; }
+.btn-extra-rm{ height:34px; border-radius:9px; font-weight:700; font-size:12px; border:1.5px solid #fecaca; background:#fff6f6; color:var(--danger); cursor:pointer; }
+.btn-extra-add{ display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; height:44px; border-radius:11px; border:1.5px dashed var(--primary); background:#f3f8fe; color:var(--primary); font-weight:700; font-size:13.5px; cursor:pointer; }
+.btn-extra-add:disabled{ opacity:.6; cursor:wait; }
 .photo-info-preview{ margin-top:14px; background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:14px; text-align:left; }
 .photo-info-preview h4{ margin:0 0 8px; font-size:11px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; color:var(--primary); }
 .photo-info-preview ul{ margin:0; padding:0; list-style:none; }
@@ -327,7 +339,7 @@ body{
           <div class="field">
             <label for="idParcela">ID da Parcela/Lote</label>
             <input type="text" id="idParcela" name="idParcela" maxlength="35">
-            <div class="hint">Obrigatório p/ predial; não informar p/ territorial.</div>
+            <div class="hint">Opcional. Não informar p/ imóvel territorial.</div>
           </div>
           <div class="field">
             <label for="anoConstrutivo">Ano Construtivo</label>
@@ -507,7 +519,7 @@ body{
     <!-- ============ ETAPA 4 — TITULARES ============ -->
     <section class="step-panel" data-step="4">
       <div class="card"><div class="card-body">
-        <p class="sub-note">Se CPF/CNPJ ou nome forem informados, os demais campos do titular passam a ser obrigatórios. A soma das participações deve resultar em 100%.</p>
+        <p class="sub-note">Todos os campos do titular são obrigatórios (<span class="req" style="color:var(--danger)">*</span>). A soma das participações deve resultar em 100%.</p>
         <div id="titulares"></div>
         <button type="button" class="add-btn" data-add="titulares">+ Adicionar titular</button>
       </div></div>
@@ -655,6 +667,14 @@ body{
           <div class="photo-loading" id="photoLoading" style="display:none;">
             <span class="spinner"></span> Processando imagem…
           </div>
+        </div>
+
+        <div class="extra-photos" id="extraPhotos">
+          <h4>Fotos adicionais <span class="opt">(opcional · até 2)</span></h4>
+          <input type="file" id="extra_input" accept="image/*" hidden>
+          <div class="extra-grid" id="extraGrid"></div>
+          <button type="button" class="btn-extra-add" id="btnAddExtra">+ Anexar foto adicional</button>
+          <p class="hint" id="extraHint">Você pode tirar uma foto ou escolher da galeria. Cada imagem é comprimida para ~150&nbsp;KB.</p>
         </div>
       </div></div>
     </section>
@@ -1275,17 +1295,17 @@ function initFormulario(){
   /* ---------- TEMPLATES ---------- */
   const titularTpl = () => `<div class="list-item">
     <button type="button" class="rm">remover</button>
-    <div class="field"><label>CPF/CNPJ</label>
+    <div class="field"><label>CPF/CNPJ <span class="req">*</span></label>
       <input name="niTitular" data-mask="cpfcnpj" maxlength="18" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00"></div>
-    <div class="field"><label>Nome</label>
+    <div class="field"><label>Nome <span class="req">*</span></label>
       <input name="nomeTitular" maxlength="100"></div>
     <div class="row row-2">
-      <div class="field"><label>% Participação</label>
+      <div class="field"><label>% Participação <span class="req">*</span></label>
         <input type="number" step="0.0001" min="0" max="100" name="percTitular"></div>
-      <div class="field"><label>Data de Aquisição</label>
+      <div class="field"><label>Data de Aquisição <span class="req">*</span></label>
         <input type="date" name="dtAquisicaoTitular"></div>
     </div>
-    <div class="field"><label>Tipo de Titularidade</label>
+    <div class="field"><label>Tipo de Titularidade <span class="req">*</span></label>
       <select name="tipoTitularidade"><option value="">Selecione…</option>
         <option value="1">1 - Proprietário</option><option value="2">2 - Nu proprietário</option>
         <option value="3">3 - Senhorio Direto</option><option value="4">4 - Credor Fiduciário</option>
@@ -1298,7 +1318,7 @@ function initFormulario(){
         <option value="16">16 - Promitente comprador (demais)</option>
         <option value="17">17 - Arrendatário</option>
       </select></div>
-    <div class="field"><label>Doc. de Titularidade</label>
+    <div class="field"><label>Doc. de Titularidade <span class="req">*</span></label>
       <select name="docTitularidade"><option value="">Selecione…</option>
         <option value="1">1 - Escritura Pública</option><option value="2">2 - Contrato com força de Escritura</option>
         <option value="3">3 - Instrumento Particular</option><option value="4">4 - Sentença Judicial</option>
@@ -1735,6 +1755,77 @@ function initFormulario(){
     }
   });
 
+  /* ---------- FOTOS ADICIONAIS (opcionais · até 2) ---------- */
+  const MAX_FOTOS_EXTRAS = 2;
+  let fotosExtras = [];
+  const extraInput  = document.getElementById('extra_input');
+  const extraGrid   = document.getElementById('extraGrid');
+  const btnAddExtra = document.getElementById('btnAddExtra');
+
+  function renderExtras(){
+    if(!extraGrid) return;
+    extraGrid.innerHTML = fotosExtras.map((f, i) =>
+      '<div class="extra-item">' +
+        '<img src="data:' + f.tipo + ';base64,' + f.base64 + '" alt="Foto adicional ' + (i+1) + '">' +
+        '<div class="extra-meta">Foto adicional ' + (i+1) + ' · ' + (f.tamanhoBytes / 1024).toFixed(1) + ' KB</div>' +
+        '<button type="button" class="btn-extra-rm" data-rm-extra="' + i + '">Remover</button>' +
+      '</div>'
+    ).join('');
+    if(btnAddExtra){
+      btnAddExtra.style.display = fotosExtras.length >= MAX_FOTOS_EXTRAS ? 'none' : '';
+      btnAddExtra.textContent = fotosExtras.length
+        ? '+ Anexar mais uma foto (' + fotosExtras.length + '/' + MAX_FOTOS_EXTRAS + ')'
+        : '+ Anexar foto adicional';
+    }
+  }
+  function resetExtras(){
+    fotosExtras = [];
+    if(extraInput) extraInput.value = '';
+    renderExtras();
+  }
+  btnAddExtra?.addEventListener('click', () => {
+    if(fotosExtras.length >= MAX_FOTOS_EXTRAS){
+      toast('Limite de ' + MAX_FOTOS_EXTRAS + ' fotos adicionais.', 'warning');
+      return;
+    }
+    extraInput && extraInput.click();
+  });
+  extraGrid?.addEventListener('click', (e) => {
+    const b = e.target.closest ? e.target.closest('[data-rm-extra]') : null;
+    if(!b) return;
+    fotosExtras.splice(Number(b.getAttribute('data-rm-extra')), 1);
+    renderExtras();
+    toast('Foto adicional removida.', 'success');
+  });
+  extraInput?.addEventListener('change', async () => {
+    const file = extraInput.files && extraInput.files[0];
+    if(!file) return;
+    if(!/^image\//.test(file.type)){
+      toast('Selecione um arquivo de imagem.', 'error');
+      extraInput.value = '';
+      return;
+    }
+    if(fotosExtras.length >= MAX_FOTOS_EXTRAS){
+      toast('Limite de ' + MAX_FOTOS_EXTRAS + ' fotos adicionais.', 'warning');
+      extraInput.value = '';
+      return;
+    }
+    const rotulo = btnAddExtra ? btnAddExtra.textContent : '';
+    if(btnAddExtra){ btnAddExtra.disabled = true; btnAddExtra.textContent = 'Processando imagem…'; }
+    try {
+      const res = await comprimirImagemParaBase64(file, 150 * 1024, null, null);
+      fotosExtras.push({ base64: res.base64, tipo: res.tipo, tamanhoBytes: res.tamanho });
+      toast('Foto adicional anexada.', 'success');
+    } catch(err){
+      console.error('[foto extra]', err);
+      toast('Não foi possível processar a imagem.', 'error');
+    } finally {
+      extraInput.value = '';
+      if(btnAddExtra){ btnAddExtra.disabled = false; btnAddExtra.textContent = rotulo; }
+      renderExtras();
+    }
+  });
+
   /* ============================================================
      STEPS
      ============================================================ */
@@ -1869,7 +1960,6 @@ function initFormulario(){
       const tipo = g('tipoImovel');
       if(!tipo) invalidos.push({ el: q('tipoImovel'), msg: 'Selecione o tipo de imóvel.' });
       if(tipo === '2' && !g('tpArquitetonico')) invalidos.push({ el: q('tpArquitetonico'), msg: 'Tipo arquitetônico é obrigatório para imóvel predial.' });
-      if(tipo === '2' && !g('idParcela')) invalidos.push({ el: q('idParcela'), msg: 'ID da parcela é obrigatório para imóvel predial.' });
       if(tipo === '2' && !g('anoConstrutivo')) invalidos.push({ el: q('anoConstrutivo'), msg: 'Ano construtivo é obrigatório para imóvel predial.' });
       if(tipo === '1' && g('anoConstrutivo')) invalidos.push({ el: q('anoConstrutivo'), msg: 'Ano construtivo não deve ser informado para territorial.' });
       if(tipo === '1' && g('idParcela')) invalidos.push({ el: q('idParcela'), msg: 'ID da parcela não deve ser informado para territorial.' });
@@ -1893,23 +1983,35 @@ function initFormulario(){
     }
     if(stepNum === 4){
       const rows = [...document.querySelectorAll('#titulares .list-item')];
+      if(!rows.length){
+        invalidos.push({ el: document.getElementById('titulares'), msg: 'Informe ao menos um titular.' });
+      }
+      const ROTULOS_TITULAR = {
+        percTitular: '% de participação',
+        dtAquisicaoTitular: 'data de aquisição',
+        tipoTitularidade: 'tipo de titularidade',
+        docTitularidade: 'documento de titularidade'
+      };
       rows.forEach((r, i) => {
+        const pref = 'Titular ' + (i+1) + ': ';
         const niEl  = r.querySelector('[name=niTitular]');
         const nomeEl = r.querySelector('[name=nomeTitular]');
         const ni = niEl.value.trim();
         const nome = nomeEl.value.trim();
-        if(!ni && !nome) return;
 
-        if(ni && !validarCPFouCNPJ(ni)){
+        if(!ni){
+          invalidos.push({ el: niEl, msg: pref + 'informe o CPF/CNPJ.' });
+        } else if(!validarCPFouCNPJ(ni)){
           const wrap = niEl.closest('.field');
           if(wrap) wrap.classList.add('invalid');
-          invalidos.push({ el: niEl, msg: 'Titular ' + (i+1) + ': CPF/CNPJ inválido.' });
+          invalidos.push({ el: niEl, msg: pref + 'CPF/CNPJ inválido.' });
         }
+        if(!nome) invalidos.push({ el: nomeEl, msg: pref + 'informe o nome.' });
 
-        ['percTitular','dtAquisicaoTitular','tipoTitularidade','docTitularidade'].forEach(f => {
+        Object.keys(ROTULOS_TITULAR).forEach(f => {
           const inp = r.querySelector('[name=' + f + ']');
           if(inp && !String(inp.value).trim()){
-            invalidos.push({ el: inp, msg: 'Titular ' + (i+1) + ': preencha todos os campos.' });
+            invalidos.push({ el: inp, msg: pref + 'informe ' + ROTULOS_TITULAR[f] + '.' });
           }
         });
       });
@@ -2100,6 +2202,11 @@ function initFormulario(){
         precisaoM:              fotoGeo ? fotoGeo.precisao : null,
         geolocalizacaoHorario:  fotoGeo ? fotoGeo.horario : null
       } : null,
+      fotosAdicionais: fotosExtras.map(f => ({
+        base64:       f.base64,
+        tipo:         f.tipo || null,
+        tamanhoBytes: f.tamanhoBytes || null
+      })),
       status: 'pendente',
       origem: 'sinter'
     };
@@ -2110,6 +2217,7 @@ function initFormulario(){
   function clearForm(){
     form.reset();
     resetFoto();
+    resetExtras();
     document.querySelectorAll('.field.invalid,.field.valid').forEach(f => f.classList.remove('invalid','valid'));
     ['titulares','transmitentes','adquirentes'].forEach(k => {
       lists[k].el.innerHTML = '';
@@ -2251,6 +2359,7 @@ function initFormulario(){
   syncLocalizacao();
   updateProgress();
   renderFotoUI();
+  renderExtras();
   atualizarTitularesUI();
   atualizarPreviewInfo();
 
