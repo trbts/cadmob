@@ -425,6 +425,8 @@ ul{ list-style:none; }
 .foto-compare .ficha-photo-frame{ padding:8px 0 4px; }
 .foto-compare .ficha-photo-frame img{ max-height:340px; }
 .foto-compare .extra-photos-grid{ grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+.photo-wrap{ position:relative; display:inline-block; max-width:100%; line-height:0; }
+.photo-wrap .dl-btn{ top:8px; right:8px; width:32px; height:32px; }
 .extra-wrap{ position:relative; }
 .extra-wrap .extra-thumb{ display:block; }
 .extra-wrap .dl-btn{ top:8px; right:8px; width:32px; height:32px; }
@@ -1722,8 +1724,6 @@ Pages.registros.view = function(id){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   const st = getStatusFromReg(r);
   const dataUrl = fotoDataUrl(r);
-  const tipoLabel = /webp/i.test(r.foto_tipo || '') ? 'WebP' : 'JPEG';
-  const tamanhoLabel = r.foto_tamanho_bytes ? (r.foto_tamanho_bytes / 1024).toFixed(1) + ' KB' : '—';
 
   const titularesHTML = (Array.isArray(r.Titular) && r.Titular.length)
     ? r.Titular.map(function(t, i){
@@ -1869,9 +1869,10 @@ Pages.registros.view = function(id){
 
   const fotoBloco = dataUrl
     ? '<div class="ficha-photo-frame" id="photoFrame">' +
-        '<button type="button" class="dl-btn" data-dl="main" title="Baixar foto do imóvel">' + ICON_DOWNLOAD + '</button>' +
-        '<img src="' + dataUrl + '" alt="Foto do imóvel" id="photoViewImg">' +
-        '<div class="pv-overlay"><span>' + tamanhoLabel + ' · ' + tipoLabel + '</span></div>' +
+        '<div class="photo-wrap">' +
+          '<button type="button" class="dl-btn" data-dl="main" title="Baixar foto do imóvel">' + ICON_DOWNLOAD + '</button>' +
+          '<img src="' + dataUrl + '" alt="Foto do imóvel" id="photoViewImg">' +
+        '</div>' +
       '</div>'
     : '<div class="ficha-photo-empty">Nenhuma foto anexada a esta ficha.</div>';
 
