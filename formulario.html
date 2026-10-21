@@ -671,10 +671,10 @@ body{
 
         <div class="extra-photos" id="extraPhotos">
           <h4>Fotos adicionais <span class="opt">(opcional · até 2)</span></h4>
-          <input type="file" id="extra_input" accept="image/*" hidden>
+          <input type="file" id="extra_input" accept="image/*" capture="environment" hidden>
           <div class="extra-grid" id="extraGrid"></div>
-          <button type="button" class="btn-extra-add" id="btnAddExtra">+ Anexar foto adicional</button>
-          <p class="hint" id="extraHint">Você pode tirar uma foto ou escolher da galeria. Cada imagem é comprimida para ~150&nbsp;KB.</p>
+          <button type="button" class="btn-extra-add" id="btnAddExtra">+ Tirar foto adicional</button>
+          <p class="hint" id="extraHint">Tire a foto na hora, com a câmera do aparelho. Cada imagem é comprimida para ~150&nbsp;KB.</p>
         </div>
       </div></div>
     </section>
@@ -861,73 +861,79 @@ function initFormulario(){
   const DRAFT_KEY = 'careiro_sinter_draft_v2';
 
   /* ---------- DADOS PADRÃO (FALLBACK) ---------- */
+  /* A posição na lista define o número do bairro (001, 002, …), igual à
+     planilha de ruas: o código das ruas começa pelo número do bairro
+     (ex.: 1xx = Centro, 2xx = Vista Alegre …). */
   const BAIRROS_PADRAO = [
-    'CENTRO','NOVA ESPERANÇA','NOVO HORIZONTE','DA PAZ',
-    'VISTA ALEGRE','SEBASTIÃO BORGES','DISTRITO','NOVO'
+    'CENTRO','VISTA ALEGRE','NOVO HORIZONTE','DISTRITO',
+    'SEBASTIÃO BORGES','NOVO','NOVA ESPERANÇA','BAIRRO DA PAZ'
   ];
   const RUAS_PADRAO = ['VITÓRIA','PRECIOSA'];
 
   /* ---------- LOGRADOUROS PREDEFINIDOS POR BAIRRO ---------- */
   const BAIRROS_LOGRA = [
     { nome:'CENTRO', logradouros:[
-      ['101','Rua Manoel Rocha dos Santos'],['102','Av. Adail de Sá'],['103','Rua Água Branca'],
-      ['104','Rua Dorvane Ferreira de Souza'],['105','Rua Maria Diva Campos'],['106','Rua Araçatuba'],
-      ['107','Rua Aruanâ'],['108','Rua Beira Rio'],['109','Rua Caapiranga'],['110','Rua Cambixe'],
-      ['111','Rua Curari'],['112','Rua Curuça'],['113','Rua Francisca Ribeiro da Costa'],
-      ['114','Rua Raimunda Nonata Silva Reis'],['115','Rua Iracema'],['116','Rua Gilmar Nogueira de Castro'],
-      ['117','Rua Jaraqui'],['118','Rua Lanteriama'],['119','Rua Claudio Francisco da Victoria'],
-      ['120','Rua Terezinha Teixeira de Souza'],['121','Rua Manaquiri'],['122','Rua Miracauera'],
-      ['123','Rua Morapiranga'],['124','Rua Mosqueteiro'],['125','Rua João Santiago da Silva (Antiga Murumurutuba)'],
-      ['126','Rua Manoel Almeida Leite'],['127','Rua Porto da balsa'],['128','Rua Pastor José Aquino de Moraes'],
-      ['129','Rua Purupuru'],['130','Rua Tabocal'],['131','Rua Professora Socorro Guimarães'],
-      ['132','Rua Areolino Moraes'],['133','Rua Almir Nonato da Costa']
-    ]},
-    { nome:'SEBASTIÃO BORGES', logradouros:[
-      ['201','Rua 13 de Maio'],['202','Rua 05 de Setembro'],['203','Rua 07 de Setembro'],['204','Rua Aurora'],
-      ['205','Rua Belém'],['206','Rua Bom Sucesso'],['207','Rua Buriti'],['208','Av. Cosme Carneiro de Castro'],
-      ['210','Rua Dom Bosco'],['211','Rua Josino Matos Filho'],['212','Rua Saturnino Lira dos Santos'],
-      ['213','Rua Luciano Fernandes'],['215','Rua Nossa Srª de Fátima'],['217','Rua Prof. Vicente de Paula'],
-      ['218','Av. Raimundo Cavalcante'],['219','Rua Santa Helena'],['220','Rua Santo Antonio'],
-      ['221','Rua São Jorge'],['222','Rua São Sebastião'],['223','Rua Tefé'],['225','Rua Wagner de Barrros'],['226','Rua 04']
-    ]},
-    { nome:'NOVO', logradouros:[
-      ['301','Beco Água Branca'],['302','Rua Aturiá'],['303','Rua Calafate'],['304','Rua Castanho'],
-      ['305','Rua Moisés Torres de Souza'],['306','Rua Jacamim'],['307','Rua Mancheteria'],['308','Rua Manoel Sales'],
-      ['309','Beco Pacova'],['310','Rua Miraua'],['311','Rua Pacova'],['312','Rua Paricatuba'],
-      ['313','Rua Erivaldo Gonzaga'],['314','Rua Prof. Antonio Soares'],['315','Rua Rio Negro'],
-      ['316','Rua Taquara'],['317','Rua Vitória'],['318','Rua Waldemar Barros'],['319','Zero'],
-      ['320','Beco Zumbi dos Palmares'],['321','Beco Rio Negro']
-    ]},
-    { nome:'NOVA ESPERANÇA', logradouros:[
-      ['401','Rua 15 de Maio'],['402','Rua Encontro das Aguas'],['403','Rua Francisco Nogueira'],
-      ['404','Rua João Silvestre'],['405','Rua Jose Rodrigues de Arruda'],['406','Rua Lírio do Vale'],
-      ['407','Rua Nova Esperança'],['408','Rua Nova Olinda'],['409','Rua Otacílio de Souza'],
-      ['410','Rua Nova'],['411','Rua Solimões'],['412','Rua Tapajós']
+      ['101','Av. Adail de Sá'],['102','Av. Mario Jorge Guedes'],['103','Rua Água Branca'],
+      ['104','Rua Almir Nonato da Costa'],['105','Rua Araçatuba'],['106','Rua Areolino Moraes'],
+      ['107','Rua Aruanã'],['108','Rua Beira Rio'],['109','Rua Caapiranga'],
+      ['110','Rua Cambixe'],['111','Rua Claudio Francisco da Victoria'],['112','Rua Curari'],
+      ['113','Rua Curuça'],['114','Rua Dorvane Ferreira de Souza'],['115','Rua Francisca Ribeiro da Costa'],
+      ['116','Rua Gilmar Nogueira de Castro'],['117','Rua Humberto Bastos de Oliveira'],['118','Rua Iracema'],
+      ['119','Rua Jaraqui'],['120','Rua João Santiago da Silva (Antiga Murumurutuba)'],['121','Rua Lanteriama'],
+      ['122','Rua Manaquiri'],['123','Rua Manoel Almeida Leite'],['124','Rua Manoel Rocha dos Santos'],
+      ['125','Rua Maria Diva Campos'],['126','Rua Miracauera'],['127','Rua Morapiranga'],
+      ['128','Rua Mosqueteiro'],['129','Rua Pastor José Aquino de Moraes'],['130','Rua Poção'],
+      ['131','Rua Porto da balsa'],['132','Rua Professora Socorro Guimarães'],['133','Rua Purupuru'],
+      ['134','Rua Raimunda Nonata Silva Reis'],['135','Rua Tabocal'],['136','Rua Terezinha Teixeira de Souza']
     ]},
     { nome:'VISTA ALEGRE', logradouros:[
-      ['501','Rua 31 de Maio'],['503','Rua Saturnino Barreto Moraes'],['505','Rua Barro Alto'],
-      ['506','Rua Maria Martins'],['507','Rua Curarizinho'],['508','Rua Maria Antonia'],
-      ['509','Rua Marimba'],['510','Rua Muratu'],['511','Rua dos Reis'],['512','Rua Maria Dailis Braga'],['514','Rua Tapagem']
+      ['201','Av. Sargento Nonato Brito'],['202','Rua 31 de Março'],['203','Rua Airton sena'],
+      ['204','Rua Barro Alto'],['205','Rua Curarizinho'],['206','Rua dos Reis'],
+      ['207','Rua Maria Antonia'],['208','Rua Maria Dailis Braga'],['209','Rua Maria Martins'],
+      ['210','Rua Marimba'],['211','Rua Muratu'],['212','Rua Ocimar de Melo Almeida'],
+      ['213','Rua Saturnino Barreto Moraes'],['214','Rua Tapagem']
     ]},
     { nome:'NOVO HORIZONTE', logradouros:[
-      ['601','Rua Azaleia'],['602','Rua das Orquídeas'],['603','Rua Lourenço Alves de Souza'],
-      ['604','Rua Girassol'],['605','Rua Jasmim'],['606','Rua Margarida'],['607','Rua Papoula'],['608','Rua Tulipa']
-    ]},
-    { nome:'BAIRRO DA PAZ', logradouros:[
-      ['701','Rua Julia Conde Martins (Antiga Rua 01)'],
-      ['702','Raimundo Carlos Queiroz Viana (antiga Rua 02)'],
-      ['703','Rua 03'],['704','Rua 04']
-    ]},
-    { nome:'CONJUNTO SIZENANDO LUIZ DE MOURA', logradouros:[
-      ['801','Rua Poção'],['802','Av. Antonio Diniz de Carvalho'],['803','Av. Volmar Laurentino'],
-      ['804','Rua Niteroi'],['805','Rua Parque das Castanheira'],['806','Rua Ocimar de Melo Almeida'],
-      ['807','Av. Airton Senna'],['808','Av. Mario Jorge Guedes da Silva'],['809','Av. Sargento Nonato Brito'],
-      ['810','Rua Humberto Basto de Oliveira']
+      ['301','Rua Azaleia'],['302','Rua das Orquídeas'],['303','Rua Girassol'],
+      ['304','Rua Jasmim'],['305','Rua Lourenço Alves de Souza'],['306','Rua Margarida'],
+      ['307','Rua Papoula'],['308','Rua Tulipa']
     ]},
     { nome:'DISTRITO', logradouros:[
-      ['901','Rua 2'],['902','Rua 3'],['903','Rua 4'],['904','Rua 5'],['905','Rua 6'],['906','Rua 7'],
-      ['907','Rua 8'],['908','Rua A'],['909','Rua Vila Amazonas'],['910','Av. Elçamir B. da Costa'],
-      ['911','Av. Manoel Gadelha Neto']
+      ['401','Av. Manoel Gadelha Neto'],['402','Rua 2'],['403','Rua 3'],
+      ['404','Rua 4'],['405','Rua 5'],['406','Rua 6'],
+      ['407','Rua 7'],['408','Rua 8'],['409','Rua A'],
+      ['410','Rua Elçamir B. da Costa'],['411','Rua Preciosa'],['412','Rua Vila Amazonas']
+    ]},
+    { nome:'SEBASTIÃO BORGES', logradouros:[
+      ['501','Av. Cosme Carneiro de Castro'],['502','Av. Raimundo Cavalcante'],['503','Av. Volmar Laurentino'],
+      ['504','Rua 05 de Setembro'],['505','Rua 07 de Setembro'],['506','Rua 13 de Maio'],
+      ['507','Rua Belém'],['508','Rua Bom Sucesso'],['509','Rua Buriti'],
+      ['510','Rua Dom Bosco'],['511','Rua Josino Matos Filho'],['512','Rua Luciano Fernandes'],
+      ['513','Rua Niteroi'],['514','Rua Nossa Srª de Fátima'],['515','Rua Parque das Castanheiras'],
+      ['516','Rua Prof. Vicente de Paula'],['517','Rua Santa Helena'],['518','Rua Santo Antonio'],
+      ['519','Rua São Jorge'],['520','Rua São Sebastião'],['521','Rua Saturnino Lira dos Santos'],
+      ['522','Rua Tefé'],['523','Rua Wagner de Barrros'],['524','Trav. Cosme Carneiro de castro'],
+      ['525','Trav. Lago preto']
+    ]},
+    { nome:'NOVO', logradouros:[
+      ['601','Beco Água Branca'],['602','Beco Pacova'],['603','Beco Rio Negro'],
+      ['604','Beco Zumbi dos Palmares'],['605','Rua Aturiá'],['606','Rua Calafate'],
+      ['607','Rua Castanho'],['608','Rua Erivaldo Gonzaga'],['609','Rua Jacamim'],
+      ['610','Rua Mancheteria'],['611','Rua Manoel Sales'],['612','Rua Miraua'],
+      ['613','Rua Moisés Torres de Souza'],['614','Rua Pacova'],['615','Rua Paricatuba'],
+      ['616','Rua Prof. Antonio Soares'],['617','Rua Rio Negro'],['618','Rua Taquara'],
+      ['619','Rua Tupana'],['620','Rua Vitória'],['621','Rua Waldemar Barros'],
+      ['622','Rua Zero'],['623','Trav. Rio Negro']
+    ]},
+    { nome:'NOVA ESPERANÇA', logradouros:[
+      ['701','Rua 15 de Maio'],['702','Rua Encontro das Aguas'],['703','Rua Francisco Nogueira'],
+      ['704','Rua João Silvestre'],['705','Rua Jose Rodrigues de Arruda'],['706','Rua Lírio do Vale'],
+      ['707','Rua Nova Esperança'],['708','Rua Nova Olinda'],['709','Rua Otacílio de Souza'],
+      ['710','Rua Raimundo Lima da Cunha'],['711','Rua Solimões'],['712','Rua Tapajós']
+    ]},
+    { nome:'BAIRRO DA PAZ', logradouros:[
+      ['801','Raimundo Carlos Queiroz Viana (antiga Rua 02)'],['802','Rua 03'],['803','Rua 04'],
+      ['804','Rua Julia Conde Martins (Antiga Rua 01)']
     ]}
   ];
 
@@ -1774,8 +1780,8 @@ function initFormulario(){
     if(btnAddExtra){
       btnAddExtra.style.display = fotosExtras.length >= MAX_FOTOS_EXTRAS ? 'none' : '';
       btnAddExtra.textContent = fotosExtras.length
-        ? '+ Anexar mais uma foto (' + fotosExtras.length + '/' + MAX_FOTOS_EXTRAS + ')'
-        : '+ Anexar foto adicional';
+        ? '+ Tirar mais uma foto (' + fotosExtras.length + '/' + MAX_FOTOS_EXTRAS + ')'
+        : '+ Tirar foto adicional';
     }
   }
   function resetExtras(){
@@ -1815,7 +1821,7 @@ function initFormulario(){
     try {
       const res = await comprimirImagemParaBase64(file, 150 * 1024, null, null);
       fotosExtras.push({ base64: res.base64, tipo: res.tipo, tamanhoBytes: res.tamanho });
-      toast('Foto adicional anexada.', 'success');
+      toast('Foto adicional capturada.', 'success');
     } catch(err){
       console.error('[foto extra]', err);
       toast('Não foi possível processar a imagem.', 'error');

@@ -814,6 +814,19 @@ function normalizarFicha(raw){
 /* ============================================================
    MAPA FLAT → DOT-PATH — gravar edições preservando a estrutura
    ============================================================ */
+/* Numeração padrão dos bairros (igual à planilha de ruas e ao formulário).
+   Usada quando não há lista configurada no banco. */
+const BAIRROS_NUMERACAO_PADRAO = [
+  { label:'CENTRO',           numero:'001' },
+  { label:'VISTA ALEGRE',     numero:'002' },
+  { label:'NOVO HORIZONTE',   numero:'003' },
+  { label:'DISTRITO',         numero:'004' },
+  { label:'SEBASTIÃO BORGES', numero:'005' },
+  { label:'NOVO',             numero:'006' },
+  { label:'NOVA ESPERANÇA',   numero:'007' },
+  { label:'BAIRRO DA PAZ',    numero:'008' }
+];
+
 const FIELD_PATHS = {
   inscricaoImobiliaria: 'dados_imovel.DadosGeraisImovel.inscricaoImobiliaria',
   tipoImovel:           'dados_imovel.DadosGeraisImovel.tipoImovel',
@@ -1955,7 +1968,8 @@ Pages.registros.edit = function(id){
       if(fe > 0 && fo > 0) flatUpdates.areaConstruida = fe * fo;
 
       if(!String(flatUpdates.inscricaoImobiliaria || '').trim()){
-        const bi = (State.listas && State.listas.grupos && State.listas.grupos.bairros) || [];
+        const biCfg = (State.listas && State.listas.grupos && State.listas.grupos.bairros) || [];
+        const bi = biCfg.length ? biCfg : BAIRROS_NUMERACAO_PADRAO;
         const biMap = bi.find(function(o){ return o.label === flatUpdates.bairro_imovel; });
         const bNum = biMap && biMap.numero ? String(biMap.numero).padStart(3,'0') : '000';
         if(flatUpdates.quadra_imovel && flatUpdates.lote_letra){
