@@ -2067,7 +2067,7 @@ Pages.registros.view = function(id){
         .catch(function(){ toast('Não foi possível abrir a imagem.', 'error'); });
     });
   });
-  hidratarImagens(document.querySelector('.ficha-panel') || document);
+  hidratarImagens(document.querySelector('.ficha-content') || document);   // todos os painéis (a aba de fotos fica oculta até ser aberta)
 
   document.querySelectorAll('.ficha-panel [data-dl]').forEach(function(btn){
     btn.addEventListener('click', function(e){
