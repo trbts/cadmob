@@ -653,6 +653,67 @@ async function api(method, path, body){
   return data;
 }
 
+/* Baixa uma imagem em BINÁRIO do Worker (precisa do ID Token, por isso não dá para usar <img src> direto). */
+async function apiBlob(path){
+  const u = auth.currentUser;
+  if(!u){
+    const e = new Error('sem_sessao');
+    e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
+    throw e;
+  }
+  const idToken = await u.getIdToken();
+  let resp;
+  try {
+    resp = await fetch(WORKER_URL + path, { headers: { 'Authorization': 'Bearer ' + idToken } });
+  } catch(netErr){
+    const e = new Error('falha_rede');
+    e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
+    throw e;
+  }
+  if(!resp.ok){
+    const e = new Error('erro_worker_' + resp.status);
+    e.status = resp.status;
+    throw e;
+  }
+  return await resp.blob();
+}
+
+/* Cache em memória: "idDaFicha|slot" → Promise<{ blob, url }>  (slot: foto | anexo1 | anexo2) */
+const _imgCache = {};
+function imagemObter(id, slot){
+  const k = id + '|' + slot;
+  if(!_imgCache[k]){
+    _imgCache[k] = apiBlob('/fichas/' + encodeURIComponent(id) + '/anexos/' + slot)
+      .then(function(blob){ return { blob: blob, url: URL.createObjectURL(blob) }; })
+      .catch(function(e){ delete _imgCache[k]; throw e; });
+  }
+  return _imgCache[k];
+}
+/* Preenche os <img data-img="id|slot"> de um container (carrega só o que aparece na tela). */
+function hidratarImagens(root){
+  const imgs = (root || document).querySelectorAll('img[data-img]');
+  const carregar = function(img){
+    const p = String(img.dataset.img || '').split('|');
+    imagemObter(p[0], p[1]).then(function(res){ img.src = res.url; })
+      .catch(function(){ img.alt = 'Imagem indisponível'; img.classList.add('img-erro'); });
+  };
+  if(!('IntersectionObserver' in window)){ imgs.forEach(carregar); return; }
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ io.unobserve(en.target); carregar(en.target); }
+    });
+  }, { rootMargin: '300px' });
+  imgs.forEach(function(img){ io.observe(img); });
+}
+function blobParaDataUrl(blob){
+  return new Promise(function(resolve, reject){
+    const fr = new FileReader();
+    fr.onload = function(){ resolve(String(fr.result)); };
+    fr.onerror = reject;
+    fr.readAsDataURL(blob);
+  });
+}
+
 const ROLE_LEVELS = { user:0, funcionario:1, admin:2, superadmin:3 };
 /* A aba "Configuração" é exclusiva do desenvolvedor (superadmin).
    O perfil administrativo (admin) NÃO tem acesso a ela. */
@@ -786,6 +847,8 @@ function normalizarFicha(raw){
     bairro_imovel:     raw.bairro_imovel    || loc.bairro,
     quadra_imovel:     raw.quadra_imovel    || loc.quadra,
     lote_letra:        raw.lote_letra       || loc.lote,
+    segmento_lote:      raw.segmento_lote      || loc.segmento      || '',
+    tipo_segmento_lote: raw.tipo_segmento_lote || loc.tipoSegmento  || '',
     unidade_imovel:    raw.unidade_imovel   || loc.unidade || '',
     status:            raw.status           || dc.status   || 'pendente',
     origem:            raw.origem           || dc.origem   || 'sinter',
@@ -861,14 +924,15 @@ function normalizarFicha(raw){
     num_frentes:      co.numFrentes,
     num_andares:      co.numAndares,
 
-    foto_base64:        ft ? ft.base64               : undefined,
+    foto_arquivo:       !!(ft && (ft.arquivo || ft.base64)),   // a imagem vem em binário, sob demanda
     foto_tipo:          ft ? ft.tipo                 : undefined,
     foto_tamanho_bytes: ft ? ft.tamanhoBytes         : undefined,
     foto_latitude:      ft ? ft.latitude             : undefined,
     foto_longitude:     ft ? ft.longitude            : undefined,
     foto_precisao_m:    ft ? ft.precisaoM            : undefined,
     foto_geo_horario:   ft ? ft.geolocalizacaoHorario: undefined,
-    fotos_adicionais:   Array.isArray(dc.fotosAdicionais) ? dc.fotosAdicionais : []
+    fotos_adicionais:   Array.isArray(dc.fotosAdicionais) ? dc.fotosAdicionais : [],
+    anexos_excluidos_em: dc.anexosExcluidosEm || ''
   });
 }
 
@@ -957,6 +1021,8 @@ const FIELD_PATHS = {
   bairro_imovel:  'bairro_imovel',
   quadra_imovel:  'quadra_imovel',
   lote_letra:     'lote_letra',
+  segmento_lote:      'segmento_lote',
+  tipo_segmento_lote: 'tipo_segmento_lote',
   unidade_imovel: 'unidade_imovel',
   status:         'status',
   responsavel:    'responsavel'
@@ -988,6 +1054,10 @@ const SELECT_OPTIONS = {
   padraoConstrutivo: [
     { v:'1', l:'1 - POPULAR' },{ v:'2', l:'2 - BAIXO' },{ v:'3', l:'3 - NORMAL' },
     { v:'4', l:'4 - ALTO' },{ v:'5', l:'5 - LUXO' }
+  ],
+  tipoSegmentoLote: [
+    { v:'desmembrado', l:'Desmembrado' }, { v:'remembrado', l:'Remembrado' },
+    { v:'fracao', l:'Fração ideal / condomínio' }, { v:'outro', l:'Outro' }
   ],
   tipoLogradouro: [
     { v:'250', l:'250 - RUA' }, { v:'299', l:'299 - ALAGADO' }, { v:'300', l:'300 - ÁREA' },
@@ -1063,10 +1133,7 @@ function getStatusFromReg(r){ return normalizeStatus(r.status); }
 /* ============================================================
    FOTO
    ============================================================ */
-function fotoDataUrl(reg){
-  if(!reg || !reg.foto_base64) return '';
-  return 'data:' + (reg.foto_tipo || 'image/jpeg') + ';base64,' + reg.foto_base64;
-}
+/* A imagem não vem mais embutida (base64) na ficha: é buscada em binário por imagemObter(id, slot). */
 
 /* ---------- Download de imagens ---------- */
 const ICON_DOWNLOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
@@ -1086,12 +1153,16 @@ function nomeArquivoImagem(r, prefixo, tipo){
     .filter(Boolean);
   return partes.join('_') + '.' + extDeTipo(tipo);
 }
-function baixarImagem(base64, tipo, nomeArquivo){
+function baixarImagemFicha(r, slot, prefixo){
+  imagemObter(r.id, slot).then(function(res){
+    baixarImagem(res.blob, nomeArquivoImagem(r, prefixo, res.blob.type));
+  }).catch(function(){
+    toast('Não foi possível baixar a imagem.', 'error');
+  });
+}
+function baixarImagem(blob, nomeArquivo){
   try{
-    const bin = atob(base64);
-    const bytes = new Uint8Array(bin.length);
-    for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    const url = URL.createObjectURL(new Blob([bytes], { type: tipo || 'image/jpeg' }));
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = nomeArquivo;
     document.body.appendChild(a); a.click(); a.remove();
@@ -1360,7 +1431,11 @@ function renderBreadcrumb(){
 }
 
 function getQuadraNome(r){ return norm(r.quadra_imovel) || 'SEM QUADRA'; }
-function getLoteNome(r){ return norm(r.lote_letra) || '—'; }
+function getLoteNome(r){
+  const l = norm(r.lote_letra) || '—';
+  const sg = norm(r.segmento_lote);
+  return sg ? l + '-' + sg : l;
+}
 function getNomeProprietario(r){
   if(Array.isArray(r.Titular) && r.Titular.length && r.Titular[0].nomeTitular) return r.Titular[0].nomeTitular;
   return r.nome || 'Sem proprietário';
@@ -1547,7 +1622,7 @@ Pages.fotos.goBairroLevel = function(){ State.fotosHier.quadra = null; renderFot
 Pages.fotos.goQuadra = function(q){ State.fotosHier.quadra = q; renderFotos(); };
 
 function fichasComFoto(){
-  return State.registros.filter(function(r){ return !!r.foto_base64; });
+  return State.registros.filter(function(r){ return !!r.foto_arquivo; });
 }
 
 function renderFotos(){
@@ -1658,7 +1733,7 @@ function renderFotosGaleria(){
       ? '<div class="fc-geo">' + Number(r.foto_latitude).toFixed(6) + ', ' + Number(r.foto_longitude).toFixed(6) +
         (r.foto_precisao_m ? ' · ±' + Math.round(Number(r.foto_precisao_m)) + ' m' : '') + '</div>' : '';
     return '<div class="foto-card" data-id="' + esc(r.id) + '">' +
-      '<div class="fc-img" data-act="zoom"><img loading="lazy" src="' + fotoDataUrl(r) + '" alt="Foto do imóvel">' +
+      '<div class="fc-img" data-act="zoom"><img data-img="' + esc(r.id) + '|foto" alt="Foto do imóvel">' +
         '<span class="fc-tag">Lote ' + esc(getLoteNome(r)) + '</span></div>' +
       '<div class="fc-body">' +
         '<div class="fc-title">' + esc(getNomeProprietario(r)) + '</div>' +
@@ -1673,13 +1748,16 @@ function renderFotosGaleria(){
     const r = State.registros.find(function(x){ return x.id === card.dataset.id; });
     if(!r) return;
     card.querySelector('[data-act="zoom"]').addEventListener('click', function(){
-      Lightbox.open(fotoDataUrl(r), getNomeProprietario(r) + ' · ' + bairro + ' Q' + quadra + ' L' + getLoteNome(r));
+      imagemObter(r.id, 'foto').then(function(res){
+        Lightbox.open(res.url, getNomeProprietario(r) + ' · ' + bairro + ' Q' + quadra + ' L' + getLoteNome(r));
+      }).catch(function(){ toast('Não foi possível abrir a imagem.', 'error'); });
     });
     card.querySelector('[data-act="download"]').addEventListener('click', function(){
-      baixarImagem(r.foto_base64, r.foto_tipo, nomeArquivoImagem(r, 'foto', r.foto_tipo));
+      baixarImagemFicha(r, 'foto', 'foto');
     });
     card.querySelector('[data-act="ficha"]').addEventListener('click', function(){ Pages.registros.view(r.id); });
   });
+  hidratarImagens(el);
 }
 
 /* ============================================================
@@ -1723,7 +1801,7 @@ function dSection(title, svg){
 Pages.registros.view = function(id){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   const st = getStatusFromReg(r);
-  const dataUrl = fotoDataUrl(r);
+  const temFoto = !!r.foto_arquivo;
 
   const titularesHTML = (Array.isArray(r.Titular) && r.Titular.length)
     ? r.Titular.map(function(t, i){
@@ -1748,6 +1826,8 @@ Pages.registros.view = function(id){
       dItem('Bairro', r.bairro_imovel) +
       dItem('Quadra', r.quadra_imovel) +
       dItem('Lote', r.lote_letra) +
+      dItem('Segmento do Lote', r.segmento_lote) +
+      dItem('Classificação do Segmento', labelFromOptions('tipoSegmentoLote', r.tipo_segmento_lote)) +
     '</div>' +
     dSection('Endereço do Imóvel', SVG_ICONS.home) +
     '<div class="detail-grid">' +
@@ -1867,26 +1947,29 @@ Pages.registros.view = function(id){
     dSection('Transmitentes', SVG_ICONS.users) + transHTML +
     dSection('Adquirentes', SVG_ICONS.users) + adqHTML;
 
-  const fotoBloco = dataUrl
+  const fotoBloco = temFoto
     ? '<div class="ficha-photo-frame" id="photoFrame">' +
         '<div class="photo-wrap">' +
           '<button type="button" class="dl-btn" data-dl="main" title="Baixar foto do imóvel">' + ICON_DOWNLOAD + '</button>' +
-          '<img src="' + dataUrl + '" alt="Foto do imóvel" id="photoViewImg">' +
+          '<img data-img="' + esc(r.id) + '|foto" alt="Foto do imóvel" id="photoViewImg">' +
         '</div>' +
       '</div>'
     : '<div class="ficha-photo-empty">Nenhuma foto anexada a esta ficha.</div>';
 
-  const extras = Array.isArray(r.fotos_adicionais) ? r.fotos_adicionais.filter(function(f){ return f && f.base64; }) : [];
+  const extras = Array.isArray(r.fotos_adicionais) ? r.fotos_adicionais.filter(function(f){ return f && (f.arquivo || f.base64); }) : [];
   const extrasHTML = extras.length
     ? '<div class="extra-photos-grid">' +
         extras.map(function(f, i){
           return '<div class="extra-wrap">' +
             '<button type="button" class="dl-btn" data-dl="extra-' + i + '" title="Baixar anexo ' + (i+1) + '">' + ICON_DOWNLOAD + '</button>' +
-            '<img class="extra-thumb" data-extra="' + i + '" src="data:' + (f.tipo || 'image/jpeg') + ';base64,' + f.base64 + '" alt="Anexo ' + (i+1) + '">' +
+            '<img class="extra-thumb" data-extra="' + i + '" data-img="' + esc(r.id) + '|anexo' + (i+1) + '" alt="Anexo ' + (i+1) + '">' +
           '</div>';
         }).join('') +
-      '</div>'
-    : '<div class="ficha-photo-empty">Nenhum anexo nesta ficha.</div>';
+      '</div>' +
+      '<div class="hint-anexos" style="font-size:11.5px;color:var(--muted);margin-top:8px;">Os anexos são excluídos automaticamente 20 dias após o envio da ficha. Baixe-os antes, se precisar guardá-los.</div>'
+    : (r.anexos_excluidos_em
+        ? '<div class="ficha-photo-empty">Anexos excluídos automaticamente em ' + esc(fmtDateTime(r.anexos_excluidos_em)) + ' (retenção de 20 dias).</div>'
+        : '<div class="ficha-photo-empty">Nenhum anexo nesta ficha.</div>');
 
   /* Foto do imóvel (esquerda) e anexos (direita), lado a lado */
   const tabFoto =
@@ -1979,28 +2062,31 @@ Pages.registros.view = function(id){
 
   document.querySelectorAll('.extra-thumb').forEach(function(img){
     img.addEventListener('click', function(){
-      Lightbox.open(img.src, 'Anexo ' + (Number(img.dataset.extra) + 1));
+      const n = Number(img.dataset.extra) + 1;
+      imagemObter(r.id, 'anexo' + n).then(function(res){ Lightbox.open(res.url, 'Anexo ' + n); })
+        .catch(function(){ toast('Não foi possível abrir a imagem.', 'error'); });
     });
   });
+  hidratarImagens(document.querySelector('.ficha-panel') || document);
 
   document.querySelectorAll('.ficha-panel [data-dl]').forEach(function(btn){
     btn.addEventListener('click', function(e){
       e.stopPropagation();
       const k = btn.dataset.dl;
       if(k === 'main'){
-        baixarImagem(r.foto_base64, r.foto_tipo, nomeArquivoImagem(r, 'foto', r.foto_tipo));
+        baixarImagemFicha(r, 'foto', 'foto');
       } else {
         const i = Number(k.replace('extra-', ''));
-        const f = extras[i];
-        if(f) baixarImagem(f.base64, f.tipo, nomeArquivoImagem(r, 'anexo-' + (i+1), f.tipo));
+        if(extras[i]) baixarImagemFicha(r, 'anexo' + (i+1), 'anexo-' + (i+1));
       }
     });
   });
 
   const frame = document.getElementById('photoFrame');
-  if(frame && dataUrl){
+  if(frame && temFoto){
     frame.addEventListener('click', function(){
-      Lightbox.open(dataUrl);
+      imagemObter(r.id, 'foto').then(function(res){ Lightbox.open(res.url); })
+        .catch(function(){ toast('Não foi possível abrir a imagem.', 'error'); });
     });
   }
 };
@@ -2014,7 +2100,9 @@ const EDIT_SCHEMA = {
       { n:'inscricaoImobiliaria', l:'Inscrição Imobiliária (auto)', t:'text', readonly:true, full:true },
       { n:'bairro_imovel', l:'Bairro', t:'text' },
       { n:'quadra_imovel', l:'Quadra', t:'text' },
-      { n:'lote_letra', l:'Lote', t:'text' }
+      { n:'lote_letra', l:'Lote', t:'text' },
+      { n:'segmento_lote', l:'Segmento do Lote (opcional)', t:'text' },
+      { n:'tipo_segmento_lote', l:'Classificação do Segmento', t:'select', opt:'tipoSegmentoLote' }
     ]},
     { section:'Endereço do Imóvel', icon:SVG_ICONS.home, fields: [
       { n:'tipoLogradouro', l:'Tipo de Logradouro', t:'select', opt:'tipoLogradouro' },
@@ -2232,7 +2320,7 @@ Pages.registros.edit = function(id){
         const name = el.dataset.editField;
         if(el.type === 'checkbox'){ flatUpdates[name] = !!el.checked; return; }
         let v = el.value;
-        if(typeof v === 'string' && v && !['dtUltimoValorVenal','dataUltVlrMercado','dtUltAtualizacao','dtTransacaoITBI','status','tipoImovel','tpArquitetonico','destinacaoImovel','padraoConstrutivo','bice','tipoLogradouro','tpTransacaoITBI','cep'].includes(name)){
+        if(typeof v === 'string' && v && !['dtUltimoValorVenal','dataUltVlrMercado','dtUltAtualizacao','dtTransacaoITBI','status','tipoImovel','tpArquitetonico','destinacaoImovel','padraoConstrutivo','bice','tipoLogradouro','tpTransacaoITBI','cep','tipo_segmento_lote'].includes(name)){
           v = v.toUpperCase();
         }
         flatUpdates[name] = v;
@@ -2269,6 +2357,12 @@ Pages.registros.edit = function(id){
       }
       if('lote_letra' in flatUpdates){
         updates['dados_imovel.DadosComplementares.localizacaoCadastral.lote']   = flatUpdates.lote_letra;
+      }
+      if('segmento_lote' in flatUpdates){
+        updates['dados_imovel.DadosComplementares.localizacaoCadastral.segmento'] = flatUpdates.segmento_lote;
+      }
+      if('tipo_segmento_lote' in flatUpdates){
+        updates['dados_imovel.DadosComplementares.localizacaoCadastral.tipoSegmento'] = flatUpdates.tipo_segmento_lote;
       }
 
       try {
@@ -2416,9 +2510,9 @@ function getPrintCSS(){
   `;
 }
 
-function montarHTMLFichaParaImpressao(r){
+function montarHTMLFichaParaImpressao(r, fotoSrc){
   const st = getStatusFromReg(r);
-  const dataUrl = fotoDataUrl(r);
+  const dataUrl = fotoSrc || '';   // data URL gerada na hora a partir do binário (só para o documento impresso)
   const dt = new Date();
   const dataEmissao = dt.toLocaleDateString('pt-BR');
 
@@ -2487,6 +2581,8 @@ function montarHTMLFichaParaImpressao(r){
       row('Bairro', r.bairro_imovel || r.bairro) +
       row('Quadra', r.quadra_imovel) +
       row('Lote', r.lote_letra) +
+      row('Segmento do Lote', r.segmento_lote) +
+      row('Classificação do Segmento', labelFromOptions('tipoSegmentoLote', r.tipo_segmento_lote)) +
     '</div>' +
 
     section('2. Endereço do Imóvel') +
@@ -2593,13 +2689,20 @@ function montarHTMLFichaParaImpressao(r){
 Pages.registros.imprimirPDF = function(id){
   const r = State.registros.find(function(x){ return x.id === id; });
   if(!r) return;
-  const html = montarHTMLFichaParaImpressao(r);
   const w = window.open('', '_blank');
   if(!w){ toast('Permita popups para imprimir / salvar em PDF.', 'warning'); return; }
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-  toast('Documento pronto. Use o botão "Imprimir / Salvar PDF".', 'info');
+  w.document.write('<p style="font:14px sans-serif;padding:24px;">Preparando documento…</p>');
+  const escrever = function(src){
+    w.document.open();
+    w.document.write(montarHTMLFichaParaImpressao(r, src));
+    w.document.close();
+    toast('Documento pronto. Use o botão "Imprimir / Salvar PDF".', 'info');
+  };
+  if(!r.foto_arquivo){ escrever(''); return; }
+  imagemObter(r.id, 'foto')
+    .then(function(res){ return blobParaDataUrl(res.blob); })
+    .then(escrever)
+    .catch(function(){ escrever(''); });
 };
 
 /* ============================================================
@@ -2836,7 +2939,7 @@ function renderStorageInfo(){
     if(r.bairro_imovel) bSet.add(norm(r.bairro_imovel));
     if(r.bairro_imovel && r.quadra_imovel) qSet.add(norm(r.bairro_imovel)+'|'+norm(r.quadra_imovel));
   });
-  const comFoto = State.registros.filter(function(r){ return !!r.foto_base64; }).length;
+  const comFoto = State.registros.filter(function(r){ return !!r.foto_arquivo; }).length;
   const aprov = State.registros.filter(function(r){ return getStatusFromReg(r) === 'aprovado'; }).length;
 
   const info = [
@@ -3009,4 +3112,4 @@ window.Lightbox = Lightbox;
 window.montarHTMLFichaParaImpressao = montarHTMLFichaParaImpressao;
 </script>
 </body>
-</html>
+</html>

@@ -21,11 +21,12 @@
  * ------------------------------------------------------------------
  */
 
+// v7: segmentação opcional de lotes e envio das imagens em binário (multipart).
 // v6: marca YMOB, novos campos do titular (contato/e-mail), vias em mais de um
 //     bairro e novo manifest. Ao subir uma nova versão do app, basta
 //     incrementar este número para forçar a invalidação de todo o cache
 //     antigo no activate.
-const CACHE_NAME = 'cadmob-form-v6';
+const CACHE_NAME = 'cadmob-form-v7';
 
 const APP_SHELL = [
   './index.html',

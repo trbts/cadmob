@@ -270,6 +270,21 @@ body{
             <input type="text" id="lote_letra" name="lote_letra" maxlength="3" inputmode="numeric" placeholder="000" disabled>
           </div>
         </div>
+        <div class="row row-2">
+          <div class="field"><label for="segmento_lote">Segmento do Lote <span class="opt-tag">(opcional)</span></label>
+            <input type="text" id="segmento_lote" name="segmento_lote" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="Ex.: A" disabled>
+          </div>
+          <div class="field"><label for="tipo_segmento_lote">Classificação <span class="opt-tag">(opcional)</span></label>
+            <select id="tipo_segmento_lote" name="tipo_segmento_lote" disabled>
+              <option value="">Lote inteiro</option>
+              <option value="desmembrado">Desmembrado</option>
+              <option value="remembrado">Remembrado</option>
+              <option value="fracao">Fração ideal / condomínio</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="hint">Use só quando o lote for dividido em partes (A, B…) ou unido a outro. Identifica cada segmento sem alterar a inscrição.</div>
         <div class="field">
           <label for="inscricaoImobiliaria">Inscrição Imobiliária <span class="req">*</span></label>
           <input type="text" id="inscricaoImobiliaria" name="inscricaoImobiliaria" maxlength="45" required readonly placeholder="00.00.000.000.000">
@@ -771,22 +786,28 @@ async function api(method, path, body){
   return data;
 }
 
-async function enviarFichaViaWorker(payload){
+/* Envia a ficha (JSON, sem imagens) + imagens em BINÁRIO (multipart/form-data).
+   arquivos = { foto: Blob|null, anexos: [Blob, Blob] } */
+async function enviarFichaViaWorker(payload, arquivos){
   if(!auth.currentUser){
     const e = new Error('sem_sessao');
     e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
     throw e;
   }
   const idToken = await auth.currentUser.getIdToken();
+  const fd = new FormData();
+  fd.append('ficha', JSON.stringify(payload));
+  const ext = (b) => /webp/i.test(b.type) ? 'webp' : (/png/i.test(b.type) ? 'png' : 'jpg');
+  if(arquivos && arquivos.foto) fd.append('foto', arquivos.foto, 'foto.' + ext(arquivos.foto));
+  ((arquivos && arquivos.anexos) || []).forEach((b, i) => fd.append('anexo' + (i + 1), b, 'anexo' + (i + 1) + '.' + ext(b)));
+
   let resp;
   try {
+    // Sem Content-Type manual: o navegador define o multipart com o boundary correto
     resp = await fetch(WORKER_URL + '/fichas', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + idToken
-      },
-      body: JSON.stringify(payload)
+      headers: { 'Authorization': 'Bearer ' + idToken },
+      body: fd
     });
   } catch(networkErr){
     const e = new Error('falha_rede');
@@ -1103,12 +1124,18 @@ function initFormulario(){
     const bairro = document.getElementById('bairro_imovel').value;
     const qEl = document.getElementById('quadra_imovel');
     const lEl = document.getElementById('lote_letra');
+    const sEl = document.getElementById('segmento_lote');
+    const tEl = document.getElementById('tipo_segmento_lote');
     const hasBairro = !!bairro;
     qEl.disabled = !hasBairro;
     lEl.disabled = !hasBairro;
+    if(sEl) sEl.disabled = !hasBairro;
+    if(tEl) tEl.disabled = !hasBairro;
     if(!hasBairro){
       qEl.value = '';
       lEl.value = '';
+      if(sEl) sEl.value = '';
+      if(tEl) tEl.value = '';
     }
     gerarInscricao();
   }
@@ -1120,6 +1147,11 @@ function initFormulario(){
       this.value = this.value.replace(/\D/g, '').slice(0, 3);
       gerarInscricao();
     });
+  });
+
+  /* ---------- SEGMENTO DO LOTE (opcional): letras/números, caixa alta, até 4 ---------- */
+  document.getElementById('segmento_lote')?.addEventListener('input', function(){
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
   });
 
   /* ---------- CÁLCULO DE ÁREAS ---------- */
@@ -1494,10 +1526,11 @@ function initFormulario(){
     const bairroCad = first('#bairro_imovel');
     const quadra    = first('#quadra_imovel');
     const lote      = first('#lote_letra');
+    const segmento  = first('#segmento_lote');
     const logradouro= first('#nomeLogradouro');
     const numero    = first('#numeroImovel');
     const complemento = first('#complNroImovel');
-    return { bairroCad, quadra, lote, logradouro, numero, complemento };
+    return { bairroCad, quadra, lote, segmento, logradouro, numero, complemento };
   }
 
   /* ---------- 3 LINHAS COMPACTAS (SEM TITULAR) ---------- */
@@ -1507,7 +1540,7 @@ function initFormulario(){
       const partes = [];
       if(info.bairroCad) partes.push('Bairro: ' + info.bairroCad.toUpperCase());
       if(info.quadra)    partes.push('Quadra: ' + info.quadra);
-      if(info.lote)      partes.push('Lote: ' + info.lote);
+      if(info.lote)      partes.push('Lote: ' + info.lote + (info.segmento ? '-' + info.segmento : ''));
       if(partes.length) linhas.push({ texto: partes.join('  |  '), bold: false });
 
       if(info.logradouro){
@@ -1606,7 +1639,8 @@ function initFormulario(){
   /* ============================================================
      FOTO — ELEMENTOS E LÓGICA
      ============================================================ */
-  let fotoBase64 = '';
+  let fotoBlob = null;      // imagem em binário (Blob) — enviada como arquivo, sem base64
+  let fotoUrl = '';         // object URL só para a prévia na tela
   let fotoTipo = '';
   let fotoTamanhoBytes = 0;
   let fotoGeo = null;
@@ -1627,7 +1661,7 @@ function initFormulario(){
     const itens = [];
 
     if(info.bairroCad) itens.push({ lbl:'Bairro', val:info.bairroCad });
-    if(info.quadra || info.lote) itens.push({ lbl:'Quadra / Lote', val:(info.quadra||'—') + ' / ' + (info.lote||'—') });
+    if(info.quadra || info.lote) itens.push({ lbl:'Quadra / Lote', val:(info.quadra||'—') + ' / ' + (info.lote||'—') + (info.segmento ? '-' + info.segmento : '') });
     if(info.logradouro) itens.push({ lbl:'Logradouro', val:info.logradouro + (info.numero ? ', Nº ' + info.numero : '') });
     itens.push({ lbl:'Georreferenciamento', val:'Capturado no momento da foto (GPS de alta precisão)' });
 
@@ -1638,7 +1672,7 @@ function initFormulario(){
 
   function renderFotoUI(){
     if(!photoBlock) return;
-    const temFoto = !!fotoBase64;
+    const temFoto = !!fotoBlob;
     photoBlock.classList.toggle('has-photo', temFoto);
     if(photoEmpty) photoEmpty.style.display = temFoto ? 'none' : '';
     if(photoPreview) photoPreview.style.display = temFoto ? '' : 'none';
@@ -1646,15 +1680,16 @@ function initFormulario(){
   }
   function setFotoLoading(on){
     if(photoLoading) photoLoading.style.display = on ? '' : 'none';
-    if(photoEmpty) photoEmpty.style.display = on ? 'none' : (fotoBase64 ? 'none' : '');
-    if(photoPreview) photoPreview.style.display = on ? 'none' : (fotoBase64 ? '' : 'none');
+    if(photoEmpty) photoEmpty.style.display = on ? 'none' : (fotoBlob ? 'none' : '');
+    if(photoPreview) photoPreview.style.display = on ? 'none' : (fotoBlob ? '' : 'none');
   }
   function setFotoLoadingTexto(txt){
     if(!photoLoading) return;
     photoLoading.innerHTML = '<span class="spinner"></span> ' + esc(String(txt || ''));
   }
   function resetFoto(){
-    fotoBase64 = ''; fotoTipo = ''; fotoTamanhoBytes = 0; fotoGeo = null; fotoInfoSnapshot = null;
+    if(fotoUrl){ try { URL.revokeObjectURL(fotoUrl); } catch(e){} }
+    fotoBlob = null; fotoUrl = ''; fotoTipo = ''; fotoTamanhoBytes = 0; fotoGeo = null; fotoInfoSnapshot = null;
     if(photoImg) photoImg.removeAttribute('src');
     if(photoInput) photoInput.value = '';
     if(photoBlock) photoBlock.classList.remove('invalid');
@@ -1678,14 +1713,6 @@ function initFormulario(){
   }
   function canvasToBlob(canvas, type, quality){
     return new Promise(resolve => { canvas.toBlob(b => resolve(b), type, quality); });
-  }
-  function blobToBase64(blob){
-    return new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(String(r.result).split(',')[1] || '');
-      r.onerror = reject;
-      r.readAsDataURL(blob);
-    });
   }
   function suportaWebP(){
     try {
@@ -1732,7 +1759,7 @@ function initFormulario(){
     });
   }
 
-  async function comprimirImagemParaBase64(file, maxBytes, geo, info){
+  async function comprimirImagem(file, maxBytes, geo, info){
     const alvo = maxBytes || (150 * 1024);
     const img = await loadImageFromFile(file);
     const MAX_DIM = 1600;
@@ -1769,9 +1796,8 @@ function initFormulario(){
       if(blob.size < melhorBlob.size) melhorBlob = blob; else break;
     }
     if(!melhorBlob) throw new Error('compress_fail');
-    const base64 = await blobToBase64(melhorBlob);
     const tipoReal = melhorBlob.type || formatoPrimario;
-    return { base64, tipo: tipoReal, tamanho: melhorBlob.size, width: w, height: h };
+    return { blob: melhorBlob, tipo: tipoReal, tamanho: melhorBlob.size, width: w, height: h };
   }
 
   photoInput?.addEventListener('change', async () => {
@@ -1799,13 +1825,15 @@ function initFormulario(){
     setFotoLoadingTexto('Aplicando informações na imagem…');
     try {
       const info = coletarInfoFoto();
-      const res = await comprimirImagemParaBase64(file, 150 * 1024, geo, info);
-      fotoBase64 = res.base64;
+      const res = await comprimirImagem(file, 150 * 1024, geo, info);
+      if(fotoUrl){ try { URL.revokeObjectURL(fotoUrl); } catch(e){} }
+      fotoBlob = res.blob;
+      fotoUrl = URL.createObjectURL(res.blob);
       fotoTipo = res.tipo;
       fotoTamanhoBytes = res.tamanho;
       fotoGeo = geo;
       fotoInfoSnapshot = info;
-      photoImg.src = 'data:' + res.tipo + ';base64,' + res.base64;
+      photoImg.src = fotoUrl;
       photoBlock.classList.remove('invalid');
       const fmtLabel = /webp/i.test(res.tipo) ? 'WebP' : 'JPEG';
       let infoHtml = 'Tamanho final: <strong>' + (res.tamanho / 1024).toFixed(1) + ' KB</strong> · ' +
@@ -1839,7 +1867,7 @@ function initFormulario(){
     if(!extraGrid) return;
     extraGrid.innerHTML = fotosExtras.map((f, i) =>
       '<div class="extra-item">' +
-        '<img src="data:' + f.tipo + ';base64,' + f.base64 + '" alt="Foto adicional ' + (i+1) + '">' +
+        '<img src="' + f.url + '" alt="Foto adicional ' + (i+1) + '">' +
         '<div class="extra-meta">Foto adicional ' + (i+1) + ' · ' + (f.tamanhoBytes / 1024).toFixed(1) + ' KB</div>' +
         '<button type="button" class="btn-extra-rm" data-rm-extra="' + i + '">Remover</button>' +
       '</div>'
@@ -1852,6 +1880,7 @@ function initFormulario(){
     }
   }
   function resetExtras(){
+    fotosExtras.forEach(f => { try { URL.revokeObjectURL(f.url); } catch(e){} });
     fotosExtras = [];
     if(extraInput) extraInput.value = '';
     renderExtras();
@@ -1866,7 +1895,8 @@ function initFormulario(){
   extraGrid?.addEventListener('click', (e) => {
     const b = e.target.closest ? e.target.closest('[data-rm-extra]') : null;
     if(!b) return;
-    fotosExtras.splice(Number(b.getAttribute('data-rm-extra')), 1);
+    const removida = fotosExtras.splice(Number(b.getAttribute('data-rm-extra')), 1)[0];
+    if(removida){ try { URL.revokeObjectURL(removida.url); } catch(e){} }
     renderExtras();
     toast('Foto adicional removida.', 'success');
   });
@@ -1886,8 +1916,8 @@ function initFormulario(){
     const rotulo = btnAddExtra ? btnAddExtra.textContent : '';
     if(btnAddExtra){ btnAddExtra.disabled = true; btnAddExtra.textContent = 'Processando imagem…'; }
     try {
-      const res = await comprimirImagemParaBase64(file, 150 * 1024, null, null);
-      fotosExtras.push({ base64: res.base64, tipo: res.tipo, tamanhoBytes: res.tamanho });
+      const res = await comprimirImagem(file, 150 * 1024, null, null);
+      fotosExtras.push({ blob: res.blob, url: URL.createObjectURL(res.blob), tipo: res.tipo, tamanhoBytes: res.tamanho });
       toast('Foto adicional capturada.', 'success');
     } catch(err){
       console.error('[foto extra]', err);
@@ -2030,6 +2060,9 @@ function initFormulario(){
       if(!lote) invalidos.push({ el: q('lote_letra'), msg: 'Informe o lote (3 dígitos).' });
       else if(!/^\d{3}$/.test(lote)) invalidos.push({ el: q('lote_letra'), msg: 'Lote deve ter exatamente 3 dígitos.' });
 
+      const segLote = String(g('segmento_lote') || '').trim();
+      if(g('tipo_segmento_lote') && !segLote) invalidos.push({ el: q('segmento_lote'), msg: 'Informe o segmento do lote para usar a classificação.' });
+
       const tipo = g('tipoImovel');
       if(!tipo) invalidos.push({ el: q('tipoImovel'), msg: 'Selecione o tipo de imóvel.' });
       if(tipo === '2' && !g('tpArquitetonico')) invalidos.push({ el: q('tpArquitetonico'), msg: 'Tipo arquitetônico é obrigatório para imóvel predial.' });
@@ -2138,7 +2171,7 @@ function initFormulario(){
       }
     }
     if(stepNum === 7){
-      if(!fotoBase64){
+      if(!fotoBlob){
         photoBlock.classList.add('invalid');
         invalidos.push({ el: document.getElementById('btnTirarFoto'), msg: 'A foto do imóvel é obrigatória.' });
       }
@@ -2261,7 +2294,9 @@ function initFormulario(){
       localizacaoCadastral: {
         bairro: up(g('bairro_imovel')),
         quadra: up(g('quadra_imovel')),
-        lote:   up(g('lote_letra'))
+        lote:   up(g('lote_letra')),
+        segmento:     up(g('segmento_lote')).trim(),
+        tipoSegmento: up(g('segmento_lote')).trim() ? String(g('tipo_segmento_lote') || '') : ''
       },
       medidasTerreno: {
         frente:       toNum(g('frente_terreno')),
@@ -2279,8 +2314,8 @@ function initFormulario(){
         numFrentes: toInt(g('num_frentes')),
         numAndares: toInt(g('num_andares'))
       },
-      foto: fotoBase64 ? {
-        base64:                 fotoBase64,
+      /* Só metadados: as imagens vão como arquivos binários (ver enviarFichaViaWorker) */
+      foto: fotoBlob ? {
         tipo:                   fotoTipo || null,
         tamanhoBytes:           fotoTamanhoBytes || null,
         latitude:               fotoGeo ? fotoGeo.lat : null,
@@ -2289,7 +2324,6 @@ function initFormulario(){
         geolocalizacaoHorario:  fotoGeo ? fotoGeo.horario : null
       } : null,
       fotosAdicionais: fotosExtras.map(f => ({
-        base64:       f.base64,
         tipo:         f.tipo || null,
         tamanhoBytes: f.tamanhoBytes || null
       })),
@@ -2347,7 +2381,10 @@ function initFormulario(){
 
     try {
       const payload = collect();
-      await enviarFichaViaWorker(payload);
+      await enviarFichaViaWorker(payload, {
+        foto: fotoBlob,
+        anexos: fotosExtras.map(f => f.blob)
+      });
       toast('Ficha enviada para a nuvem!', 'success');
       try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
       setTimeout(() => { clearForm(); window.scrollTo({ top:0, behavior:'smooth' }); }, 500);
