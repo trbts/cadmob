@@ -1966,9 +1966,9 @@ Pages.registros.view = function(id){
           '</div>';
         }).join('') +
       '</div>' +
-      '<div class="hint-anexos" style="font-size:11.5px;color:var(--muted);margin-top:8px;">Os anexos são excluídos automaticamente 20 dias após o envio da ficha. Baixe-os antes, se precisar guardá-los.</div>'
+      '<div class="hint-anexos" style="font-size:11.5px;color:var(--muted);margin-top:8px;">Os anexos são excluídos automaticamente 30 dias após o envio da ficha. Baixe-os antes, se precisar guardá-los.</div>'
     : (r.anexos_excluidos_em
-        ? '<div class="ficha-photo-empty">Anexos excluídos automaticamente em ' + esc(fmtDateTime(r.anexos_excluidos_em)) + ' (retenção de 20 dias).</div>'
+        ? '<div class="ficha-photo-empty">Anexos excluídos automaticamente em ' + esc(fmtDateTime(r.anexos_excluidos_em)) + ' (retenção de 30 dias).</div>'
         : '<div class="ficha-photo-empty">Nenhum anexo nesta ficha.</div>');
 
   /* Foto do imóvel (esquerda) e anexos (direita), lado a lado */
