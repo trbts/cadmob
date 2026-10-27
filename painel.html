@@ -372,7 +372,6 @@ ul{ list-style:none; }
 .filters-bar .filters-count{ margin-left:auto; font-size:12px; color:var(--muted); font-weight:600; }
 .filters-bar .filters-count strong{ color:var(--text); }
 
-/* Foto na pré-visualização da ficha */
 .ficha-photo-frame{
   display:flex; justify-content:center; align-items:center;
   padding:8px 0 4px; cursor:zoom-in; position:relative;
@@ -410,7 +409,6 @@ ul{ list-style:none; }
   .topbar-search{ width:200px; }
 }
 
-/* ===== Imagens: download, lado a lado, galeria fotográfica ===== */
 .dl-btn{
   position:absolute; top:12px; right:12px; z-index:2;
   width:36px; height:36px; border-radius:10px; border:0; cursor:pointer;
@@ -618,8 +616,6 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
 
-/* Chamada autenticada ao Worker (banco de dados no Cloudflare D1).
-   A autenticação continua no Firebase Auth: enviamos o ID Token. */
 async function api(method, path, body){
   const u = auth.currentUser;
   if(!u){
@@ -653,7 +649,6 @@ async function api(method, path, body){
   return data;
 }
 
-/* Baixa uma imagem em BINÁRIO do Worker (precisa do ID Token, por isso não dá para usar <img src> direto). */
 async function apiBlob(path){
   const u = auth.currentUser;
   if(!u){
@@ -678,7 +673,6 @@ async function apiBlob(path){
   return await resp.blob();
 }
 
-/* Cache em memória: "idDaFicha|slot" → Promise<{ blob, url }>  (slot: foto | anexo1 | anexo2) */
 const _imgCache = {};
 function imagemObter(id, slot){
   const k = id + '|' + slot;
@@ -689,7 +683,6 @@ function imagemObter(id, slot){
   }
   return _imgCache[k];
 }
-/* Preenche os <img data-img="id|slot"> de um container (carrega só o que aparece na tela). */
 function hidratarImagens(root){
   const imgs = (root || document).querySelectorAll('img[data-img]');
   const carregar = function(img){
@@ -715,8 +708,6 @@ function blobParaDataUrl(blob){
 }
 
 const ROLE_LEVELS = { user:0, funcionario:1, admin:2, superadmin:3 };
-/* A aba "Configuração" é exclusiva do desenvolvedor (superadmin).
-   O perfil administrativo (admin) NÃO tem acesso a ela. */
 const ROLE_PAGES = {
   user:        [],
   funcionario: [],
@@ -788,9 +779,6 @@ function navigate(page){
   if(page === 'dados')     renderStorageInfo();
 }
 
-/* ============================================================
-   ESTADO
-   ============================================================ */
 const State = {
   registros: [],
   hier: { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' },
@@ -821,10 +809,6 @@ function todayISO(){
   return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
 }
 
-/* ============================================================
-   NORMALIZAÇÃO — Converte o documento aninhado (dados_imovel.*)
-   para o formato flat que o painel consome.
-   ============================================================ */
 function normalizarFicha(raw){
   if(!raw || typeof raw !== 'object') return raw;
   if(!raw.dados_imovel || typeof raw.dados_imovel !== 'object') return raw;
@@ -924,7 +908,7 @@ function normalizarFicha(raw){
     num_frentes:      co.numFrentes,
     num_andares:      co.numAndares,
 
-    foto_arquivo:       !!(ft && (ft.arquivo || ft.base64)),   // a imagem vem em binário, sob demanda
+    foto_arquivo:       !!(ft && (ft.arquivo || ft.base64)),
     foto_tipo:          ft ? ft.tipo                 : undefined,
     foto_tamanho_bytes: ft ? ft.tamanhoBytes         : undefined,
     foto_latitude:      ft ? ft.latitude             : undefined,
@@ -936,11 +920,6 @@ function normalizarFicha(raw){
   });
 }
 
-/* ============================================================
-   MAPA FLAT → DOT-PATH — gravar edições preservando a estrutura
-   ============================================================ */
-/* Numeração padrão dos bairros (igual à planilha de ruas e ao formulário).
-   Usada quando não há lista configurada no banco. */
 const BAIRROS_NUMERACAO_PADRAO = [
   { label:'CENTRO',           numero:'001' },
   { label:'VISTA ALEGRE',     numero:'002' },
@@ -1028,9 +1007,6 @@ const FIELD_PATHS = {
   responsavel:    'responsavel'
 };
 
-/* ============================================================
-   MAPEAMENTO DOS CAMPOS DO NOVO FORMULÁRIO SINTER
-   ============================================================ */
 const SELECT_OPTIONS = {
   tipoImovel: [
     { v:'1', l:'1 - TERRITORIAL (SEM EDIFICAÇÃO)' },
@@ -1130,12 +1106,6 @@ function statusLabel(s){ return labelFromOptions('status', s || 'pendente'); }
 function normalizeStatus(s){ return (s === 'aprovado') ? 'aprovado' : 'pendente'; }
 function getStatusFromReg(r){ return normalizeStatus(r.status); }
 
-/* ============================================================
-   FOTO
-   ============================================================ */
-/* A imagem não vem mais embutida (base64) na ficha: é buscada em binário por imagemObter(id, slot). */
-
-/* ---------- Download de imagens ---------- */
 const ICON_DOWNLOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 function extDeTipo(t){
   t = String(t || '').toLowerCase();
@@ -1204,9 +1174,6 @@ document.addEventListener('keydown', function(e){
   if(e.key === 'Escape' && Lightbox.el.classList.contains('open')) Lightbox.close();
 });
 
-/* ============================================================
-   TOAST
-   ============================================================ */
 function toast(message, type, subtitle){
   const root = document.getElementById('toastRoot');
   const el = document.createElement('div');
@@ -1217,9 +1184,6 @@ function toast(message, type, subtitle){
   setTimeout(function(){ el.classList.add('hide'); setTimeout(function(){ el.remove(); }, 260); }, 3600);
 }
 
-/* ============================================================
-   MODAL
-   ============================================================ */
 const Modal = {
   el: document.getElementById('overlay'),
   open(opts){
@@ -1271,9 +1235,6 @@ const Modal = {
   }
 };
 
-/* ============================================================
-   CARREGAMENTO DE FICHAS — Cloudflare D1 (via Worker)
-   ============================================================ */
 let _fichasVersao = null;
 function renderPaginaAtual(){
   if(State.page === 'dashboard' && hasAccess('dashboard')) renderDashboard();
@@ -1282,8 +1243,6 @@ function renderPaginaAtual(){
   if(State.page === 'dados'     && hasAccess('dados'))     renderStorageInfo();
 }
 
-/* Busca a "versão" das fichas (1 leitura barata no D1) e só baixa a lista
-   completa quando algo mudou. force=true ignora a versão e baixa sempre. */
 async function recarregarFichas(force){
   try {
     const v = await api('GET', '/fichas/versao');
@@ -1308,9 +1267,6 @@ function escutarFichas(){
   });
 }
 
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
 function getBairroNome(r){
   return norm(r.bairro_imovel) || norm(r.bairro) || 'SEM BAIRRO';
 }
@@ -1342,7 +1298,6 @@ function renderDashboard(){
     '<div class="stat-trend' + (s.down?' down':'') + '">' + s.trend + '</div></div>';
   }).join('');
 
-  /* ----- Agrupamentos por bairro: ruas e lotes ----- */
   const ruasPorBairro  = {};
   const lotesPorBairro = {};
   regs.forEach(function(r){
@@ -1387,9 +1342,6 @@ function renderDashboard(){
   renderLista('lotesPorBairro', lotesPorBairro, maxLotes, 'linear-gradient(90deg,#10b981,#34d399)');
 }
 
-/* ============================================================
-   REGISTROS — navegação
-   ============================================================ */
 const Pages = { registros:{} };
 
 Pages.registros.goRoot   = function(){ State.hier = { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' }; renderRegistros(); };
@@ -1610,11 +1562,6 @@ function renderLotesView(){
   });
 }
 
-/* ============================================================
-   REGISTROS FOTOGRÁFICOS — mesmo fluxo: Bairro → Quadra → Fotos
-   Só entram fichas com foto do imóvel (foto principal). Anexos e
-   documentos NÃO aparecem aqui; ficam na ficha completa.
-   ============================================================ */
 Pages.fotos = {};
 Pages.fotos.goRoot   = function(){ State.fotosHier = { bairro:null, quadra:null }; renderFotos(); };
 Pages.fotos.goBairro = function(b){ State.fotosHier = { bairro:b, quadra:null }; renderFotos(); };
@@ -1760,9 +1707,6 @@ function renderFotosGaleria(){
   hidratarImagens(el);
 }
 
-/* ============================================================
-   HELPERS DE RENDER — FICHA
-   ============================================================ */
 const SVG_ICONS = {
   user:  '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   home:  '<path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>',
@@ -1795,9 +1739,6 @@ function dSection(title, svg){
     esc(title) + '</div>';
 }
 
-/* ============================================================
-   FICHA — VISUALIZAÇÃO (abas)
-   ============================================================ */
 Pages.registros.view = function(id){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   const st = getStatusFromReg(r);
@@ -1867,20 +1808,9 @@ Pages.registros.view = function(id){
     '</div>';
 
   const tabMedidas =
-    dSection('Terreno — Medidas', SVG_ICONS.ruler) +
+    dSection('Áreas do Imóvel', SVG_ICONS.ruler) +
     '<div class="detail-grid">' +
-      dItem('Frente (m)', r.frente_terreno) +
-      dItem('Fundo (m)', r.fundo_terreno) +
-      dItem('Lado Direito (m)', r.lado_dir_terreno) +
-      dItem('Lado Esquerdo (m)', r.lado_esq_terreno) +
       dItem('Área do Terreno (m²)', r.areaTerreno) +
-    '</div>' +
-    dSection('Edificação — Medidas', SVG_ICONS.build) +
-    '<div class="detail-grid">' +
-      dItem('Frente (m)', r.frente_edif) +
-      dItem('Fundo (m)', r.fundo_edif) +
-      dItem('Lado Direito (m)', r.lado_dir_edif) +
-      dItem('Lado Esquerdo (m)', r.lado_esq_edif) +
       dItem('Área Construída (m²)', r.areaConstruida) +
     '</div>' +
     dSection('Construção', SVG_ICONS.build) +
@@ -1971,7 +1901,6 @@ Pages.registros.view = function(id){
         ? '<div class="ficha-photo-empty">Anexos excluídos automaticamente em ' + esc(fmtDateTime(r.anexos_excluidos_em)) + ' (retenção de 30 dias).</div>'
         : '<div class="ficha-photo-empty">Nenhum anexo nesta ficha.</div>');
 
-  /* Foto do imóvel (esquerda) e anexos (direita), lado a lado */
   const tabFoto =
     '<div class="foto-compare">' +
       '<div class="foto-col">' + dSection('Foto do Imóvel', SVG_ICONS.cam) + fotoBloco + '</div>' +
@@ -2067,7 +1996,7 @@ Pages.registros.view = function(id){
         .catch(function(){ toast('Não foi possível abrir a imagem.', 'error'); });
     });
   });
-  hidratarImagens(document.querySelector('.ficha-content') || document);   // todos os painéis (a aba de fotos fica oculta até ser aberta)
+  hidratarImagens(document.querySelector('.ficha-content') || document);
 
   document.querySelectorAll('.ficha-panel [data-dl]').forEach(function(btn){
     btn.addEventListener('click', function(e){
@@ -2091,13 +2020,10 @@ Pages.registros.view = function(id){
   }
 };
 
-/* ============================================================
-   FICHA — EDIÇÃO
-   ============================================================ */
 const EDIT_SCHEMA = {
   localizacao: [
     { section:'Localização Cadastral', icon:SVG_ICONS.home, fields: [
-      { n:'inscricaoImobiliaria', l:'Inscrição Imobiliária (auto)', t:'text', readonly:true, full:true },
+      { n:'inscricaoImobiliaria', l:'Inscrição Imobiliária', t:'text', full:true },
       { n:'bairro_imovel', l:'Bairro', t:'text' },
       { n:'quadra_imovel', l:'Quadra', t:'text' },
       { n:'lote_letra', l:'Lote', t:'text' },
@@ -2137,19 +2063,9 @@ const EDIT_SCHEMA = {
     ]}
   ],
   medidas: [
-    { section:'Terreno — Medidas', icon:SVG_ICONS.ruler, fields: [
-      { n:'frente_terreno', l:'Frente (m)', t:'text' },
-      { n:'fundo_terreno', l:'Fundo (m)', t:'text' },
-      { n:'lado_dir_terreno', l:'Lado Direito (m)', t:'text' },
-      { n:'lado_esq_terreno', l:'Lado Esquerdo (m)', t:'text' },
-      { n:'areaTerreno', l:'Área do Terreno (m²) — auto', t:'number', readonly:true }
-    ]},
-    { section:'Edificação — Medidas', icon:SVG_ICONS.build, fields: [
-      { n:'frente_edif', l:'Frente (m)', t:'text' },
-      { n:'fundo_edif', l:'Fundo (m)', t:'text' },
-      { n:'lado_dir_edif', l:'Lado Direito (m)', t:'text' },
-      { n:'lado_esq_edif', l:'Lado Esquerdo (m)', t:'text' },
-      { n:'areaConstruida', l:'Área Construída (m²) — auto', t:'number', readonly:true }
+    { section:'Áreas e Medidas', icon:SVG_ICONS.ruler, fields: [
+      { n:'areaTerreno', l:'Área do Terreno (m²)', t:'number' },
+      { n:'areaConstruida', l:'Área Construída (m²)', t:'number' }
     ]},
     { section:'Construção', icon:SVG_ICONS.build, fields: [
       { n:'adicional', l:'Adicional', t:'number' },
@@ -2395,9 +2311,6 @@ Pages.registros.edit = function(id){
   }, 60);
 };
 
-/* ============================================================
-   STATUS / REMOÇÃO
-   ============================================================ */
 Pages.registros.openStatus = function(id){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   Modal.open({
@@ -2451,9 +2364,6 @@ Pages.registros.remove = function(id){
   });
 };
 
-/* ============================================================
-   IMPRESSÃO / PDF
-   ============================================================ */
 function getPrintCSS(){
   return `
     @page { size: A4; margin: 12mm 14mm; }
@@ -2512,7 +2422,7 @@ function getPrintCSS(){
 
 function montarHTMLFichaParaImpressao(r, fotoSrc){
   const st = getStatusFromReg(r);
-  const dataUrl = fotoSrc || '';   // data URL gerada na hora a partir do binário (só para o documento impresso)
+  const dataUrl = fotoSrc || '';
   const dt = new Date();
   const dataEmissao = dt.toLocaleDateString('pt-BR');
 
@@ -2622,34 +2532,22 @@ function montarHTMLFichaParaImpressao(r, fotoSrc){
       row('Fração Ideal', r.fraIdeal) +
     '</div>' +
 
-    section('5. Medidas do Terreno') +
+    section('5. Áreas e Medidas') +
     '<div class="grid">' +
-      row('Frente (m)', r.frente_terreno) +
-      row('Fundo (m)', r.fundo_terreno) +
-      row('Lado Direito (m)', r.lado_dir_terreno) +
-      row('Lado Esquerdo (m)', r.lado_esq_terreno) +
       row('Área do Terreno (m²)', r.areaTerreno) +
-    '</div>' +
-
-    section('6. Medidas da Edificação') +
-    '<div class="grid">' +
-      row('Frente (m)', r.frente_edif) +
-      row('Fundo (m)', r.fundo_edif) +
-      row('Lado Direito (m)', r.lado_dir_edif) +
-      row('Lado Esquerdo (m)', r.lado_esq_edif) +
       row('Área Construída (m²)', r.areaConstruida) +
     '</div>' +
 
-    section('7. Construção') +
+    section('6. Construção') +
     '<div class="grid">' +
       row('Adicional', r.adicional) +
       row('N° de Frentes', r.num_frentes) +
       row('N° de Andares', r.num_andares) +
     '</div>' +
 
-    section('8. Titulares') + titularesHTML +
+    section('7. Titulares') + titularesHTML +
 
-    section('9. Registro de Imóvel') +
+    section('8. Registro de Imóvel') +
     '<div class="grid">' +
       row('Nome da Serventia', r.nomeServentiaRI) +
       row('CNS', r.cnsRI) +
@@ -2661,7 +2559,7 @@ function montarHTMLFichaParaImpressao(r, fotoSrc){
       row('Últ. Atualização', r.dtUltAtualizacao) +
     '</div>' +
 
-    section('10. Cartório de Notas') +
+    section('9. Cartório de Notas') +
     '<div class="grid">' +
       row('Nome da Serventia', r.nomeServentiaNotas) +
       row('CNS', r.cnsNotas) +
@@ -2669,7 +2567,7 @@ function montarHTMLFichaParaImpressao(r, fotoSrc){
       row('Folha', r.flCartNotas) +
     '</div>' +
 
-    section('11. ITBI — Última Transação') +
+    section('10. ITBI — Última Transação') +
     '<div class="grid">' +
       row('Base de Cálculo', r.baseCalculITBI) +
       row('Valor de Referência', r.valorRefITBI) +
@@ -2680,7 +2578,7 @@ function montarHTMLFichaParaImpressao(r, fotoSrc){
     '<h3 style="font-size:10pt;font-weight:700;color:#0d5cab;margin:10px 0 4px;">Transmitentes</h3>' + transHTML +
     '<h3 style="font-size:10pt;font-weight:700;color:#0d5cab;margin:10px 0 4px;">Adquirentes</h3>' + adqHTML +
 
-    section('12. Foto do Imóvel') + fotoBloco +
+    section('11. Foto do Imóvel') + fotoBloco +
 
     '</div>' +
     '</body></html>';
@@ -2705,9 +2603,6 @@ Pages.registros.imprimirPDF = function(id){
     .catch(function(){ escrever(''); });
 };
 
-/* ============================================================
-   EXPORTAÇÃO — prefere a estrutura aninhada (dados_imovel)
-   ============================================================ */
 function toExportModel(r){
   if(!r || typeof r !== 'object') return null;
 
@@ -2829,9 +2724,6 @@ function toExportModel(r){
   };
 }
 
-/* ============================================================
-   CONFIGURAÇÃO / BACKUP
-   ============================================================ */
 const Data = {
   exportJSON(){
     if(!State.registros.length){
@@ -2957,9 +2849,6 @@ function renderStorageInfo(){
   }).join('');
 }
 
-/* ============================================================
-   NAV / EVENTOS
-   ============================================================ */
 function updateNavForRole(){
   document.querySelectorAll('.nav-item').forEach(function(n){
     const page = n.dataset.page;
@@ -3047,9 +2936,6 @@ function bindEvents(){
   });
 }
 
-/* ============================================================
-   BOOT
-   ============================================================ */
 function bootApp(){
   if(AppBooted) return;
   AppBooted = true;
@@ -3061,7 +2947,7 @@ function bootApp(){
   });
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[YMOB Admin v5.0] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[YMOB Admin v5.1] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){
@@ -3112,4 +2998,4 @@ window.Lightbox = Lightbox;
 window.montarHTMLFichaParaImpressao = montarHTMLFichaParaImpressao;
 </script>
 </body>
-</html>
+</html>

@@ -518,9 +518,9 @@ body{
         </div>
         <div class="hint">Use só quando o lote for dividido em partes (A, B…) ou unido a outro. Identifica cada segmento sem alterar a inscrição.</div>
         <div class="field">
-          <label for="inscricaoImobiliaria">Inscrição Imobiliária <span class="req">*</span></label>
-          <input type="text" id="inscricaoImobiliaria" name="inscricaoImobiliaria" maxlength="45" required readonly placeholder="00.00.000.000.000">
-          <div class="hint">Gerada automaticamente a partir do bairro, quadra e lote.</div>
+          <label for="inscricaoImobiliaria">Inscrição Imobiliária <span class="opt-tag">(opcional)</span></label>
+          <input type="text" id="inscricaoImobiliaria" name="inscricaoImobiliaria" maxlength="45" placeholder="00.00.000.000.000">
+          <div class="hint">Gerada automaticamente a partir do bairro, quadra e lote, mas pode ser editada.</div>
         </div>
       </div></div>
 
@@ -652,42 +652,14 @@ body{
     <!-- ============ ETAPA 2 — MEDIDAS E ÁREAS ============ -->
     <section class="step-panel" data-step="2">
       <div class="card"><div class="card-body">
-        <p class="sub-head">Terreno</p>
-        <div class="row row-2">
-          <div class="field"><label for="frente_terreno">Frente (m)</label>
-            <input type="text" id="frente_terreno" name="frente_terreno" inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="fundo_terreno">Fundo (m)</label>
-            <input type="text" id="fundo_terreno" name="fundo_terreno" inputmode="decimal" placeholder="0,00"></div>
-        </div>
-        <div class="row row-2">
-          <div class="field"><label for="lado_dir_terreno">Lado Direito (m)</label>
-            <input type="text" id="lado_dir_terreno" name="lado_dir_terreno" inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="lado_esq_terreno">Lado Esquerdo (m)</label>
-            <input type="text" id="lado_esq_terreno" name="lado_esq_terreno" inputmode="decimal" placeholder="0,00"></div>
-        </div>
+        <p class="sub-head">Áreas Gerais</p>
         <div class="field">
-          <label for="areaTerreno">Área do Terreno (m²) <span class="req">*</span></label>
-          <input type="number" step="0.01" id="areaTerreno" name="areaTerreno" required readonly placeholder="cálculo automático">
-          <div class="hint">Área = <strong>Frente × Fundo</strong>.</div>
-        </div>
-
-        <p class="sub-head">Edificação</p>
-        <div class="row row-2">
-          <div class="field"><label for="frente_edif">Frente (m)</label>
-            <input type="text" id="frente_edif" name="frente_edif" inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="fundo_edif">Fundo (m)</label>
-            <input type="text" id="fundo_edif" name="fundo_edif" inputmode="decimal" placeholder="0,00"></div>
-        </div>
-        <div class="row row-2">
-          <div class="field"><label for="lado_dir_edif">Lado Direito (m)</label>
-            <input type="text" id="lado_dir_edif" name="lado_dir_edif" inputmode="decimal" placeholder="0,00"></div>
-          <div class="field"><label for="lado_esq_edif">Lado Esquerdo (m)</label>
-            <input type="text" id="lado_esq_edif" name="lado_esq_edif" inputmode="decimal" placeholder="0,00"></div>
+          <label for="areaTerreno">Área do Terreno (m²)</label>
+          <input type="number" step="0.01" id="areaTerreno" name="areaTerreno" placeholder="0,00">
         </div>
         <div class="field">
           <label for="areaConstruida">Área Construída (m²)</label>
-          <input type="number" step="0.01" id="areaConstruida" name="areaConstruida" readonly placeholder="cálculo automático">
-          <div class="hint">Área = <strong>Frente × Fundo</strong>.</div>
+          <input type="number" step="0.01" id="areaConstruida" name="areaConstruida" placeholder="0,00">
         </div>
 
         <p class="sub-head">Construção</p>
@@ -1382,8 +1354,8 @@ function initFormulario(){
     const lote   = document.getElementById('lote_letra').value.trim();
     const insc   = document.getElementById('inscricaoImobiliaria');
     if(!insc) return;
-    if(!bairro || !quadra || !lote){ insc.value = ''; return; }
-    if(!/^\d{3}$/.test(quadra) || !/^\d{3}$/.test(lote)){ insc.value = ''; return; }
+    if(!bairro || !quadra || !lote){ return; } // Não limpa se já tiver valor manual
+    if(!/^\d{3}$/.test(quadra) || !/^\d{3}$/.test(lote)){ return; }
     const info = getBairros().find(x => x.nome === bairro);
     const b = (info && info.numero ? String(info.numero) : '000').padStart(3,'0');
     insc.value = '00.00.' + quadra + '.' + lote + '.' + b;
@@ -1421,21 +1393,6 @@ function initFormulario(){
   document.getElementById('segmento_lote')?.addEventListener('input', function(){
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
   });
-
-  function calcAreas(){
-    const g = id => document.getElementById(id);
-    const num = id => { const el = g(id); return el ? parseDecimal(el.value) : 0; };
-
-    const ft = num('frente_terreno'), fu = num('fundo_terreno');
-    const at = (ft > 0 && fu > 0) ? ft * fu : 0;
-    const atEl = g('areaTerreno');
-    if(atEl) atEl.value = at > 0 ? at.toFixed(2) : '';
-
-    const fe = num('frente_edif'), fo = num('fundo_edif');
-    const ae = (fe > 0 && fo > 0) ? fe * fo : 0;
-    const aeEl = g('areaConstruida');
-    if(aeEl) aeEl.value = ae > 0 ? ae.toFixed(2) : '';
-  }
 
   function validarCPF(cpf){
     cpf = String(cpf).replace(/\D/g, '');
@@ -2314,11 +2271,7 @@ function initFormulario(){
       if(tipo && tipo !== '1' && !g('destinacaoImovel')) invalidos.push({ el: q('destinacaoImovel'), msg: 'Destinação é obrigatória, exceto para territorial.' });
     }
     if(stepNum === 2){
-      const tipo = g('tipoImovel');
-      if(parseDecimal(g('areaTerreno')) <= 0) invalidos.push({ el: q('areaTerreno'), msg: 'Informe Frente e Fundo do terreno (Área do Terreno).' });
-      if(tipo === '2'){
-        if(parseDecimal(g('areaConstruida')) <= 0) invalidos.push({ el: q('areaConstruida'), msg: 'Informe Frente e Fundo da edificação (Área Construída).' });
-      }
+      // Todos os campos são opcionais agora
     }
     if(stepNum === 3){
       if(!g('bairro')) invalidos.push({ el: q('bairro'), msg: 'Selecione o bairro.' });
@@ -2534,18 +2487,8 @@ function initFormulario(){
         segmento:     up(g('segmento_lote')).trim(),
         tipoSegmento: up(g('segmento_lote')).trim() ? String(g('tipo_segmento_lote') || '') : ''
       },
-      medidasTerreno: {
-        frente:       toNum(g('frente_terreno')),
-        fundo:        toNum(g('fundo_terreno')),
-        ladoDireito:  toNum(g('lado_dir_terreno')),
-        ladoEsquerdo: toNum(g('lado_esq_terreno'))
-      },
-      medidasEdificacao: {
-        frente:       toNum(g('frente_edif')),
-        fundo:        toNum(g('fundo_edif')),
-        ladoDireito:  toNum(g('lado_dir_edif')),
-        ladoEsquerdo: toNum(g('lado_esq_edif'))
-      },
+      medidasTerreno: {},
+      medidasEdificacao: {},
       construcao: {
         numFrentes: toInt(g('num_frentes')),
         numAndares: toInt(g('num_andares'))
@@ -2585,7 +2528,6 @@ function initFormulario(){
     popularBairroSelect();
     popularLogradouroSelect();
     syncLocalizacao();
-    calcAreas();
     syncTipo();
     completedSteps.clear();
     currentStep = 1;
@@ -2663,11 +2605,6 @@ function initFormulario(){
 
   document.getElementById('bairro').addEventListener('change', function(){
     popularLogradouroSelect();
-  });
-
-  ['frente_terreno','fundo_terreno','frente_edif','fundo_edif'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.addEventListener('input', calcAreas);
   });
 
   let listasAssinatura = null;
@@ -2912,24 +2849,12 @@ function initFormulario(){
         { name:'padraoConstrutivo',  label:'Padrão Construtivo',   type:'select', optionsFrom:'padraoConstrutivo',  path:'dados_imovel.DadosGeraisImovel.padraoConstrutivo' },
         { name:'anoConstrutivo',     label:'Ano Construtivo',      type:'number',                                    path:'dados_imovel.DadosGeraisImovel.anoConstrutivo' },
         { name:'qtdGaragem',         label:'Qtd. Garagens',        type:'number',                                    path:'dados_imovel.DadosGeraisImovel.qtdGaragem' },
-        { name:'areaTerreno',        label:'Área do Terreno',      type:'number',                                    path:'dados_imovel.DadosGeraisImovel.areaTerreno' },
-        { name:'areaConstruida',     label:'Área Construída',      type:'number',                                    path:'dados_imovel.DadosGeraisImovel.areaConstruida' },
+        { name:'areaTerreno',        label:'Área do Terreno (m²)', type:'number',                                    path:'dados_imovel.DadosGeraisImovel.areaTerreno' },
+        { name:'areaConstruida',     label:'Área Construída (m²)', type:'number',                                    path:'dados_imovel.DadosGeraisImovel.areaConstruida' },
         { name:'valorVenal',         label:'Valor Venal',          type:'number',                                    path:'dados_imovel.DadosGeraisImovel.valorVenal' },
         { name:'valorRefMercado',    label:'Valor Ref. Mercado',   type:'number',                                    path:'dados_imovel.DadosGeraisImovel.valorRefMercado' },
         { name:'idParcela',          label:'ID da Parcela/Lote',   type:'text',                                      path:'dados_imovel.DadosGeraisImovel.idParcela' },
         { name:'bice',               label:'BICE',                 type:'select', optionsFrom:'bice',               path:'dados_imovel.DadosGeraisImovel.bice', full:true }
-      ]},
-      { title: 'Medidas do Terreno', fields: [
-        { name:'frente_terreno', label:'Frente (m)', type:'number', path:'dados_imovel.DadosComplementares.medidasTerreno.frente' },
-        { name:'fundo_terreno', label:'Fundo (m)', type:'number', path:'dados_imovel.DadosComplementares.medidasTerreno.fundo' },
-        { name:'lado_dir_terreno', label:'Lado Direito (m)', type:'number', path:'dados_imovel.DadosComplementares.medidasTerreno.ladoDireito' },
-        { name:'lado_esq_terreno', label:'Lado Esquerdo (m)', type:'number', path:'dados_imovel.DadosComplementares.medidasTerreno.ladoEsquerdo' }
-      ]},
-      { title: 'Medidas da Edificação', fields: [
-        { name:'frente_edif', label:'Frente (m)', type:'number', path:'dados_imovel.DadosComplementares.medidasEdificacao.frente' },
-        { name:'fundo_edif', label:'Fundo (m)', type:'number', path:'dados_imovel.DadosComplementares.medidasEdificacao.fundo' },
-        { name:'lado_dir_edif', label:'Lado Direito (m)', type:'number', path:'dados_imovel.DadosComplementares.medidasEdificacao.ladoDireito' },
-        { name:'lado_esq_edif', label:'Lado Esquerdo (m)', type:'number', path:'dados_imovel.DadosComplementares.medidasEdificacao.ladoEsquerdo' }
       ]},
       { title: 'Endereço do Imóvel', fields: [
         { name:'tipoLogradouro',  label:'Tipo de Logradouro',  type:'select', optionsFrom:'tipoLogradouro',   path:'dados_imovel.EnderecoImovel.tipoLogradouro' },
@@ -3182,7 +3107,6 @@ function initFormulario(){
   })();
 
   renderStep();
-  calcAreas();
   popularBairros();
   popularRuas();
   popularBairrosDatalist();
