@@ -191,6 +191,202 @@ body{
 .auth-gate p{ font-size:13.5px; color:rgba(255,255,255,.85); line-height:1.55; }
 .auth-gate .gate-btn{ margin-top:20px; background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22); height:42px; padding:0 20px; border-radius:10px; font-weight:600; font-size:13.5px; }
 
+/* ===== ABAS PRINCIPAIS (Formulário / Banco de Dados) ===== */
+.sticky-top{ position:sticky; top:0; z-index:40; }
+.sticky-top .app-header{ position:relative; top:auto; z-index:auto; }
+
+.main-tabs{
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 8px rgba(16,40,70,.04);
+}
+.main-tabs-inner{
+  max-width:560px; margin:0 auto;
+  padding:8px 14px; display:flex; gap:4px;
+}
+.main-tab{
+  flex:1; display:inline-flex; align-items:center; justify-content:center;
+  gap:8px; padding:10px 14px;
+  font-family:inherit; font-size:13.5px; font-weight:700;
+  color:var(--muted); background:transparent; border:0; border-radius:10px;
+  cursor:pointer; transition:background .15s, color .15s;
+}
+.main-tab svg{ width:16px; height:16px; }
+.main-tab.active{
+  background:var(--primary); color:#fff;
+  box-shadow:0 4px 10px rgba(13,92,171,.28);
+}
+.main-tab:active{ transform:scale(.98); }
+
+/* ===== BANCO DE DADOS ===== */
+.db-search-bar{ position:relative; margin-bottom:14px; }
+.db-search-bar svg{
+  position:absolute; left:13px; top:50%; transform:translateY(-50%);
+  width:16px; height:16px; color:var(--muted); pointer-events:none;
+}
+.db-search-bar input{
+  width:100%; min-height:46px; padding:12px 13px 12px 40px;
+  font-family:inherit; font-size:15px; color:var(--text);
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:12px; outline:none;
+  transition:border-color .15s, box-shadow .15s;
+}
+.db-search-bar input:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3.5px rgba(13,92,171,.12);
+}
+
+.db-loading{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  padding:40px 20px; color:var(--muted); font-size:13px; font-weight:600;
+}
+.db-loading .spinner{
+  width:18px; height:18px; border-radius:50%;
+  border:2.5px solid rgba(13,92,171,.2); border-top-color:var(--primary);
+  animation:photoSpin .8s linear infinite;
+}
+
+.db-list{ display:flex; flex-direction:column; gap:10px; }
+.db-card{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:14px 16px;
+  box-shadow:var(--shadow); cursor:pointer;
+  transition:border-color .15s, box-shadow .15s, transform .12s;
+}
+.db-card:hover{ border-color:var(--primary); box-shadow:0 8px 20px rgba(13,92,171,.12); }
+.db-card:active{ transform:scale(.99); }
+.db-card-header{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; margin-bottom:8px;
+}
+.db-card-badge{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:11px; font-weight:800; color:var(--primary);
+  background:var(--primary-light); padding:4px 10px;
+  border-radius:99px; text-transform:uppercase; letter-spacing:.4px;
+}
+.db-card-status{
+  font-size:10.5px; font-weight:800; padding:3px 9px;
+  border-radius:99px; text-transform:uppercase; letter-spacing:.4px;
+}
+.db-card-status.pendente{ background:#fffbeb; color:#b45309; }
+.db-card-status.aprovado{ background:#ecfdf5; color:#047857; }
+.db-card-title{
+  font-size:14.5px; font-weight:700; color:var(--text);
+  margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.db-card-sub{
+  font-size:12.5px; color:var(--muted);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.db-card-actions{
+  display:flex; gap:8px; margin-top:10px;
+  padding-top:10px; border-top:1px dashed var(--border);
+}
+.db-card-actions button{
+  flex:1; min-height:36px; border-radius:9px;
+  font-family:inherit; font-size:12.5px; font-weight:700;
+  border:1.5px solid var(--border); background:#fff; color:var(--text);
+  cursor:pointer; display:inline-flex; align-items:center;
+  justify-content:center; gap:6px;
+}
+.db-card-actions button:active{ transform:scale(.97); }
+.db-card-actions button.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+.db-card-actions svg{ width:14px; height:14px; }
+
+.db-empty{ text-align:center; padding:60px 20px; color:var(--muted); }
+.db-empty svg{ width:48px; height:48px; color:#94a3b8; margin-bottom:12px; }
+.db-empty strong{ display:block; color:var(--text); font-size:15px; margin-bottom:4px; }
+.db-empty span{ font-size:13px; }
+
+/* ===== MODAL DE EDIÇÃO ===== */
+.db-modal-overlay{
+  position:fixed; inset:0; background:rgba(8,56,107,.5);
+  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+  z-index:100; display:none; align-items:flex-start; justify-content:center;
+  padding:16px;
+  padding-top:calc(var(--safe-top) + 16px);
+  padding-bottom:calc(var(--safe-bottom) + 16px);
+  overflow-y:auto;
+}
+.db-modal-overlay.open{ display:flex; }
+.db-modal{
+  background:var(--card); border-radius:16px; width:100%; max-width:560px;
+  box-shadow:0 24px 48px rgba(0,0,0,.3);
+  display:flex; flex-direction:column;
+  max-height:calc(100vh - 32px - var(--safe-top) - var(--safe-bottom));
+  overflow:hidden;
+}
+.db-modal-head{
+  padding:16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+}
+.db-modal-head h3{ margin:0; font-size:16px; font-weight:700; }
+.db-modal-head p{ margin:2px 0 0; font-size:12px; color:var(--muted); }
+.db-modal-close{
+  width:34px; height:34px; border-radius:9px; border:0;
+  background:var(--bg); color:var(--muted);
+  display:grid; place-items:center; cursor:pointer; flex:0 0 auto;
+}
+.db-modal-close svg{ width:16px; height:16px; }
+.db-modal-body{ flex:1 1 auto; overflow-y:auto; padding:16px; }
+.db-modal-foot{
+  padding:12px 16px; border-top:1px solid var(--border);
+  display:flex; gap:10px; background:#fafbfc;
+}
+.db-modal-foot .btn{
+  flex:1; min-height:46px; padding:0 14px; border-radius:11px;
+  font-family:inherit; font-size:14px; font-weight:700; border:0;
+  cursor:pointer; display:inline-flex; align-items:center;
+  justify-content:center; gap:6px;
+}
+.db-modal-foot .btn:active{ transform:scale(.98); }
+.db-modal-foot .btn-ghost{ background:var(--primary-light); color:var(--primary); }
+.db-modal-foot .btn-primary{
+  background:linear-gradient(135deg, #0d5cab, #083d73); color:#fff;
+  box-shadow:0 6px 16px rgba(13,92,171,.28);
+}
+.db-modal-foot .btn-primary:disabled{ opacity:.6; cursor:not-allowed; }
+
+.db-section{ margin-bottom:18px; }
+.db-section h4{
+  font-size:11px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.8px; color:var(--primary);
+  padding-bottom:6px; border-bottom:1.5px solid var(--primary-light);
+  margin:0 0 10px;
+}
+.db-section-grid{
+  display:grid; gap:0 10px; grid-template-columns:1fr 1fr;
+}
+.db-field{
+  display:flex; flex-direction:column; gap:5px;
+  margin-top:10px; min-width:0;
+}
+.db-field.full{ grid-column:1 / -1; }
+.db-field label{
+  font-size:10.5px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.4px; color:var(--muted);
+}
+.db-field input, .db-field select{
+  width:100%; min-height:42px; padding:10px 12px;
+  font-family:inherit; font-size:14.5px; color:var(--text);
+  background:#fbfcfe; border:1.5px solid var(--border);
+  border-radius:10px; outline:none;
+  transition:border-color .15s, box-shadow .15s;
+}
+.db-field input:focus, .db-field select:focus{
+  border-color:var(--primary); background:#fff;
+  box-shadow:0 0 0 3px rgba(13,92,171,.12);
+}
+.db-field select{
+  appearance:none; -webkit-appearance:none; padding-right:34px;
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;
+  background-size:16px; background-color:#fbfcfe;
+}
+.db-field input[type="text"], .db-field input:not([type]){ text-transform:uppercase; }
+.db-field input::placeholder{ text-transform:none; color:#a9b6c5; }
+
 @media (max-width:360px){
   body{ font-size:14px; }
   .brand-title{ font-size:16.5px; }
@@ -199,6 +395,7 @@ body{
   .card-body{ padding:2px 13px 16px; }
   .app-main{ padding-left:11px; padding-right:11px; }
   .btn-ghost{ flex:0 0 42%; }
+  .db-section-grid{ grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -215,6 +412,7 @@ body{
 
 <div id="appShell" style="display:none;">
 
+<div class="sticky-top">
 <header class="app-header">
   <button type="button" class="header-user" id="headerUser" title="Sair da conta">
     <svg class="h-logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -242,6 +440,21 @@ body{
   </div>
 </header>
 
+<nav class="main-tabs" id="mainTabs">
+  <div class="main-tabs-inner">
+    <button type="button" class="main-tab active" data-maintab="form">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Formulário
+    </button>
+    <button type="button" class="main-tab" data-maintab="db">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Banco de Dados
+    </button>
+  </div>
+</nav>
+</div><!-- /.sticky-top -->
+
+<div id="tab-form-content">
 <main class="app-main">
   <div class="step-head">
     <div>
@@ -656,11 +869,12 @@ body{
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 7 — FOTO DO IMÓVEL ============ -->
+    <!-- ============ ETAPA 7 — FOTO DO IMÓVEL (opcional) ============ -->
     <section class="step-panel" data-step="7">
       <div class="card"><div class="card-body">
         <p class="sub-note">
-          <strong>Última etapa.</strong> Tire uma foto do imóvel. As informações do formulário
+          <strong>Última etapa.</strong> A foto do imóvel é <strong>opcional</strong>.
+          Se você tirar uma foto, as informações do formulário
           (bairro/quadra/lote, logradouro/número e georreferenciamento) serão gravadas
           automaticamente no canto inferior esquerdo da imagem.
         </p>
@@ -681,7 +895,7 @@ body{
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
-              Tirar foto
+              Tirar foto (opcional)
             </button>
             <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio. O GPS é acionado em modo de alta precisão.</p>
           </div>
@@ -729,6 +943,55 @@ body{
     </button>
   </div>
 </footer>
+</div><!-- /#tab-form-content -->
+
+<div id="tab-db-content" style="display:none;">
+  <main class="app-main" style="padding-bottom:32px;">
+    <div class="step-head">
+      <div>
+        <span class="step-head-eyebrow">Banco de Dados</span>
+        <h2 class="step-head-title">Fichas Cadastradas</h2>
+      </div>
+      <span class="step-head-progress" id="dbCount">0</span>
+    </div>
+
+    <div class="db-search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="dbSearch" placeholder="Buscar por nome, bairro, inscrição...">
+    </div>
+
+    <div class="db-loading" id="dbLoading" style="display:none;">
+      <span class="spinner"></span> Carregando fichas...
+    </div>
+
+    <div class="db-list" id="dbList"></div>
+
+    <div class="db-empty" id="dbEmpty" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+      <strong>Nenhuma ficha cadastrada</strong>
+      <span>As fichas enviadas pelo formulário aparecerão aqui.</span>
+    </div>
+  </main>
+</div>
+
+<div class="db-modal-overlay" id="dbModal">
+  <div class="db-modal">
+    <div class="db-modal-head">
+      <div style="min-width:0;">
+        <h3 id="dbModalTitle">Editar Ficha</h3>
+        <p id="dbModalSubtitle"></p>
+      </div>
+      <button type="button" class="db-modal-close" id="dbModalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="db-modal-body" id="dbModalBody"></div>
+    <div class="db-modal-foot">
+      <button type="button" class="btn btn-ghost" id="dbModalCancel">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="dbModalSave">Salvar</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -803,7 +1066,6 @@ async function enviarFichaViaWorker(payload, arquivos){
 
   let resp;
   try {
-    // Sem Content-Type manual: o navegador define o multipart com o boundary correto
     resp = await fetch(WORKER_URL + '/fichas', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + idToken },
@@ -898,9 +1160,6 @@ function initFormulario(){
   const DRAFT_KEY = 'careiro_sinter_draft_v2';
 
   /* ---------- DADOS PADRÃO (FALLBACK) ---------- */
-  /* A posição na lista define o número do bairro (001, 002, …), igual à
-     planilha de ruas: o código das ruas começa pelo número do bairro
-     (ex.: 1xx = Centro, 2xx = Vista Alegre …). */
   const BAIRROS_PADRAO = [
     'CENTRO','VISTA ALEGRE','NOVO HORIZONTE','DISTRITO',
     'SEBASTIÃO BORGES','NOVO','NOVA ESPERANÇA','BAIRRO DA PAZ'
@@ -974,10 +1233,6 @@ function initFormulario(){
     ]}
   ];
 
-  /* ---------- VIAS QUE ATRAVESSAM MAIS DE UM BAIRRO ----------
-     [código, nome (igual ao cadastro acima), [bairros ADICIONAIS]]
-     A via continua com o código original e passa a aparecer também nos
-     bairros listados aqui, na ordem alfabética da lista de cada bairro. */
   const VIAS_COMPARTILHADAS = [
     ['611','Rua Manoel Sales',                ['CENTRO']],
     ['212','Rua Ocimar de Melo Almeida',      ['NOVO','NOVO HORIZONTE','DISTRITO']],
@@ -1149,7 +1404,6 @@ function initFormulario(){
     });
   });
 
-  /* ---------- SEGMENTO DO LOTE (opcional): letras/números, caixa alta, até 4 ---------- */
   document.getElementById('segmento_lote')?.addEventListener('input', function(){
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
   });
@@ -1216,7 +1470,6 @@ function initFormulario(){
     return false;
   }
 
-  /* ---------- MÁSCARA CPF/CNPJ ---------- */
   function formatCpfCnpj(v){
     const d = String(v == null ? '' : v).replace(/\D/g, '').slice(0, 14);
     if(!d) return '';
@@ -1497,7 +1750,6 @@ function initFormulario(){
     if(arq) arq.disabled = (v === '1');
     if(areaC) areaC.disabled = (v === '1');
     if(idP) idP.disabled = (v === '1');
-    /* Sem edificação (territorial): Ano Construtivo fica indisponível e é limpo */
     if(ano){
       ano.disabled = (v === '1');
       if(v === '1') ano.value = '';
@@ -1533,7 +1785,6 @@ function initFormulario(){
     return { bairroCad, quadra, lote, segmento, logradouro, numero, complemento };
   }
 
-  /* ---------- 3 LINHAS COMPACTAS (SEM TITULAR) ---------- */
   function montarLinhasFoto(info, geo){
     const linhas = [];
     if(info){
@@ -1559,7 +1810,6 @@ function initFormulario(){
     return linhas;
   }
 
-  /* ---------- DESENHO COMPACTO NO CANTO INFERIOR ESQUERDO ---------- */
   function desenharEmCanvas(img, w, h, geo, info){
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
@@ -1639,8 +1889,8 @@ function initFormulario(){
   /* ============================================================
      FOTO — ELEMENTOS E LÓGICA
      ============================================================ */
-  let fotoBlob = null;      // imagem em binário (Blob) — enviada como arquivo, sem base64
-  let fotoUrl = '';         // object URL só para a prévia na tela
+  let fotoBlob = null;
+  let fotoUrl = '';
   let fotoTipo = '';
   let fotoTamanhoBytes = 0;
   let fotoGeo = null;
@@ -1940,7 +2190,7 @@ function initFormulario(){
     'Titulares',
     'Registro e Cartório',
     'ITBI',
-    'Foto do Imóvel'
+    'Foto do Imóvel (opcional)'
   ];
   let currentStep = 1;
   const completedSteps = new Set();
@@ -2171,10 +2421,7 @@ function initFormulario(){
       }
     }
     if(stepNum === 7){
-      if(!fotoBlob){
-        photoBlock.classList.add('invalid');
-        invalidos.push({ el: document.getElementById('btnTirarFoto'), msg: 'A foto do imóvel é obrigatória.' });
-      }
+      /* A foto do imóvel agora é OPCIONAL — não bloqueia o salvamento. */
     }
     return invalidos;
   }
@@ -2314,7 +2561,6 @@ function initFormulario(){
         numFrentes: toInt(g('num_frentes')),
         numAndares: toInt(g('num_andares'))
       },
-      /* Só metadados: as imagens vão como arquivos binários (ver enviarFichaViaWorker) */
       foto: fotoBlob ? {
         tipo:                   fotoTipo || null,
         tamanhoBytes:           fotoTamanhoBytes || null,
@@ -2430,7 +2676,6 @@ function initFormulario(){
     }
   });
 
-  /* ---------- SELECT BAIRRO → FILTRAR LOGRADOUROS ---------- */
   document.getElementById('bairro').addEventListener('change', function(){
     popularLogradouroSelect();
   });
@@ -2447,7 +2692,7 @@ function initFormulario(){
       const r = await api('GET', '/config/listas');
       const data = (r && r.grupos) || {};
       const assinatura = JSON.stringify(data);
-      if(assinatura === listasAssinatura) return;   // nada mudou: não mexe nos selects
+      if(assinatura === listasAssinatura) return;
       listasAssinatura = assinatura;
 
       const bairrosFs = Array.isArray(data.bairros) ? data.bairros : [];
@@ -2470,6 +2715,308 @@ function initFormulario(){
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState === 'visible') carregarListas();
   });
+
+  /* ============================================================
+     ABAS PRINCIPAIS — Formulário / Banco de Dados
+     ============================================================ */
+  (function setupMainTabs(){
+    const tabForm = document.getElementById('tab-form-content');
+    const tabDb   = document.getElementById('tab-db-content');
+    const stepper = document.getElementById('stepper');
+    if(!tabForm || !tabDb) return;
+
+    let dbFichas = [];
+    let dbLoaded = false;
+    let dbFilter = '';
+    let editingId = null;
+
+    /* ---------- Troca de aba ---------- */
+    document.querySelectorAll('.main-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.maintab;
+        document.querySelectorAll('.main-tab').forEach(t => t.classList.toggle('active', t === tab));
+        tabForm.style.display = target === 'form' ? '' : 'none';
+        tabDb.style.display   = target === 'db'   ? '' : 'none';
+        if(stepper) stepper.style.display = target === 'form' ? '' : 'none';
+        if(target === 'db'){
+          try { window.scrollTo({ top:0, behavior:'smooth' }); } catch(_) { window.scrollTo(0,0); }
+          loadDbFichas(true);
+        }
+      });
+    });
+
+    /* ---------- Helpers ---------- */
+    function getPath(obj, path){
+      return String(path || '').split('.').reduce((cur, k) => (cur == null ? cur : cur[k]), obj);
+    }
+    function getOptionsFromSelect(selectId){
+      const sel = document.getElementById(selectId);
+      if(!sel) return [];
+      return [...sel.options]
+        .filter(o => o.value !== '')
+        .map(o => ({ v:o.value, l:o.textContent }));
+    }
+
+    /* ---------- Listagem ---------- */
+    async function loadDbFichas(force){
+      if(!force && dbLoaded) return;
+      const loadingEl = document.getElementById('dbLoading');
+      const listEl    = document.getElementById('dbList');
+      const emptyEl   = document.getElementById('dbEmpty');
+      if(loadingEl) loadingEl.style.display = '';
+      if(listEl) listEl.innerHTML = '';
+      if(emptyEl) emptyEl.style.display = 'none';
+      try {
+        const r = await api('GET', '/fichas');
+        dbFichas = (r && r.fichas) || [];
+        dbLoaded = true;
+        renderDbList();
+      } catch(err){
+        if(loadingEl) loadingEl.style.display = 'none';
+        if(listEl){
+          const msg = (err && err.status === 403)
+            ? 'Você não tem permissão para acessar o banco de dados. Peça ao administrador para liberar seu acesso.'
+            : ('Não foi possível carregar as fichas. ' + ((err && err.mensagemUsuario) || 'Verifique a conexão.'));
+          listEl.innerHTML = '<div class="db-empty"><strong>Indisponível</strong><span>' + esc(msg) + '</span></div>';
+        }
+      }
+    }
+
+    function renderDbList(){
+      const listEl  = document.getElementById('dbList');
+      const emptyEl = document.getElementById('dbEmpty');
+      const countEl = document.getElementById('dbCount');
+      if(!listEl) return;
+      const q = dbFilter.trim().toLowerCase();
+      const filtered = q
+        ? dbFichas.filter(f => {
+            const t = getPath(f, 'dados_imovel.Titular') || [];
+            const hay = [
+              f.bairro_imovel, f.quadra_imovel, f.lote_letra,
+              getPath(f, 'dados_imovel.DadosGeraisImovel.inscricaoImobiliaria'),
+              getPath(f, 'dados_imovel.EnderecoImovel.nomeLogradouro'),
+              t.map(x => x.nomeTitular).join(' ')
+            ].join(' ').toLowerCase();
+            return hay.includes(q);
+          })
+        : dbFichas;
+
+      if(countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' ficha' : ' fichas');
+
+      if(!filtered.length){
+        listEl.innerHTML = '';
+        if(emptyEl){
+          emptyEl.style.display = '';
+          const strong = emptyEl.querySelector('strong');
+          const span   = emptyEl.querySelector('span');
+          if(strong) strong.textContent = q ? 'Nada encontrado' : 'Nenhuma ficha cadastrada';
+          if(span)   span.textContent   = q ? 'Tente outro termo de busca.' : 'As fichas enviadas pelo formulário aparecerão aqui.';
+        }
+        return;
+      }
+      if(emptyEl) emptyEl.style.display = 'none';
+
+      listEl.innerHTML = '<div class="db-list">' + filtered.map(f => {
+        const insc    = getPath(f, 'dados_imovel.DadosGeraisImovel.inscricaoImobiliaria') || '';
+        const titular = (getPath(f, 'dados_imovel.Titular') || [])[0];
+        const nome    = (titular && titular.nomeTitular) || 'Sem titular';
+        const logr    = getPath(f, 'dados_imovel.EnderecoImovel.nomeLogradouro') || '';
+        const numero  = getPath(f, 'dados_imovel.EnderecoImovel.numeroImovel')  || '';
+        const status  = String(f.status || 'pendente').toLowerCase();
+        const sLabel  = status === 'aprovado' ? 'Aprovado' : 'Pendente';
+        const badge   = [f.quadra_imovel ? 'Q ' + f.quadra_imovel : '',
+                         f.lote_letra    ? 'L ' + f.lote_letra   : ''].filter(Boolean).join(' · ') || '—';
+        return '<div class="db-card" data-id="' + esc(f.id) + '">' +
+          '<div class="db-card-header">' +
+            '<span class="db-card-badge">' + esc(badge) + '</span>' +
+            '<span class="db-card-status ' + esc(status) + '">' + esc(sLabel) + '</span>' +
+          '</div>' +
+          '<div class="db-card-title">' + esc(nome) + '</div>' +
+          '<div class="db-card-sub">' + esc(f.bairro_imovel || '—') +
+            (logr ? ' · ' + esc(logr) : '') +
+            (numero ? ', ' + esc(numero) : '') +
+            (insc ? ' · ' + esc(insc) : '') +
+          '</div>' +
+          '<div class="db-card-actions">' +
+            '<button type="button" data-action="edit" class="primary">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+              'Editar' +
+            '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('') + '</div>';
+
+      listEl.querySelectorAll('.db-card [data-action="edit"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openDbEditor(btn.closest('.db-card').dataset.id);
+        });
+      });
+    }
+
+    /* ---------- Busca ---------- */
+    const dbSearch = document.getElementById('dbSearch');
+    if(dbSearch){
+      dbSearch.addEventListener('input', (e) => {
+        dbFilter = e.target.value;
+        renderDbList();
+      });
+    }
+
+    /* ---------- Editor ---------- */
+    const SCHEMA = [
+      { title: 'Localização Cadastral', fields: [
+        { name:'bairro_imovel',       label:'Bairro',            type:'select-bairro' },
+        { name:'quadra_imovel',       label:'Quadra',            type:'text', max:3 },
+        { name:'lote_letra',          label:'Lote',              type:'text', max:3 },
+        { name:'segmento_lote',       label:'Segmento do Lote',  type:'text', max:4 },
+        { name:'tipo_segmento_lote',  label:'Classificação',     type:'select', optionsFrom:'tipo_segmento_lote' }
+      ]},
+      { title: 'Dados Gerais do Imóvel', fields: [
+        { name:'tipoImovel',         label:'Tipo de Imóvel',       type:'select', optionsFrom:'tipoImovel',         path:'dados_imovel.DadosGeraisImovel.tipoImovel' },
+        { name:'tpArquitetonico',    label:'Tipo Arquitetônico',   type:'select', optionsFrom:'tpArquitetonico',    path:'dados_imovel.DadosGeraisImovel.tpArquitetonico' },
+        { name:'destinacaoImovel',   label:'Destinação',           type:'select', optionsFrom:'destinacaoImovel',   path:'dados_imovel.DadosGeraisImovel.destinacaoImovel' },
+        { name:'padraoConstrutivo',  label:'Padrão Construtivo',   type:'select', optionsFrom:'padraoConstrutivo',  path:'dados_imovel.DadosGeraisImovel.padraoConstrutivo' },
+        { name:'anoConstrutivo',     label:'Ano Construtivo',      type:'number',                                    path:'dados_imovel.DadosGeraisImovel.anoConstrutivo' },
+        { name:'qtdGaragem',         label:'Qtd. Garagens',        type:'number',                                    path:'dados_imovel.DadosGeraisImovel.qtdGaragem' },
+        { name:'areaTerreno',        label:'Área do Terreno',      type:'number',                                    path:'dados_imovel.DadosGeraisImovel.areaTerreno' },
+        { name:'areaConstruida',     label:'Área Construída',      type:'number',                                    path:'dados_imovel.DadosGeraisImovel.areaConstruida' },
+        { name:'valorVenal',         label:'Valor Venal',          type:'number',                                    path:'dados_imovel.DadosGeraisImovel.valorVenal' },
+        { name:'valorRefMercado',    label:'Valor Ref. Mercado',   type:'number',                                    path:'dados_imovel.DadosGeraisImovel.valorRefMercado' },
+        { name:'idParcela',          label:'ID da Parcela/Lote',   type:'text',                                      path:'dados_imovel.DadosGeraisImovel.idParcela' },
+        { name:'bice',               label:'BICE',                 type:'select', optionsFrom:'bice',               path:'dados_imovel.DadosGeraisImovel.bice', full:true }
+      ]},
+      { title: 'Endereço do Imóvel', fields: [
+        { name:'tipoLogradouro',  label:'Tipo de Logradouro',  type:'select', optionsFrom:'tipoLogradouro',   path:'dados_imovel.EnderecoImovel.tipoLogradouro' },
+        { name:'nomeLogradouro',  label:'Nome do Logradouro',  type:'text',                                    path:'dados_imovel.EnderecoImovel.nomeLogradouro' },
+        { name:'numeroImovel',    label:'Número',              type:'text',                                    path:'dados_imovel.EnderecoImovel.numeroImovel' },
+        { name:'complNroImovel',  label:'Compl. Nº',           type:'text',                                    path:'dados_imovel.EnderecoImovel.complNroImovel' },
+        { name:'complEndereco',   label:'Complemento',         type:'text',                                    path:'dados_imovel.EnderecoImovel.complEndereco' },
+        { name:'bairro',          label:'Bairro (endereço)',   type:'text',                                    path:'dados_imovel.EnderecoImovel.bairro' },
+        { name:'cep',             label:'CEP',                 type:'text', max:8,                            path:'dados_imovel.EnderecoImovel.cep' }
+      ]},
+      { title: 'Status da Ficha', fields: [
+        { name:'status', label:'Status', type:'select', options:[
+          { v:'pendente', l:'Pendente' },
+          { v:'aprovado', l:'Aprovado'  }
+        ], full:true }
+      ]}
+    ];
+
+    function renderField(field, ficha){
+      const value = getPath(ficha, field.path || field.name);
+      const val   = (value === null || value === undefined) ? '' : String(value);
+      const cls   = 'db-field' + (field.full ? ' full' : '');
+      let inner;
+      if(field.type === 'select'){
+        let opts = field.optionsFrom ? getOptionsFromSelect(field.optionsFrom) : (field.options || []);
+        if(val && !opts.some(o => String(o.v) === val)){
+          opts = [{ v: val, l: val + ' (atual)' }].concat(opts);
+        }
+        inner = '<select data-field="' + esc(field.name) + '">' +
+          '<option value="">—</option>' +
+          opts.map(o => '<option value="' + esc(o.v) + '"' + (String(o.v) === val ? ' selected' : '') + '>' + esc(o.l) + '</option>').join('') +
+        '</select>';
+      } else if(field.type === 'select-bairro'){
+        const bairros = getBairros();
+        const exists = bairros.some(b => b.nome === val);
+        let opts = bairros.map(b => '<option value="' + esc(b.nome) + '"' + (b.nome === val ? ' selected' : '') + '>' + esc(b.numero + ' - ' + b.nome) + '</option>').join('');
+        if(val && !exists){
+          opts = '<option value="' + esc(val) + '" selected>' + esc(val) + ' (atual)</option>' + opts;
+        }
+        inner = '<select data-field="' + esc(field.name) + '"><option value="">—</option>' + opts + '</select>';
+      } else {
+        const inputType = field.type === 'number' ? 'number' : 'text';
+        const step = field.type === 'number' ? ' step="0.01"' : '';
+        const maxl = field.max ? ' maxlength="' + field.max + '"' : '';
+        inner = '<input type="' + inputType + '" data-field="' + esc(field.name) + '" value="' + esc(val) + '"' + maxl + step + '>';
+      }
+      return '<div class="' + cls + '"><label>' + esc(field.label) + '</label>' + inner + '</div>';
+    }
+
+    function openDbEditor(id){
+      const ficha = dbFichas.find(f => f.id === id);
+      if(!ficha) return;
+      editingId = id;
+      const titular = (getPath(ficha, 'dados_imovel.Titular') || [])[0];
+      const nome    = (titular && titular.nomeTitular) || 'Sem titular';
+      document.getElementById('dbModalTitle').textContent    = 'Editar Ficha';
+      document.getElementById('dbModalSubtitle').textContent = nome + ' · ' + (ficha.bairro_imovel || '—');
+      document.getElementById('dbModalBody').innerHTML = SCHEMA.map(group =>
+        '<div class="db-section"><h4>' + esc(group.title) + '</h4>' +
+          '<div class="db-section-grid">' + group.fields.map(f => renderField(f, ficha)).join('') + '</div>' +
+        '</div>'
+      ).join('');
+      document.getElementById('dbModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDbEditor(){
+      document.getElementById('dbModal').classList.remove('open');
+      document.body.style.overflow = '';
+      editingId = null;
+    }
+
+    document.getElementById('dbModalClose')?.addEventListener('click', closeDbEditor);
+    document.getElementById('dbModalCancel')?.addEventListener('click', closeDbEditor);
+    document.getElementById('dbModal')?.addEventListener('click', (e) => {
+      if(e.target.id === 'dbModal') closeDbEditor();
+    });
+
+    /* ---------- Salvar edição ---------- */
+    document.getElementById('dbModalSave')?.addEventListener('click', async () => {
+      if(!editingId) return;
+      const body = document.getElementById('dbModalBody');
+      const updates = {};
+      SCHEMA.forEach(group => {
+        group.fields.forEach(field => {
+          const input = body.querySelector('[data-field="' + field.name + '"]');
+          if(!input) return;
+          let v = input.value;
+          if(field.type === 'number'){
+            v = v === '' ? null : Number(v);
+            if(!Number.isFinite(v)) v = null;
+          }
+          updates[field.path || field.name] = v;
+        });
+      });
+
+      /* Regra: classificação só faz sentido com segmento */
+      if(updates['tipo_segmento_lote'] && !String(updates['segmento_lote'] || '').trim()){
+        toast('Informe o segmento do lote para usar a classificação.', 'error');
+        return;
+      }
+
+      /* Recalcular inscrição quando bairro/quadra/lote mudam */
+      const ficha = dbFichas.find(f => f.id === editingId);
+      const bNovo = updates['bairro_imovel'] !== undefined ? updates['bairro_imovel'] : (ficha.bairro_imovel || '');
+      const qNovo = updates['quadra_imovel'] !== undefined ? updates['quadra_imovel'] : (ficha.quadra_imovel || '');
+      const lNovo = updates['lote_letra']    !== undefined ? updates['lote_letra']    : (ficha.lote_letra    || '');
+      if(bNovo && /^\d{3}$/.test(qNovo) && /^\d{3}$/.test(lNovo)){
+        const bInfo = getBairros().find(x => x.nome === bNovo);
+        const bNum  = bInfo ? bInfo.numero : '000';
+        updates['dados_imovel.DadosGeraisImovel.inscricaoImobiliaria'] =
+          '00.00.' + qNovo + '.' + lNovo + '.' + bNum;
+      }
+
+      const btn = document.getElementById('dbModalSave');
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = 'Salvando...';
+      try {
+        await api('PATCH', '/fichas/' + encodeURIComponent(editingId), { updates });
+        toast('Ficha atualizada com sucesso.', 'success');
+        closeDbEditor();
+        await loadDbFichas(true);
+      } catch(err){
+        console.error('[db-edit]', err);
+        toast((err && err.mensagemUsuario) || 'Não foi possível salvar as alterações.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    });
+  })();
 
   /* ---------- INIT ---------- */
   renderStep();
