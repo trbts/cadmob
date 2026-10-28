@@ -177,7 +177,7 @@ body{
 .btn-ghost{ flex:0 0 38%; color:var(--primary); background:var(--primary-light); }
 .btn svg{ width:18px; height:18px; }
 
-.toast{ position:fixed; left:50%; bottom:calc(88px + var(--safe-bottom)); transform:translate(-50%, 20px); z-index:80; max-width:calc(100% - 40px); padding:12px 18px; border-radius:14px; background:#16212e; color:#fff; font-size:13.5px; font-weight:600; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.28); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; }
+.toast{ position:fixed; left:50%; bottom:calc(88px + var(--safe-bottom)); transform:translate(-50%, 20px); z-index:100; max-width:calc(100% - 40px); padding:12px 18px; border-radius:14px; background:#16212e; color:#fff; font-size:13.5px; font-weight:600; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.28); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; }
 .toast.show{ opacity:1; transform:translate(-50%, 0); }
 .toast.success{ background:#0f8a63; }
 .toast.error{ background:#c0392b; }
@@ -191,220 +191,74 @@ body{
 .auth-gate p{ font-size:13.5px; color:rgba(255,255,255,.85); line-height:1.55; }
 .auth-gate .gate-btn{ margin-top:20px; background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22); height:42px; padding:0 20px; border-radius:10px; font-weight:600; font-size:13.5px; }
 
-/* ===== ABAS PRINCIPAIS (Formulário / Banco de Dados) ===== */
-.sticky-top{ position:sticky; top:0; z-index:40; }
-.sticky-top .app-header{ position:relative; top:auto; z-index:auto; }
+/* ---------- ABAS PRINCIPAIS ---------- */
+.main-tabs{ display:flex; gap:4px; max-width:420px; margin:14px auto 0; padding:4px; background:rgba(255,255,255,.14); border-radius:14px; }
+.main-tab{ flex:1; min-height:38px; border:0; border-radius:10px; background:transparent; color:rgba(255,255,255,.85); font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; transition:background .2s,color .2s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+.main-tab.active{ background:#fff; color:var(--primary); box-shadow:0 2px 8px rgba(0,0,0,.14); }
+.main-tab-count{ min-width:20px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,.22); font-size:11px; }
+.main-tab.active .main-tab-count{ background:var(--primary-light); }
+.main-tab-count:empty{ display:none; }
 
-.main-tabs{
-  background:var(--card);
-  border-bottom:1px solid var(--border);
-  box-shadow:0 2px 8px rgba(16,40,70,.04);
-}
-.main-tabs-inner{
-  max-width:560px; margin:0 auto;
-  padding:8px 14px; display:flex; gap:4px;
-}
-.main-tab{
-  flex:1; display:inline-flex; align-items:center; justify-content:center;
-  gap:8px; padding:10px 14px;
-  font-family:inherit; font-size:13.5px; font-weight:700;
-  color:var(--muted); background:transparent; border:0; border-radius:10px;
-  cursor:pointer; transition:background .15s, color .15s;
-}
-.main-tab svg{ width:16px; height:16px; }
-.main-tab.active{
-  background:var(--primary); color:#fff;
-  box-shadow:0 4px 10px rgba(13,92,171,.28);
-}
-.main-tab:active{ transform:scale(.98); }
+/* ---------- FICHAS SALVAS ---------- */
+.saved-tools{ display:flex; gap:8px; margin:0 0 10px; }
+.saved-tools input{ flex:1; min-width:0; min-height:46px; padding:0 14px; font:inherit; font-size:16px; border:1.5px solid var(--border); border-radius:12px; background:#fff; outline:none; -webkit-appearance:none; appearance:none; }
+.saved-tools input:focus{ border-color:var(--primary); box-shadow:0 0 0 3.5px rgba(13,92,171,.12); }
+.btn-icon{ flex:0 0 46px; height:46px; border:1.5px solid var(--border); border-radius:12px; background:#fff; color:var(--primary); display:grid; place-items:center; cursor:pointer; }
+.btn-icon:active{ transform:scale(.95); background:var(--primary-light); }
+.btn-icon svg{ width:19px; height:19px; }
+.btn-icon.spin svg{ animation:photoSpin .8s linear infinite; }
+.saved-count{ margin:0 4px 10px; font-size:12px; color:var(--muted); font-weight:600; }
+.saved-empty{ padding:36px 18px; text-align:center; color:var(--muted); background:var(--card); border:1px dashed var(--border); border-radius:var(--radius); font-size:13.5px; }
+.saved-card{ display:flex; gap:12px; align-items:center; width:100%; padding:10px; margin-bottom:10px; text-align:left; font-family:inherit; color:inherit; background:var(--card); border:1px solid rgba(227,233,241,.9); border-radius:var(--radius); box-shadow:var(--shadow); cursor:pointer; }
+.saved-card:active{ transform:scale(.985); }
+.saved-thumb{ flex:0 0 64px; width:64px; height:64px; border-radius:12px; overflow:hidden; background:var(--primary-light); color:var(--primary); display:grid; place-items:center; }
+.saved-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.saved-thumb svg{ width:24px; height:24px; opacity:.55; }
+.saved-info{ flex:1 1 auto; min-width:0; }
+.saved-info > span{ display:block; }
+.saved-title{ font-size:14.5px; font-weight:800; letter-spacing:-.2px; }
+.saved-line{ font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.saved-line.strong{ color:#41536a; font-weight:600; }
+.badge-st{ display:inline-block !important; margin-top:4px; padding:2px 9px; border-radius:99px; font-size:10.5px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; background:#fff7e0; color:#b45309; }
+.badge-st.aprovado{ background:#e3f8ec; color:#047857; }
+.btn-more{ display:flex; width:100%; margin:4px 0 10px; }
 
-/* ===== BANCO DE DADOS ===== */
-.db-search-bar{ position:relative; margin-bottom:14px; }
-.db-search-bar svg{
-  position:absolute; left:13px; top:50%; transform:translateY(-50%);
-  width:16px; height:16px; color:var(--muted); pointer-events:none;
-}
-.db-search-bar input{
-  width:100%; min-height:46px; padding:12px 13px 12px 40px;
-  font-family:inherit; font-size:15px; color:var(--text);
-  background:var(--card); border:1.5px solid var(--border);
-  border-radius:12px; outline:none;
-  transition:border-color .15s, box-shadow .15s;
-}
-.db-search-bar input:focus{
-  border-color:var(--primary);
-  box-shadow:0 0 0 3.5px rgba(13,92,171,.12);
-}
+.sheet{ position:fixed; inset:0; z-index:60; background:var(--bg); display:flex; flex-direction:column; animation:stepIn .25s ease; }
+.sheet-head{ flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:calc(var(--safe-top) + 12px) 12px 12px; color:#fff; background:linear-gradient(135deg,#0d5cab 0%,#08386b 100%); box-shadow:0 8px 24px rgba(8,56,107,.22); }
+.sheet-back{ flex:0 0 38px; width:38px; height:38px; border:0; border-radius:99px; background:rgba(255,255,255,.14); color:#fff; display:grid; place-items:center; cursor:pointer; }
+.sheet-back svg{ width:18px; height:18px; }
+.sheet-title{ flex:1 1 auto; min-width:0; }
+.sheet-title strong{ display:block; font-size:16px; letter-spacing:-.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sheet-title span{ display:block; font-size:12px; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sheet-edit{ flex:0 0 auto; height:38px; padding:0 14px; border:0; border-radius:10px; background:rgba(255,255,255,.18); color:#fff; font-family:inherit; font-weight:700; font-size:13.5px; cursor:pointer; }
+.sheet-body{ flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:14px 14px 130px; max-width:560px; width:100%; margin:0 auto; }
+.sheet-foot{ position:fixed; left:0; right:0; bottom:0; z-index:61; background:rgba(255,255,255,.95); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-top:1px solid var(--border); padding:10px 14px calc(10px + var(--safe-bottom)); }
+.dl-row{ display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px dashed var(--border); font-size:13.5px; }
+.dl-row:last-child{ border-bottom:0; }
+.dl-row .k{ flex:0 0 42%; color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding-top:2px; }
+.dl-row .v{ flex:1 1 auto; text-align:right; font-weight:600; word-break:break-word; }
+.dl-row .v.empty{ color:#b3bfcc; font-weight:500; }
+.sv-sub{ margin-top:12px; padding:10px 12px; background:#fbfcfe; border:1px dashed var(--border); border-radius:12px; }
+.sv-sub > strong{ font-size:12px; color:var(--primary); text-transform:uppercase; letter-spacing:.5px; }
+.sv-photo{ margin-top:14px; }
+.sv-title{ font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:6px; }
+.sv-img{ width:100%; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#0f172a0d; display:grid; place-items:center; color:var(--muted); font-size:13px; }
+.sv-photo.extra .sv-img{ aspect-ratio:16/9; }
+.sv-img img{ width:100%; height:100%; object-fit:contain; display:block; }
+.sv-meta{ margin-top:6px; font-size:11.5px; color:var(--muted); font-weight:600; }
+.sv-photo .photo-actions{ margin-top:8px; }
 
-.db-loading{
-  display:flex; align-items:center; justify-content:center; gap:10px;
-  padding:40px 20px; color:var(--muted); font-size:13px; font-weight:600;
-}
-.db-loading .spinner{
-  width:18px; height:18px; border-radius:50%;
-  border:2.5px solid rgba(13,92,171,.2); border-top-color:var(--primary);
-  animation:photoSpin .8s linear infinite;
-}
-
-.db-list{ display:flex; flex-direction:column; gap:10px; }
-.db-card{
-  background:var(--card); border:1px solid var(--border);
-  border-radius:14px; padding:14px 16px;
-  box-shadow:var(--shadow); cursor:pointer;
-  transition:border-color .15s, box-shadow .15s, transform .12s;
-}
-.db-card:hover{ border-color:var(--primary); box-shadow:0 8px 20px rgba(13,92,171,.12); }
-.db-card:active{ transform:scale(.99); }
-.db-card-header{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:10px; margin-bottom:8px;
-}
-.db-card-badge{
-  display:inline-flex; align-items:center; gap:5px;
-  font-size:11px; font-weight:800; color:var(--primary);
-  background:var(--primary-light); padding:4px 10px;
-  border-radius:99px; text-transform:uppercase; letter-spacing:.4px;
-}
-.db-card-status{
-  font-size:10.5px; font-weight:800; padding:3px 9px;
-  border-radius:99px; text-transform:uppercase; letter-spacing:.4px;
-}
-.db-card-status.pendente{ background:#fffbeb; color:#b45309; }
-.db-card-status.aprovado{ background:#ecfdf5; color:#047857; }
-.db-card-title{
-  font-size:14.5px; font-weight:700; color:var(--text);
-  margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.db-card-sub{
-  font-size:12.5px; color:var(--muted);
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.db-card-actions{
-  display:flex; gap:8px; margin-top:10px;
-  padding-top:10px; border-top:1px dashed var(--border);
-}
-.db-card-actions button{
-  flex:1; min-height:36px; border-radius:9px;
-  font-family:inherit; font-size:12.5px; font-weight:700;
-  border:1.5px solid var(--border); background:#fff; color:var(--text);
-  cursor:pointer; display:inline-flex; align-items:center;
-  justify-content:center; gap:6px;
-}
-.db-card-actions button:active{ transform:scale(.97); }
-.db-card-actions button.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
-.db-card-actions svg{ width:14px; height:14px; }
-
-.db-empty{ text-align:center; padding:60px 20px; color:var(--muted); }
-.db-empty svg{ width:48px; height:48px; color:#94a3b8; margin-bottom:12px; }
-.db-empty strong{ display:block; color:var(--text); font-size:15px; margin-bottom:4px; }
-.db-empty span{ font-size:13px; }
-
-/* ===== MODAL DE EDIÇÃO ===== */
-.db-modal-overlay{
-  position:fixed; inset:0; background:rgba(8,56,107,.5);
-  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
-  z-index:100; display:none; align-items:flex-start; justify-content:center;
-  padding:16px;
-  padding-top:calc(var(--safe-top) + 16px);
-  padding-bottom:calc(var(--safe-bottom) + 16px);
-  overflow-y:auto;
-}
-.db-modal-overlay.open{ display:flex; }
-.db-modal{
-  background:var(--card); border-radius:16px; width:100%; max-width:560px;
-  box-shadow:0 24px 48px rgba(0,0,0,.3);
-  display:flex; flex-direction:column;
-  max-height:calc(100vh - 32px - var(--safe-top) - var(--safe-bottom));
-  overflow:hidden;
-}
-.db-modal-head{
-  padding:16px; border-bottom:1px solid var(--border);
-  display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-}
-.db-modal-head h3{ margin:0; font-size:16px; font-weight:700; }
-.db-modal-head p{ margin:2px 0 0; font-size:12px; color:var(--muted); }
-.db-modal-close{
-  width:34px; height:34px; border-radius:9px; border:0;
-  background:var(--bg); color:var(--muted);
-  display:grid; place-items:center; cursor:pointer; flex:0 0 auto;
-}
-.db-modal-close svg{ width:16px; height:16px; }
-.db-modal-body{ flex:1 1 auto; overflow-y:auto; padding:16px; }
-.db-modal-foot{
-  padding:12px 16px; border-top:1px solid var(--border);
-  display:flex; gap:10px; background:#fafbfc;
-}
-.db-modal-foot .btn{
-  flex:1; min-height:46px; padding:0 14px; border-radius:11px;
-  font-family:inherit; font-size:14px; font-weight:700; border:0;
-  cursor:pointer; display:inline-flex; align-items:center;
-  justify-content:center; gap:6px;
-}
-.db-modal-foot .btn:active{ transform:scale(.98); }
-.db-modal-foot .btn-ghost{ background:var(--primary-light); color:var(--primary); }
-.db-modal-foot .btn-primary{
-  background:linear-gradient(135deg, #0d5cab, #083d73); color:#fff;
-  box-shadow:0 6px 16px rgba(13,92,171,.28);
-}
-.db-modal-foot .btn-primary:disabled{ opacity:.6; cursor:not-allowed; }
-
-.db-section{ margin-bottom:22px; }
-.db-section h4{
-  font-size:11px; font-weight:800; text-transform:uppercase;
-  letter-spacing:.8px; color:var(--primary);
-  padding-bottom:6px; border-bottom:1.5px solid var(--primary-light);
-  margin:0 0 10px;
-}
-.db-section-grid{
-  display:grid; gap:0 10px; grid-template-columns:1fr 1fr;
-}
-.db-field{
-  display:flex; flex-direction:column; gap:5px;
-  margin-top:10px; min-width:0;
-}
-.db-field.full{ grid-column:1 / -1; }
-.db-field label{
-  font-size:10.5px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.4px; color:var(--muted);
-}
-.db-field input, .db-field select{
-  width:100%; min-height:42px; padding:10px 12px;
-  font-family:inherit; font-size:14.5px; color:var(--text);
-  background:#fbfcfe; border:1.5px solid var(--border);
-  border-radius:10px; outline:none;
-  transition:border-color .15s, box-shadow .15s;
-}
-.db-field input:focus, .db-field select:focus{
-  border-color:var(--primary); background:#fff;
-  box-shadow:0 0 0 3px rgba(13,92,171,.12);
-}
-.db-field select{
-  appearance:none; -webkit-appearance:none; padding-right:34px;
-  background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat:no-repeat; background-position:right 12px center;
-  background-size:16px; background-color:#fbfcfe;
-}
-.db-field input[type="text"], .db-field input:not([type]){ text-transform:uppercase; }
-.db-field input::placeholder{ text-transform:none; color:#a9b6c5; }
-
-.db-array-item {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
-  position: relative;
-}
-.db-array-item .btn-rm-array {
-  position: absolute;
-  top: 10px; right: 10px;
-  background: #fef2f2; color: var(--danger);
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  font-size: 11px; font-weight: 700;
-  padding: 4px 8px; cursor: pointer;
-}
-.db-array-item .btn-rm-array:active { background: #fee2e2; }
+.busy{ position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center; background:rgba(8,56,107,.55); padding:24px; }
+.busy-box{ display:flex; align-items:center; gap:12px; padding:16px 20px; border-radius:14px; background:#fff; box-shadow:0 20px 40px rgba(0,0,0,.25); font-size:13.5px; font-weight:700; max-width:100%; }
+.busy-box .spinner{ width:20px; height:20px; flex:0 0 auto; border-radius:50%; border:2.5px solid rgba(13,92,171,.2); border-top-color:var(--primary); animation:photoSpin .8s linear infinite; }
+.dlg{ position:fixed; inset:0; z-index:95; display:flex; align-items:flex-end; justify-content:center; background:rgba(15,23,42,.5); padding:16px; }
+@media (min-width:520px){ .dlg{ align-items:center; } }
+.dlg-box{ width:100%; max-width:400px; padding:22px 20px 16px; background:#fff; border-radius:18px; box-shadow:0 20px 50px rgba(0,0,0,.3); }
+.dlg-box h3{ margin:0 0 6px; font-size:17px; }
+.dlg-box p{ margin:0; font-size:13.5px; color:var(--muted); line-height:1.5; }
+.dlg-actions{ display:flex; gap:10px; margin-top:18px; }
+.dlg-actions .btn{ flex:1; }
+.btn-danger{ color:#fff; background:linear-gradient(135deg,#e05252,#b91c1c); box-shadow:0 6px 16px rgba(185,28,28,.28); }
 
 @media (max-width:360px){
   body{ font-size:14px; }
@@ -414,7 +268,6 @@ body{
   .card-body{ padding:2px 13px 16px; }
   .app-main{ padding-left:11px; padding-right:11px; }
   .btn-ghost{ flex:0 0 42%; }
-  .db-section-grid{ grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -431,7 +284,6 @@ body{
 
 <div id="appShell" style="display:none;">
 
-<div class="sticky-top">
 <header class="app-header">
   <button type="button" class="header-user" id="headerUser" title="Sair da conta">
     <svg class="h-logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -441,6 +293,10 @@ body{
   </button>
   <div class="header-inner">
     <h1 class="brand-title">YMOB · Cadastro Imobiliário</h1>
+    <div class="main-tabs" id="mainTabs" role="tablist">
+      <button type="button" class="main-tab active" data-main="cadastro" role="tab" aria-selected="true">Cadastro</button>
+      <button type="button" class="main-tab" data-main="salvas" role="tab" aria-selected="false">Fichas salvas <span class="main-tab-count" id="tabSalvasCount"></span></button>
+    </div>
     <div class="stepper" id="stepper">
       <div class="step" data-step="1"><span class="step-dot">1</span></div>
       <div class="step-line" data-line="1"></div>
@@ -459,22 +315,7 @@ body{
   </div>
 </header>
 
-<nav class="main-tabs" id="mainTabs">
-  <div class="main-tabs-inner">
-    <button type="button" class="main-tab active" data-maintab="form">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Formulário
-    </button>
-    <button type="button" class="main-tab" data-maintab="db">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-      Banco de Dados
-    </button>
-  </div>
-</nav>
-</div><!-- /.sticky-top -->
-
-<div id="tab-form-content">
-<main class="app-main">
+<main class="app-main" id="viewCadastro">
   <div class="step-head">
     <div>
       <span class="step-head-eyebrow" id="stepCounter">Etapa 1 de 7</span>
@@ -519,8 +360,8 @@ body{
         <div class="hint">Use só quando o lote for dividido em partes (A, B…) ou unido a outro. Identifica cada segmento sem alterar a inscrição.</div>
         <div class="field">
           <label for="inscricaoImobiliaria">Inscrição Imobiliária <span class="opt-tag">(opcional)</span></label>
-          <input type="text" id="inscricaoImobiliaria" name="inscricaoImobiliaria" maxlength="45" placeholder="00.00.000.000.000">
-          <div class="hint">Gerada automaticamente a partir do bairro, quadra e lote, mas pode ser editada.</div>
+          <input type="text" id="inscricaoImobiliaria" name="inscricaoImobiliaria" maxlength="45" readonly placeholder="00.00.000.000.000">
+          <div class="hint">Gerada automaticamente a partir do bairro, quadra e lote.</div>
         </div>
       </div></div>
 
@@ -649,17 +490,14 @@ body{
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 2 — MEDIDAS E ÁREAS ============ -->
+    <!-- ============ ETAPA 2 — ÁREA E CONSTRUÇÃO ============ -->
     <section class="step-panel" data-step="2">
       <div class="card"><div class="card-body">
-        <p class="sub-head">Áreas Gerais</p>
+        <p class="sub-head">Área do Imóvel</p>
         <div class="field">
-          <label for="areaTerreno">Área do Terreno (m²)</label>
-          <input type="number" step="0.01" id="areaTerreno" name="areaTerreno" placeholder="0,00">
-        </div>
-        <div class="field">
-          <label for="areaConstruida">Área Construída (m²)</label>
-          <input type="number" step="0.01" id="areaConstruida" name="areaConstruida" placeholder="0,00">
+          <label for="areaTotal">Área Total (m²) <span class="opt-tag">(opcional)</span></label>
+          <input type="text" id="areaTotal" name="areaTotal" inputmode="decimal" autocomplete="off" placeholder="0,00">
+          <div class="hint">Preenchimento manual, em metros quadrados. Use vírgula nos decimais (ex.: 250,50).</div>
         </div>
 
         <p class="sub-head">Construção</p>
@@ -860,12 +698,11 @@ body{
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 7 — FOTO DO IMÓVEL (opcional) ============ -->
+    <!-- ============ ETAPA 7 — FOTO DO IMÓVEL ============ -->
     <section class="step-panel" data-step="7">
       <div class="card"><div class="card-body">
         <p class="sub-note">
-          <strong>Última etapa.</strong> A foto do imóvel é <strong>opcional</strong>.
-          Se você tirar uma foto, as informações do formulário
+          <strong>Última etapa · opcional.</strong> A foto não é obrigatória: você pode salvar a ficha sem ela e adicionar depois na aba <strong>Fichas salvas</strong>. Se tirar a foto, as informações do formulário
           (bairro/quadra/lote, logradouro/número e georreferenciamento) serão gravadas
           automaticamente no canto inferior esquerdo da imagem.
         </p>
@@ -886,7 +723,7 @@ body{
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
-              Tirar foto (opcional)
+              Tirar foto
             </button>
             <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio. O GPS é acionado em modo de alta precisão.</p>
           </div>
@@ -918,6 +755,24 @@ body{
   </form>
 </main>
 
+<main class="app-main hidden" id="viewSalvas">
+  <div class="step-head">
+    <div>
+      <span class="step-head-eyebrow">Banco de dados</span>
+      <h2 class="step-head-title">Fichas salvas</h2>
+      <span class="hint" id="savedScope" style="font-size:11.5px;color:var(--muted);"></span>
+    </div>
+  </div>
+  <div class="saved-tools">
+    <input type="search" id="buscaFichas" placeholder="Buscar por bairro, quadra, lote, nome, rua…" autocomplete="off">
+    <button type="button" class="btn-icon" id="btnRecarregarFichas" title="Atualizar lista" aria-label="Atualizar lista">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+  </div>
+  <div class="saved-count" id="savedCount"></div>
+  <div id="savedList"></div>
+</main>
+
 <footer class="app-footer">
   <div class="footer-inner">
     <button type="button" class="btn btn-ghost" id="btnPrev">
@@ -934,59 +789,30 @@ body{
     </button>
   </div>
 </footer>
-</div><!-- /#tab-form-content -->
 
-<div id="tab-db-content" style="display:none;">
-  <main class="app-main" style="padding-bottom:32px;">
-    <div class="step-head">
-      <div>
-        <span class="step-head-eyebrow">Banco de Dados</span>
-        <h2 class="step-head-title">Fichas Cadastradas</h2>
-      </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button type="button" class="step-head-progress" id="dbRefresh" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; border:0; font-family:inherit;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Atualizar
-        </button>
-        <span class="step-head-progress" id="dbCount">0</span>
-      </div>
+<div class="sheet hidden" id="sheet" role="dialog" aria-modal="true">
+  <div class="sheet-head">
+    <button type="button" class="sheet-back" id="sheetBack" aria-label="Voltar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+    <div class="sheet-title"><strong id="sheetTitle"></strong><span id="sheetSub"></span></div>
+    <button type="button" class="sheet-edit" id="sheetEditBtn">Editar</button>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+  <div class="sheet-foot hidden" id="sheetFoot">
+    <div class="footer-inner">
+      <button type="button" class="btn btn-ghost" id="sheetCancel">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="sheetSave">Salvar alterações</button>
     </div>
-
-    <div class="db-search-bar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="search" id="dbSearch" placeholder="Buscar por nome, bairro, inscrição...">
-    </div>
-
-    <div class="db-loading" id="dbLoading" style="display:none;">
-      <span class="spinner"></span> Carregando fichas...
-    </div>
-
-    <div class="db-list" id="dbList"></div>
-
-    <div class="db-empty" id="dbEmpty" style="display:none;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
-      <strong>Nenhuma ficha cadastrada</strong>
-      <span>As fichas enviadas pelo formulário aparecerão aqui.</span>
-    </div>
-  </main>
+  </div>
 </div>
-
-<div class="db-modal-overlay" id="dbModal">
-  <div class="db-modal">
-    <div class="db-modal-head">
-      <div style="min-width:0;">
-        <h3 id="dbModalTitle">Editar Ficha</h3>
-        <p id="dbModalSubtitle"></p>
-      </div>
-      <button type="button" class="db-modal-close" id="dbModalClose">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="db-modal-body" id="dbModalBody"></div>
-    <div class="db-modal-foot">
-      <button type="button" class="btn btn-ghost" id="dbModalCancel">Cancelar</button>
-      <button type="button" class="btn btn-primary" id="dbModalSave">Salvar</button>
-    </div>
+<input type="file" id="foto_troca_input" accept="image/*" capture="environment" hidden>
+<div class="busy hidden" id="busy"><div class="busy-box"><span class="spinner"></span><span id="busyTxt">Aguarde…</span></div></div>
+<div class="dlg hidden" id="dlgConfirm">
+  <div class="dlg-box">
+    <h3 id="dlgTitle">Confirmar</h3>
+    <p id="dlgMsg"></p>
+    <div class="dlg-actions"><button type="button" class="btn btn-ghost" id="dlgNo">Cancelar</button><button type="button" class="btn btn-danger" id="dlgYes">Excluir</button></div>
   </div>
 </div>
 
@@ -1011,6 +837,8 @@ const auth = getAuth(app);
 
 const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
 
+/* Chamada autenticada ao Worker (banco de dados no Cloudflare D1).
+   A autenticação continua no Firebase Auth: enviamos o ID Token. */
 async function api(method, path, body){
   const u = auth.currentUser;
   if(!u){
@@ -1026,8 +854,7 @@ async function api(method, path, body){
     resp = await fetch(WORKER_URL + path, {
       method: method,
       headers: headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      cache: 'no-store'
+      body: body !== undefined ? JSON.stringify(body) : undefined
     });
   } catch(netErr){
     const e = new Error('falha_rede');
@@ -1045,6 +872,8 @@ async function api(method, path, body){
   return data;
 }
 
+/* Envia a ficha (JSON, sem imagens) + imagens em BINÁRIO (multipart/form-data).
+   arquivos = { foto: Blob|null, anexos: [Blob, Blob] } */
 async function enviarFichaViaWorker(payload, arquivos){
   if(!auth.currentUser){
     const e = new Error('sem_sessao');
@@ -1060,6 +889,7 @@ async function enviarFichaViaWorker(payload, arquivos){
 
   let resp;
   try {
+    // Sem Content-Type manual: o navegador define o multipart com o boundary correto
     resp = await fetch(WORKER_URL + '/fichas', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + idToken },
@@ -1080,7 +910,62 @@ async function enviarFichaViaWorker(payload, arquivos){
   return data;
 }
 
+/* Envia multipart (imagens) ao Worker. Sem Content-Type manual: o navegador define o boundary. */
+async function apiUpload(method, path, formData){
+  if(!auth.currentUser){
+    const e = new Error('sem_sessao');
+    e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
+    throw e;
+  }
+  const idToken = await auth.currentUser.getIdToken();
+  let resp;
+  try {
+    resp = await fetch(WORKER_URL + path, { method: method, headers: { 'Authorization': 'Bearer ' + idToken }, body: formData });
+  } catch(netErr){
+    const e = new Error('falha_rede');
+    e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
+    throw e;
+  }
+  let data = null;
+  try { data = await resp.json(); } catch(_){}
+  if(!resp.ok){
+    const e = new Error((data && data.error) || 'erro_worker_' + resp.status);
+    e.status = resp.status;
+    e.mensagemUsuario = (data && data.message) || 'Falha ao enviar a imagem.';
+    throw e;
+  }
+  return data;
+}
+
+/* Baixa uma imagem em binário (precisa do ID Token, por isso não dá para usar <img src> direto). */
+async function apiBlob(path, ignorarCache){
+  if(!auth.currentUser){
+    const e = new Error('sem_sessao');
+    e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
+    throw e;
+  }
+  const idToken = await auth.currentUser.getIdToken();
+  let resp;
+  try {
+    resp = await fetch(WORKER_URL + path, {
+      headers: { 'Authorization': 'Bearer ' + idToken },
+      cache: ignorarCache ? 'reload' : 'default'
+    });
+  } catch(netErr){
+    const e = new Error('falha_rede');
+    e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
+    throw e;
+  }
+  if(!resp.ok){
+    const e = new Error('erro_worker_' + resp.status);
+    e.status = resp.status;
+    throw e;
+  }
+  return await resp.blob();
+}
+
 const FORM_ROLES = ['funcionario', 'admin', 'superadmin'];
+let currentRole = 'user';
 
 function gateShow(opts){
   document.getElementById('authGate').classList.remove('hidden');
@@ -1138,6 +1023,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   gateHide();
+  currentRole = role;
 
   if(!booted){
     booted = true;
@@ -1153,12 +1039,17 @@ function initFormulario(){
   const toastEl = document.getElementById('toast');
   const DRAFT_KEY = 'careiro_sinter_draft_v2';
 
+  /* ---------- DADOS PADRÃO (FALLBACK) ---------- */
+  /* A posição na lista define o número do bairro (001, 002, …), igual à
+     planilha de ruas: o código das ruas começa pelo número do bairro
+     (ex.: 1xx = Centro, 2xx = Vista Alegre …). */
   const BAIRROS_PADRAO = [
     'CENTRO','VISTA ALEGRE','NOVO HORIZONTE','DISTRITO',
     'SEBASTIÃO BORGES','NOVO','NOVA ESPERANÇA','BAIRRO DA PAZ'
   ];
   const RUAS_PADRAO = ['VITÓRIA','PRECIOSA'];
 
+  /* ---------- LOGRADOUROS PREDEFINIDOS POR BAIRRO ---------- */
   const BAIRROS_LOGRA = [
     { nome:'CENTRO', logradouros:[
       ['101','Av. Adail de Sá'],['102','Av. Mario Jorge Guedes'],['103','Rua Água Branca'],
@@ -1225,6 +1116,10 @@ function initFormulario(){
     ]}
   ];
 
+  /* ---------- VIAS QUE ATRAVESSAM MAIS DE UM BAIRRO ----------
+     [código, nome (igual ao cadastro acima), [bairros ADICIONAIS]]
+     A via continua com o código original e passa a aparecer também nos
+     bairros listados aqui, na ordem alfabética da lista de cada bairro. */
   const VIAS_COMPARTILHADAS = [
     ['611','Rua Manoel Sales',                ['CENTRO']],
     ['212','Rua Ocimar de Melo Almeida',      ['NOVO','NOVO HORIZONTE','DISTRITO']],
@@ -1255,6 +1150,7 @@ function initFormulario(){
     ruas: RUAS_PADRAO.slice()
   };
 
+  /* ---------- HELPERS ---------- */
   function norm(s){ return String(s == null ? '' : s).trim(); }
   function esc(s){
     return String(s == null ? '' : s)
@@ -1278,6 +1174,7 @@ function initFormulario(){
       }));
   }
 
+  /* ---------- SELECT BAIRRO (ETAPA 1) ---------- */
   function popularBairros(){
     const sel = document.getElementById('bairro_imovel');
     if(!sel) return;
@@ -1288,6 +1185,7 @@ function initFormulario(){
     if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
   }
 
+  /* ---------- DATALISTS (LEGADO) ---------- */
   function popularRuas(){
     const dl = document.getElementById('ruas-list');
     if(!dl) return;
@@ -1307,6 +1205,7 @@ function initFormulario(){
     dl.innerHTML = bairros.map(n => '<option value="' + esc(n) + '"></option>').join('');
   }
 
+  /* ---------- SELECT BAIRRO (ETAPA 3) ---------- */
   function popularBairroSelect(){
     const sel = document.getElementById('bairro');
     if(!sel) return;
@@ -1316,6 +1215,7 @@ function initFormulario(){
     if(atual && [...sel.options].some(o => o.value === atual)) sel.value = atual;
   }
 
+  /* ---------- SELECT LOGRADOURO (DEPENDE DO BAIRRO) ---------- */
   function popularLogradouroSelect(){
     const bairroSel = document.getElementById('bairro');
     const lograSel  = document.getElementById('nomeLogradouro');
@@ -1348,14 +1248,15 @@ function initFormulario(){
     return BAIRROS_LOGRA.find(x => x.nome === val || x.nome === 'BAIRRO ' + val) || null;
   }
 
+  /* ---------- QUADRA / LOTE (3 DÍGITOS OBRIGATÓRIOS) ---------- */
   function gerarInscricao(){
     const bairro = document.getElementById('bairro_imovel').value;
     const quadra = document.getElementById('quadra_imovel').value.trim();
     const lote   = document.getElementById('lote_letra').value.trim();
     const insc   = document.getElementById('inscricaoImobiliaria');
     if(!insc) return;
-    if(!bairro || !quadra || !lote){ return; } // Não limpa se já tiver valor manual
-    if(!/^\d{3}$/.test(quadra) || !/^\d{3}$/.test(lote)){ return; }
+    if(!bairro || !quadra || !lote){ insc.value = ''; return; }
+    if(!/^\d{3}$/.test(quadra) || !/^\d{3}$/.test(lote)){ insc.value = ''; return; }
     const info = getBairros().find(x => x.nome === bairro);
     const b = (info && info.numero ? String(info.numero) : '000').padStart(3,'0');
     insc.value = '00.00.' + quadra + '.' + lote + '.' + b;
@@ -1390,10 +1291,29 @@ function initFormulario(){
     });
   });
 
+  /* ---------- SEGMENTO DO LOTE (opcional): letras/números, caixa alta, até 4 ---------- */
   document.getElementById('segmento_lote')?.addEventListener('input', function(){
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
   });
 
+  /* ---------- ÁREA TOTAL (m²): preenchimento manual, só dígitos e uma vírgula ---------- */
+  function sanearArea(v){
+    v = String(v || '').replace(/\./g, ',').replace(/[^\d,]/g, '');
+    const i = v.indexOf(',');
+    if(i >= 0) v = v.slice(0, i + 1) + v.slice(i + 1).replace(/,/g, '').slice(0, 4);
+    return v.slice(0, 14);
+  }
+  /* "" → null · número → número · inválido → NaN */
+  function lerAreaTotal(v){
+    const s = String(v == null ? '' : v).trim();
+    if(!s) return null;
+    return Number(s.replace(',', '.'));
+  }
+  document.getElementById('areaTotal')?.addEventListener('input', function(){ this.value = sanearArea(this.value); });
+
+  /* ============================================================
+     VALIDAÇÃO DE CPF / CNPJ
+     ============================================================ */
   function validarCPF(cpf){
     cpf = String(cpf).replace(/\D/g, '');
     if(cpf.length !== 11) return false;
@@ -1437,6 +1357,7 @@ function initFormulario(){
     return false;
   }
 
+  /* ---------- MÁSCARA CPF/CNPJ ---------- */
   function formatCpfCnpj(v){
     const d = String(v == null ? '' : v).replace(/\D/g, '').slice(0, 14);
     if(!d) return '';
@@ -1499,6 +1420,9 @@ function initFormulario(){
     if(inp.value) inp.value = formatCpfCnpj(inp.value);
   }
 
+  /* ============================================================
+     PORCENTAGEM DE PARTICIPAÇÃO DOS TITULARES
+     ============================================================ */
   function getPercInputs(){
     return [...document.querySelectorAll('#titulares .list-item [name=percTitular]')];
   }
@@ -1592,6 +1516,7 @@ function initFormulario(){
     recalcPerc(null);
   }
 
+  /* ---------- TEMPLATES ---------- */
   const titularTpl = () => `<div class="list-item">
     <button type="button" class="rm">remover</button>
     <div class="field"><label>CPF/CNPJ <span class="req">*</span></label>
@@ -1699,19 +1624,19 @@ function initFormulario(){
   });
   addRow('titulares'); addRow('transmitentes'); addRow('adquirentes');
 
+  /* ---------- SINCRONIZAÇÕES CONDICIONAIS ---------- */
   const tipoImovel = document.getElementById('tipoImovel');
   function syncTipo(){
     const v = tipoImovel.value;
     const arq = document.querySelector('[name=tpArquitetonico]');
-    const areaC = document.querySelector('[name=areaConstruida]');
     const idP = document.querySelector('[name=idParcela]');
     const bice = document.querySelector('[name=bice]');
     const ano = document.querySelector('[name=anoConstrutivo]');
     const fsComp = document.getElementById('fs-complementar');
     if(fsComp) fsComp.classList.toggle('hidden', v === '1');
     if(arq) arq.disabled = (v === '1');
-    if(areaC) areaC.disabled = (v === '1');
     if(idP) idP.disabled = (v === '1');
+    /* Sem edificação (territorial): Ano Construtivo fica indisponível e é limpo */
     if(ano){
       ano.disabled = (v === '1');
       if(v === '1') ano.value = '';
@@ -1720,6 +1645,7 @@ function initFormulario(){
   }
   tipoImovel.addEventListener('change', syncTipo); syncTipo();
 
+  /* ---------- MASK CEP ---------- */
   const cepEl = document.getElementById('cep');
   if(cepEl){
     cepEl.addEventListener('input', () => {
@@ -1728,6 +1654,9 @@ function initFormulario(){
     });
   }
 
+  /* ============================================================
+     FOTO — COLETA DE INFORMAÇÕES PARA CARIMBAR NA IMAGEM
+     ============================================================ */
   function coletarInfoFoto(){
     const first = (sel) => {
       const el = document.querySelector(sel);
@@ -1743,6 +1672,7 @@ function initFormulario(){
     return { bairroCad, quadra, lote, segmento, logradouro, numero, complemento };
   }
 
+  /* ---------- 3 LINHAS COMPACTAS (SEM TITULAR) ---------- */
   function montarLinhasFoto(info, geo){
     const linhas = [];
     if(info){
@@ -1768,6 +1698,7 @@ function initFormulario(){
     return linhas;
   }
 
+  /* ---------- DESENHO COMPACTO NO CANTO INFERIOR ESQUERDO ---------- */
   function desenharEmCanvas(img, w, h, geo, info){
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
@@ -1844,8 +1775,11 @@ function initFormulario(){
     ctx.closePath();
   }
 
-  let fotoBlob = null;
-  let fotoUrl = '';
+  /* ============================================================
+     FOTO — ELEMENTOS E LÓGICA
+     ============================================================ */
+  let fotoBlob = null;      // imagem em binário (Blob) — enviada como arquivo, sem base64
+  let fotoUrl = '';         // object URL só para a prévia na tela
   let fotoTipo = '';
   let fotoTamanhoBytes = 0;
   let fotoGeo = null;
@@ -2061,6 +1995,7 @@ function initFormulario(){
     }
   });
 
+  /* ---------- FOTOS ADICIONAIS (opcionais · até 2) ---------- */
   const MAX_FOTOS_EXTRAS = 2;
   let fotosExtras = [];
   const extraInput  = document.getElementById('extra_input');
@@ -2133,10 +2068,13 @@ function initFormulario(){
     }
   });
 
+  /* ============================================================
+     STEPS
+     ============================================================ */
   const TOTAL_STEPS = 7;
   const STEP_TITLES = [
     'Localização e Dados Gerais',
-    'Medidas e Áreas',
+    'Área e Construção',
     'Endereço',
     'Titulares',
     'Registro e Cartório',
@@ -2202,6 +2140,7 @@ function initFormulario(){
   document.getElementById('btnNext').addEventListener('click', () => goToStep(currentStep + 1));
   document.getElementById('btnPrev').addEventListener('click', () => goToStep(currentStep - 1, true));
 
+  /* ---------- PROGRESSO ---------- */
   function getFields(){
     return [...form.querySelectorAll(
       'input[required]:not([type="checkbox"]):not([type="radio"]):not([readonly]), select[required]'
@@ -2216,6 +2155,7 @@ function initFormulario(){
     if(el) el.textContent = pct + '%';
   }
 
+  /* ---------- TOAST ---------- */
   let toastTimer = null;
   function toast(msg, type){
     toastEl.textContent = msg;
@@ -2226,6 +2166,7 @@ function initFormulario(){
     }, 3000);
   }
 
+  /* ---------- VALIDAÇÃO ---------- */
   function validarEtapa(stepNum){
     const panel = document.querySelector('.step-panel[data-step="' + stepNum + '"]');
     if(!panel) return [];
@@ -2271,7 +2212,8 @@ function initFormulario(){
       if(tipo && tipo !== '1' && !g('destinacaoImovel')) invalidos.push({ el: q('destinacaoImovel'), msg: 'Destinação é obrigatória, exceto para territorial.' });
     }
     if(stepNum === 2){
-      // Todos os campos são opcionais agora
+      const at = lerAreaTotal(g('areaTotal'));
+      if(at !== null && !(at > 0)) invalidos.push({ el: q('areaTotal'), msg: 'Área total inválida. Informe um valor maior que zero (ex.: 250,50) ou deixe em branco.' });
     }
     if(stepNum === 3){
       if(!g('bairro')) invalidos.push({ el: q('bairro'), msg: 'Selecione o bairro.' });
@@ -2364,12 +2306,10 @@ function initFormulario(){
         itbiFields.forEach(k => { if(!g(k)) invalidos.push({ el: q(k), msg: 'ITBI incompleto. Preencha todos os campos de ITBI.' }); });
       }
     }
-    if(stepNum === 7){
-      /* A foto do imóvel agora é OPCIONAL — não bloqueia o salvamento. */
-    }
     return invalidos;
   }
 
+  /* ---------- HELPERS DE CONVERSÃO ---------- */
   function toNum(v){
     if(v === '' || v == null) return null;
     const s = String(v).replace(/\s/g,'').replace(',', '.');
@@ -2385,6 +2325,7 @@ function initFormulario(){
     return s ? s : null;
   }
 
+  /* ---------- COLETA ---------- */
   function collect(){
     const up = v => String(v == null ? '' : v).toUpperCase();
     const g  = n => {
@@ -2403,8 +2344,7 @@ function initFormulario(){
       tpArquitetonico:      toInt(g('tpArquitetonico')),
       destinacaoImovel:     toInt(g('destinacaoImovel')),
       idParcela:            up(g('idParcela')),
-      areaTerreno:          toNum(g('areaTerreno')),
-      areaConstruida:       toNum(g('areaConstruida')),
+      areaTotal:            (n => Number.isFinite(n) ? n : null)(lerAreaTotal(g('areaTotal'))),
       bice:                 toInt(g('bice')),
       anoConstrutivo:       toInt(g('anoConstrutivo')),
       valorVenal:           toNum(g('valorVenal')),
@@ -2487,12 +2427,11 @@ function initFormulario(){
         segmento:     up(g('segmento_lote')).trim(),
         tipoSegmento: up(g('segmento_lote')).trim() ? String(g('tipo_segmento_lote') || '') : ''
       },
-      medidasTerreno: {},
-      medidasEdificacao: {},
       construcao: {
         numFrentes: toInt(g('num_frentes')),
         numAndares: toInt(g('num_andares'))
       },
+      /* Só metadados: as imagens vão como arquivos binários (ver enviarFichaViaWorker) */
       foto: fotoBlob ? {
         tipo:                   fotoTipo || null,
         tamanhoBytes:           fotoTamanhoBytes || null,
@@ -2537,6 +2476,7 @@ function initFormulario(){
     try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
   }
 
+  /* ---------- BOTÃO SALVAR ---------- */
   document.getElementById('btnSave').addEventListener('click', async function(){
     let primeiroErro = null;
     for(let s = 1; s <= TOTAL_STEPS; s++){
@@ -2561,6 +2501,7 @@ function initFormulario(){
         foto: fotoBlob,
         anexos: fotosExtras.map(f => f.blob)
       });
+      salvasVersao = null;   // a aba Fichas salvas recarrega na próxima abertura
       toast('Ficha enviada para a nuvem!', 'success');
       try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
       setTimeout(() => { clearForm(); window.scrollTo({ top:0, behavior:'smooth' }); }, 500);
@@ -2573,6 +2514,7 @@ function initFormulario(){
     }
   });
 
+  /* ---------- LIMPAR ---------- */
   document.getElementById('btnClear').addEventListener('click', function(){
     if(!window.confirm('Deseja realmente limpar todos os campos da ficha?')) return;
     clearForm();
@@ -2580,6 +2522,7 @@ function initFormulario(){
     window.scrollTo({ top:0, behavior:'smooth' });
   });
 
+  /* ---------- DRAFT ---------- */
   let saveTimer = null;
   function agendarRascunho(){
     updateProgress();
@@ -2591,6 +2534,7 @@ function initFormulario(){
   form.addEventListener('input', () => { agendarRascunho(); atualizarPreviewInfo(); });
   form.addEventListener('change', () => { agendarRascunho(); atualizarPreviewInfo(); });
 
+  /* ---------- EVENTOS ESPECÍFICOS ---------- */
   document.getElementById('bairro_imovel').addEventListener('change', function(){
     syncLocalizacao();
     const b = document.querySelector('[name=bairro]');
@@ -2603,17 +2547,19 @@ function initFormulario(){
     }
   });
 
+  /* ---------- SELECT BAIRRO → FILTRAR LOGRADOUROS ---------- */
   document.getElementById('bairro').addEventListener('change', function(){
     popularLogradouroSelect();
   });
 
+  /* ---------- LISTAS (bairros/ruas) — Cloudflare D1 via Worker ---------- */
   let listasAssinatura = null;
   async function carregarListas(){
     try {
       const r = await api('GET', '/config/listas');
       const data = (r && r.grupos) || {};
       const assinatura = JSON.stringify(data);
-      if(assinatura === listasAssinatura) return;
+      if(assinatura === listasAssinatura) return;   // nada mudou: não mexe nos selects
       listasAssinatura = assinatura;
 
       const bairrosFs = Array.isArray(data.bairros) ? data.bairros : [];
@@ -2638,474 +2584,777 @@ function initFormulario(){
   });
 
   /* ============================================================
-     ABAS PRINCIPAIS — Formulário / Banco de Dados
+     ABAS PRINCIPAIS · FICHAS SALVAS (visualizar e editar)
      ============================================================ */
-  (function setupMainTabs(){
-    const tabForm = document.getElementById('tab-form-content');
-    const tabDb   = document.getElementById('tab-db-content');
-    const stepper = document.getElementById('stepper');
-    const btnClear = document.getElementById('btnClear');
-    if(!tabForm || !tabDb) return;
+  const viewCadastro = document.getElementById('viewCadastro');
+  const viewSalvas   = document.getElementById('viewSalvas');
+  const footerEl     = document.querySelector('.app-footer');
+  const stepperEl    = document.getElementById('stepper');
+  const btnClearEl   = document.getElementById('btnClear');
+  const SOU_ADMIN    = (currentRole === 'admin' || currentRole === 'superadmin');
+  const LOC = 'dados_imovel.DadosComplementares.localizacaoCadastral.';
+  const ICONE_CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
 
-    let dbFichas = [];
-    let dbLoaded = false;
-    let dbFilter = '';
-    let editingId = null;
-
-    document.querySelectorAll('.main-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const target = tab.dataset.maintab;
-        document.querySelectorAll('.main-tab').forEach(t => t.classList.toggle('active', t === tab));
-        tabForm.style.display = target === 'form' ? '' : 'none';
-        tabDb.style.display   = target === 'db'   ? '' : 'none';
-        
-        if(stepper) stepper.style.display = target === 'form' ? '' : 'none';
-        if(btnClear) btnClear.style.display = target === 'form' ? '' : 'none';
-
-        if(target === 'db'){
-          try { window.scrollTo({ top:0, behavior:'smooth' }); } catch(_) { window.scrollTo(0,0); }
-          loadDbFichas(true);
-        }
-      });
+  function mostrarAba(nome){
+    const cad = nome === 'cadastro';
+    viewCadastro.classList.toggle('hidden', !cad);
+    viewSalvas.classList.toggle('hidden', cad);
+    footerEl.classList.toggle('hidden', !cad);
+    stepperEl.classList.toggle('hidden', !cad);
+    btnClearEl.classList.toggle('hidden', !cad);
+    document.querySelectorAll('.main-tab').forEach(b => {
+      const on = b.dataset.main === nome;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
+    try { window.scrollTo({ top:0 }); } catch(e){ window.scrollTo(0,0); }
+    if(!cad) carregarSalvas(false);
+  }
+  document.querySelectorAll('.main-tab').forEach(b => {
+    b.addEventListener('click', () => mostrarAba(b.dataset.main));
+  });
+  document.getElementById('savedScope').textContent = SOU_ADMIN
+    ? 'Todas as fichas do banco de dados.'
+    : 'Fichas que você cadastrou.';
 
-    function getPath(obj, path){
-      return String(path || '').split('.').reduce((cur, k) => (cur == null ? cur : cur[k]), obj);
+  /* ---------- utilidades de exibição ---------- */
+  const vazio = v => v === null || v === undefined || String(v).trim() === '';
+  function fmtData(s){
+    if(vazio(s)) return '';
+    const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? (m[3] + '/' + m[2] + '/' + m[1]) : String(s);
+  }
+  function fmtDataHora(s){
+    if(vazio(s)) return '';
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? String(s) : d.toLocaleString('pt-BR');
+  }
+  function fmtNum(v, casas){
+    if(vazio(v)) return '';
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toLocaleString('pt-BR', { maximumFractionDigits: casas == null ? 2 : casas }) : String(v);
+  }
+  function fmtTel(v){
+    const d = String(v == null ? '' : v).replace(/\D/g, '');
+    if(d.length === 11) return '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+    if(d.length === 10) return '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6);
+    return String(v == null ? '' : v);
+  }
+  /* Rótulo de uma opção: lido dos próprios selects do formulário de cadastro (sem duplicar listas). */
+  function rotuloSel(selId, val){
+    if(vazio(val)) return '';
+    const s = document.getElementById(selId);
+    if(s){
+      const o = [...s.options].find(o => o.value !== '' && String(o.value).toUpperCase() === String(val).toUpperCase());
+      if(o) return o.textContent;
     }
-    function getOptionsFromSelect(selectId){
-      const sel = document.getElementById(selectId);
-      if(!sel) return [];
-      return [...sel.options]
-        .filter(o => o.value !== '')
-        .map(o => ({ v:o.value, l:o.textContent }));
+    return String(val);
+  }
+  const tplTitularDOM = document.createElement('div');
+  tplTitularDOM.innerHTML = titularTpl();
+  function rotuloTitular(nome, val){
+    if(vazio(val)) return '';
+    const s = tplTitularDOM.querySelector('[name="' + nome + '"]');
+    const o = s ? [...s.options].find(o => o.value !== '' && String(o.value) === String(val)) : null;
+    return o ? o.textContent : String(val);
+  }
+  function linha(k, v){
+    const e = vazio(v);
+    return '<div class="dl-row"><span class="k">' + esc(k) + '</span><span class="v' + (e ? ' empty' : '') + '">' + (e ? '—' : esc(v)) + '</span></div>';
+  }
+  function linhaSe(k, v){ return vazio(v) ? '' : linha(k, v); }
+  function cartao(titulo, corpo){
+    return '<div class="card"><div class="card-body"><p class="sub-head">' + esc(titulo) + '</p>' + corpo + '</div></div>';
+  }
+
+  /* ---------- imagens (binário, com cache em memória) ---------- */
+  const imgCache = {};   // "id|slot" → Promise<{ blob, url }>
+  const imgBust  = {};   // slots que mudaram: a próxima leitura ignora o cache HTTP do navegador
+  function imagemObter(id, slot){
+    const k = id + '|' + slot;
+    if(!imgCache[k]){
+      const bust = !!imgBust[k]; delete imgBust[k];
+      imgCache[k] = apiBlob('/fichas/' + encodeURIComponent(id) + '/anexos/' + slot, bust)
+        .then(blob => ({ blob: blob, url: URL.createObjectURL(blob) }))
+        .catch(e => { delete imgCache[k]; throw e; });
     }
-
-    async function loadDbFichas(force){
-      if(!force && dbLoaded) return;
-      const loadingEl = document.getElementById('dbLoading');
-      const listEl    = document.getElementById('dbList');
-      const emptyEl   = document.getElementById('dbEmpty');
-      
-      if(loadingEl) loadingEl.style.display = '';
-      if(listEl) listEl.innerHTML = '';
-      if(emptyEl) emptyEl.style.display = 'none';
-
-      try {
-        const r = await api('GET', '/fichas');
-        dbFichas = (r && r.fichas) || [];
-        dbLoaded = true;
-        if(loadingEl) loadingEl.style.display = 'none';
-        renderDbList();
-      } catch(err){
-        if(loadingEl) loadingEl.style.display = 'none';
-        if(listEl){
-          const msg = (err && err.status === 403)
-            ? 'Você não tem permissão para acessar o banco de dados. Peça ao administrador para liberar seu acesso.'
-            : ('Não foi possível carregar as fichas. ' + ((err && err.mensagemUsuario) || 'Verifique a conexão.'));
-          listEl.innerHTML = '<div class="db-empty"><strong>Indisponível</strong><span>' + esc(msg) + '</span></div>';
-        }
-      }
-    }
-
-    document.getElementById('dbRefresh')?.addEventListener('click', () => loadDbFichas(true));
-
-    function renderDbList(){
-      const listEl  = document.getElementById('dbList');
-      const emptyEl = document.getElementById('dbEmpty');
-      const countEl = document.getElementById('dbCount');
-      if(!listEl) return;
-      const q = dbFilter.trim().toLowerCase();
-      const filtered = q
-        ? dbFichas.filter(f => {
-            const t = getPath(f, 'dados_imovel.Titular') || [];
-            const hay = [
-              f.bairro_imovel, f.quadra_imovel, f.lote_letra,
-              getPath(f, 'dados_imovel.DadosGeraisImovel.inscricaoImobiliaria'),
-              getPath(f, 'dados_imovel.EnderecoImovel.nomeLogradouro'),
-              t.map(x => x.nomeTitular).join(' ')
-            ].join(' ').toLowerCase();
-            return hay.includes(q);
-          })
-        : dbFichas;
-
-      if(countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' ficha' : ' fichas');
-
-      if(!filtered.length){
-        listEl.innerHTML = '';
-        if(emptyEl){
-          emptyEl.style.display = '';
-          const strong = emptyEl.querySelector('strong');
-          const span   = emptyEl.querySelector('span');
-          if(strong) strong.textContent = q ? 'Nada encontrado' : 'Nenhuma ficha cadastrada';
-          if(span)   span.textContent   = q ? 'Tente outro termo de busca.' : 'As fichas enviadas pelo formulário aparecerão aqui.';
-        }
-        return;
-      }
-      if(emptyEl) emptyEl.style.display = 'none';
-
-      listEl.innerHTML = '<div class="db-list">' + filtered.map(f => {
-        const insc    = getPath(f, 'dados_imovel.DadosGeraisImovel.inscricaoImobiliaria') || '';
-        const titular = (getPath(f, 'dados_imovel.Titular') || [])[0];
-        const nome    = (titular && titular.nomeTitular) || 'Sem titular';
-        const logr    = getPath(f, 'dados_imovel.EnderecoImovel.nomeLogradouro') || '';
-        const numero  = getPath(f, 'dados_imovel.EnderecoImovel.numeroImovel')  || '';
-        const status  = String(f.status || 'pendente').toLowerCase();
-        const sLabel  = status === 'aprovado' ? 'Aprovado' : 'Pendente';
-        const badge   = [f.quadra_imovel ? 'Q ' + f.quadra_imovel : '',
-                         f.lote_letra    ? 'L ' + f.lote_letra   : ''].filter(Boolean).join(' · ') || '—';
-        return '<div class="db-card" data-id="' + esc(f.id) + '">' +
-          '<div class="db-card-header">' +
-            '<span class="db-card-badge">' + esc(badge) + '</span>' +
-            '<span class="db-card-status ' + esc(status) + '">' + esc(sLabel) + '</span>' +
-          '</div>' +
-          '<div class="db-card-title">' + esc(nome) + '</div>' +
-          '<div class="db-card-sub">' + esc(f.bairro_imovel || '—') +
-            (logr ? ' · ' + esc(logr) : '') +
-            (numero ? ', ' + esc(numero) : '') +
-            (insc ? ' · ' + esc(insc) : '') +
-          '</div>' +
-          '<div class="db-card-actions">' +
-            '<button type="button" data-action="view" style="background:#f1f5f9;color:#0f172a;border-color:#cbd5e1;">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
-              'Visualizar' +
-            '</button>' +
-            '<button type="button" data-action="edit" class="primary">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
-              'Editar' +
-            '</button>' +
-          '</div>' +
-        '</div>';
-      }).join('') + '</div>';
-
-      listEl.querySelectorAll('.db-card [data-action]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const id = btn.closest('.db-card').dataset.id;
-          const action = btn.dataset.action;
-          openDbModal(id, action);
-        });
-      });
-    }
-
-    const dbSearch = document.getElementById('dbSearch');
-    if(dbSearch){
-      dbSearch.addEventListener('input', (e) => {
-        dbFilter = e.target.value;
-        renderDbList();
-      });
-    }
-
-    const OPT_TIPO_TITULARIDADE = [
-      { v:'1', l:'1 - Proprietário' }, { v:'2', l:'2 - Nu proprietário' },
-      { v:'3', l:'3 - Senhorio Direto' }, { v:'4', l:'4 - Credor Fiduciário' },
-      { v:'5', l:'5 - Possuidor a justo título' }, { v:'6', l:'6 - Possuidor por simples ocupação' },
-      { v:'7', l:'7 - Enfiteuta' }, { v:'8', l:'8 - Usufrutuário' },
-      { v:'9', l:'9 - Devedor Fiduciante' }, { v:'10', l:'10 - Usuário' },
-      { v:'11', l:'11 - Superficiário' }, { v:'12', l:'12 - Concessionário do Direito Real de Uso' },
-      { v:'13', l:'13 - Habitador' }, { v:'14', l:'14 - Promitente comprador (com registro)' },
-      { v:'15', l:'15 - Concessionário (contrato de concessão de uso)' }, { v:'16', l:'16 - Promitente comprador (demais)' },
-      { v:'17', l:'17 - Arrendatário' }
-    ];
-    const OPT_DOC_TITULARIDADE = [
-      { v:'1', l:'1 - Escritura Pública' }, { v:'2', l:'2 - Contrato com força de Escritura' },
-      { v:'3', l:'3 - Instrumento Particular' }, { v:'4', l:'4 - Sentença Judicial' },
-      { v:'5', l:'5 - Documento de Posse Emitido por Órgão Público' }
-    ];
-
-    const ARRAY_SCHEMAS = {
-      Titular: [
-        { name:'nomeTitular', label:'Nome', type:'text' },
-        { name:'niTitular', label:'CPF/CNPJ', type:'text' },
-        { name:'percTitularidade', label:'% Participação', type:'number', step:'0.01' },
-        { name:'dtAquisicaoTitular', label:'Data de Aquisição', type:'date' },
-        { name:'contatoTitular', label:'Contato', type:'text' },
-        { name:'emailTitular', label:'E-mail', type:'text' },
-        { name:'tipoTitularidade', label:'Tipo de Titularidade', type:'select', options: OPT_TIPO_TITULARIDADE },
-        { name:'docTitularidade', label:'Doc. de Titularidade', type:'select', options: OPT_DOC_TITULARIDADE }
-      ],
-      TransmitenteITBI: [
-        { name:'nomeTransmitenteITBI', label:'Nome', type:'text', full:true },
-        { name:'idTransmitenteITBI', label:'CPF/CNPJ', type:'text', full:true }
-      ],
-      AdquirenteITBI: [
-        { name:'nomeAdquirenteITBI', label:'Nome', type:'text', full:true },
-        { name:'idAdquirenteITBI', label:'CPF/CNPJ', type:'text', full:true },
-        { name:'percTransacAdquirenteITBI', label:'% Adquirido', type:'number', step:'0.01', full:true }
-      ]
+    return imgCache[k];
+  }
+  function invalidarImagensFicha(id){
+    ['foto', 'anexo1', 'anexo2'].forEach(slot => {
+      const k = id + '|' + slot;
+      const p = imgCache[k];
+      delete imgCache[k];
+      imgBust[k] = true;
+      if(p) p.then(r => { try { URL.revokeObjectURL(r.url); } catch(e){} }).catch(() => {});
+    });
+  }
+  function hidratarImagens(root){
+    const imgs = (root || document).querySelectorAll('img[data-img]');
+    const carregar = img => {
+      const p = String(img.dataset.img || '').split('|');
+      imagemObter(p[0], p[1]).then(res => { img.src = res.url; })
+        .catch(() => { img.alt = 'Imagem indisponível'; });
     };
+    if(!('IntersectionObserver' in window)){ imgs.forEach(carregar); return; }
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => { if(en.isIntersecting){ io.unobserve(en.target); carregar(en.target); } });
+    }, { rootMargin:'200px' });
+    imgs.forEach(img => io.observe(img));
+  }
 
-    const SCHEMA = [
-      { title: 'Localização Cadastral', fields: [
-        { name:'bairro_imovel',       label:'Bairro',            type:'select-bairro' },
-        { name:'quadra_imovel',       label:'Quadra',            type:'text', max:3 },
-        { name:'lote_letra',          label:'Lote',              type:'text', max:3 },
-        { name:'segmento_lote',       label:'Segmento do Lote',  type:'text', max:4 },
-        { name:'tipo_segmento_lote',  label:'Classificação',     type:'select', optionsFrom:'tipo_segmento_lote' }
-      ]},
-      { title: 'Dados Gerais do Imóvel', fields: [
-        { name:'tipoImovel',         label:'Tipo de Imóvel',       type:'select', optionsFrom:'tipoImovel',         path:'dados_imovel.DadosGeraisImovel.tipoImovel' },
-        { name:'tpArquitetonico',    label:'Tipo Arquitetônico',   type:'select', optionsFrom:'tpArquitetonico',    path:'dados_imovel.DadosGeraisImovel.tpArquitetonico' },
-        { name:'destinacaoImovel',   label:'Destinação',           type:'select', optionsFrom:'destinacaoImovel',   path:'dados_imovel.DadosGeraisImovel.destinacaoImovel' },
-        { name:'padraoConstrutivo',  label:'Padrão Construtivo',   type:'select', optionsFrom:'padraoConstrutivo',  path:'dados_imovel.DadosGeraisImovel.padraoConstrutivo' },
-        { name:'anoConstrutivo',     label:'Ano Construtivo',      type:'number',                                    path:'dados_imovel.DadosGeraisImovel.anoConstrutivo' },
-        { name:'qtdGaragem',         label:'Qtd. Garagens',        type:'number',                                    path:'dados_imovel.DadosGeraisImovel.qtdGaragem' },
-        { name:'areaTerreno',        label:'Área do Terreno (m²)', type:'number',                                    path:'dados_imovel.DadosGeraisImovel.areaTerreno' },
-        { name:'areaConstruida',     label:'Área Construída (m²)', type:'number',                                    path:'dados_imovel.DadosGeraisImovel.areaConstruida' },
-        { name:'valorVenal',         label:'Valor Venal',          type:'number',                                    path:'dados_imovel.DadosGeraisImovel.valorVenal' },
-        { name:'valorRefMercado',    label:'Valor Ref. Mercado',   type:'number',                                    path:'dados_imovel.DadosGeraisImovel.valorRefMercado' },
-        { name:'idParcela',          label:'ID da Parcela/Lote',   type:'text',                                      path:'dados_imovel.DadosGeraisImovel.idParcela' },
-        { name:'bice',               label:'BICE',                 type:'select', optionsFrom:'bice',               path:'dados_imovel.DadosGeraisImovel.bice', full:true }
-      ]},
-      { title: 'Endereço do Imóvel', fields: [
-        { name:'tipoLogradouro',  label:'Tipo de Logradouro',  type:'select', optionsFrom:'tipoLogradouro',   path:'dados_imovel.EnderecoImovel.tipoLogradouro' },
-        { name:'nomeLogradouro',  label:'Nome do Logradouro',  type:'text',                                    path:'dados_imovel.EnderecoImovel.nomeLogradouro' },
-        { name:'numeroImovel',    label:'Número',              type:'text',                                    path:'dados_imovel.EnderecoImovel.numeroImovel' },
-        { name:'complNroImovel',  label:'Compl. Nº',           type:'text',                                    path:'dados_imovel.EnderecoImovel.complNroImovel' },
-        { name:'complEndereco',   label:'Complemento',         type:'text',                                    path:'dados_imovel.EnderecoImovel.complEndereco' },
-        { name:'bairro',          label:'Bairro (endereço)',   type:'text',                                    path:'dados_imovel.EnderecoImovel.bairro' },
-        { name:'cep',             label:'CEP',                 type:'text', max:8,                            path:'dados_imovel.EnderecoImovel.cep' }
-      ]},
-      { title: 'Titulares', type: 'array', name: 'Titular', path: 'dados_imovel.Titular' },
-      { title: 'Registro de Imóvel', fields: [
-        { name:'nomeServentiaRI', label:'Nome da Serventia', type:'text', path:'dados_imovel.ServicoRegistroImovel.nomeServentiaRI', full:true },
-        { name:'cnsRI', label:'CNS', type:'number', path:'dados_imovel.ServicoRegistroImovel.cnsRI' },
-        { name:'cnmRI', label:'CNM', type:'number', path:'dados_imovel.ServicoRegistroImovel.cnmRI' },
-        { name:'numMatriculaRI', label:'Nº Matrícula', type:'text', path:'dados_imovel.ServicoRegistroImovel.numMatriculaRI' },
-        { name:'numUltimoAtoRI', label:'Nº Último Ato', type:'text', path:'dados_imovel.ServicoRegistroImovel.numUltimoAtoRI' },
-        { name:'lvCartRI', label:'Livro', type:'text', path:'dados_imovel.ServicoRegistroImovel.lvCartRI' },
-        { name:'flCartRI', label:'Folha', type:'text', path:'dados_imovel.ServicoRegistroImovel.flCartRI' },
-        { name:'dtUltAtualizacao', label:'Últ. Atualização', type:'date', path:'dados_imovel.ServicoRegistroImovel.dtUltAtualizacao' }
-      ]},
-      { title: 'Cartório de Notas', fields: [
-        { name:'nomeServentiaNotas', label:'Nome da Serventia', type:'text', path:'dados_imovel.CartorioNotas.nomeServentiaNotas', full:true },
-        { name:'cnsNotas', label:'CNS', type:'number', path:'dados_imovel.CartorioNotas.cnsNotas' },
-        { name:'lvCartNotas', label:'Livro', type:'text', path:'dados_imovel.CartorioNotas.lvCartNotas' },
-        { name:'flCartNotas', label:'Folha', type:'text', path:'dados_imovel.CartorioNotas.flCartNotas' }
-      ]},
-      { title: 'ITBI', fields: [
-        { name:'baseCalculITBI', label:'Base de Cálculo', type:'number', path:'dados_imovel.ITBI.baseCalculITBI' },
-        { name:'valorRefITBI', label:'Valor de Referência', type:'number', path:'dados_imovel.ITBI.valorRefITBI' },
-        { name:'dtTransacaoITBI', label:'Data da Transação', type:'date', path:'dados_imovel.ITBI.dtTransacaoITBI' },
-        { name:'percTransacionadoITBI', label:'% Transacionado', type:'number', path:'dados_imovel.ITBI.percTransacionadoITBI' },
-        { name:'tpTransacaoITBI', label:'Tipo da Transação', type:'select', optionsFrom:'tpTransacaoITBI', path:'dados_imovel.ITBI.tpTransacaoITBI', full:true }
-      ]},
-      { title: 'ITBI - Transmitentes', type: 'array', name: 'TransmitenteITBI', path: 'dados_imovel.ITBI.TransmitenteITBI' },
-      { title: 'ITBI - Adquirentes', type: 'array', name: 'AdquirenteITBI', path: 'dados_imovel.ITBI.AdquirenteITBI' },
-      { title: 'Status da Ficha', fields: [
-        { name:'status', label:'Status', type:'select', options:[
-          { v:'pendente', l:'Pendente' },
-          { v:'aprovado', l:'Aprovado'  }
-        ], full:true }
-      ]}
-    ];
+  /* ---------- carregamento da lista ---------- */
+  let salvas = [];
+  let salvasVersao = null;
+  let salvasCarregando = false;
+  let salvasFalhou = false;
+  let salvasLimite = 30;
 
-    function renderField(field, ficha, mode){
-      const value = getPath(ficha, field.path || field.name);
-      const val   = (value === null || value === undefined) ? '' : String(value);
-      const cls   = 'db-field' + (field.full ? ' full' : '');
-      const ro    = mode === 'view' ? ' readonly disabled' : '';
-      let inner;
-      if(field.type === 'select'){
-        let opts = field.optionsFrom ? getOptionsFromSelect(field.optionsFrom) : (field.options || []);
-        if(val && !opts.some(o => String(o.v) === val)){
-          opts = [{ v: val, l: val + ' (atual)' }].concat(opts);
-        }
-        inner = '<select data-field="' + esc(field.name) + '"' + ro + '>' +
-          '<option value="">—</option>' +
-          opts.map(o => '<option value="' + esc(o.v) + '"' + (String(o.v) === val ? ' selected' : '') + '>' + esc(o.l) + '</option>').join('') +
-        '</select>';
-      } else if(field.type === 'select-bairro'){
-        const bairros = getBairros();
-        const exists = bairros.some(b => b.nome === val);
-        let opts = bairros.map(b => '<option value="' + esc(b.nome) + '"' + (b.nome === val ? ' selected' : '') + '>' + esc(b.numero + ' - ' + b.nome) + '</option>').join('');
-        if(val && !exists){
-          opts = '<option value="' + esc(val) + '" selected>' + esc(val) + ' (atual)</option>' + opts;
-        }
-        inner = '<select data-field="' + esc(field.name) + '"' + ro + '><option value="">—</option>' + opts + '</select>';
-      } else {
-        const inputType = field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text');
-        const step = field.type === 'number' ? ' step="0.01"' : '';
-        const maxl = field.max ? ' maxlength="' + field.max + '"' : '';
-        inner = '<input type="' + inputType + '" data-field="' + esc(field.name) + '" value="' + esc(val) + '"' + maxl + step + ro + '>';
-      }
-      return '<div class="' + cls + '"><label>' + esc(field.label) + '</label>' + inner + '</div>';
-    }
-
-    function renderArrayRow(container, type, data, mode) {
-      const row = document.createElement('div');
-      row.className = 'db-array-item';
-      const fields = ARRAY_SCHEMAS[type];
-      const ro = mode === 'view' ? ' readonly disabled' : '';
-
-      let html = fields.map(f => {
-        let val = data[f.name] !== undefined && data[f.name] !== null ? String(data[f.name]) : '';
-        let inner = '';
-        if (f.type === 'select') {
-           inner = `<select data-arr-field="${f.name}" ${ro}>`;
-           inner += `<option value="">—</option>`;
-           f.options.forEach(o => {
-              inner += `<option value="${esc(o.v)}" ${String(o.v) === val ? 'selected' : ''}>${esc(o.l)}</option>`;
-           });
-           inner += `</select>`;
-        } else {
-           let typeAttr = f.type === 'number' ? 'number' : (f.type === 'date' ? 'date' : 'text');
-           let stepAttr = f.step ? ` step="${f.step}"` : '';
-           inner = `<input type="${typeAttr}" data-arr-field="${f.name}" value="${esc(val)}" ${stepAttr} ${ro}>`;
-        }
-        return `<div class="db-field ${f.full ? 'full' : ''}"><label>${esc(f.label)}</label>${inner}</div>`;
-      }).join('');
-
-      if (mode !== 'view') {
-        html += `<button type="button" class="btn-rm-array">Remover</button>`;
-      }
-
-      row.innerHTML = `<div class="db-section-grid">${html}</div>`;
-      
-      if (mode !== 'view') {
-        row.querySelector('.btn-rm-array').onclick = () => row.remove();
-      }
-      container.appendChild(row);
-    }
-
-    function openDbModal(id, mode){
-      const ficha = dbFichas.find(f => f.id === id);
-      if(!ficha) return;
-      editingId = id;
-      const titular = (getPath(ficha, 'dados_imovel.Titular') || [])[0];
-      const nome    = (titular && titular.nomeTitular) || 'Sem titular';
-      
-      document.getElementById('dbModalTitle').textContent = mode === 'view' ? 'Visualizar Ficha' : 'Editar Ficha';
-      document.getElementById('dbModalSubtitle').textContent = nome + ' · ' + (ficha.bairro_imovel || '—');
-      document.getElementById('dbModalSave').style.display = mode === 'view' ? 'none' : '';
-      document.getElementById('dbModalCancel').textContent = mode === 'view' ? 'Fechar' : 'Cancelar';
-
-      const container = document.getElementById('dbModalBody');
-      container.innerHTML = '';
-      
-      SCHEMA.forEach(group => {
-        const section = document.createElement('div');
-        section.className = 'db-section';
-        section.innerHTML = `<h4>${esc(group.title)}</h4>`;
-        
-        if (group.type === 'array') {
-          const arrayDiv = document.createElement('div');
-          arrayDiv.id = 'db-array-' + group.name;
-          arrayDiv.dataset.arrayName = group.name;
-          arrayDiv.dataset.path = group.path;
-          section.appendChild(arrayDiv);
-          
-          if (mode !== 'view') {
-            const addBtn = document.createElement('button');
-            addBtn.type = 'button';
-            addBtn.className = 'btn btn-ghost';
-            addBtn.style = 'margin-top:10px; min-height:36px; font-size:12.5px; padding:0 12px;';
-            addBtn.textContent = '+ Adicionar ' + (group.name === 'Titular' ? 'Titular' : (group.name === 'TransmitenteITBI' ? 'Transmitente' : 'Adquirente'));
-            addBtn.onclick = () => renderArrayRow(arrayDiv, group.name, {}, mode);
-            section.appendChild(addBtn);
-          }
-          
-          const list = getPath(ficha, group.path) || [];
-          if (list.length === 0 && mode !== 'view') {
-            renderArrayRow(arrayDiv, group.name, {}, mode);
-          } else {
-            list.forEach(item => renderArrayRow(arrayDiv, group.name, item, mode));
-          }
-        } else {
-          const grid = document.createElement('div');
-          grid.className = 'db-section-grid';
-          group.fields.forEach(field => {
-             grid.innerHTML += renderField(field, ficha, mode);
-          });
-          section.appendChild(grid);
-        }
-        container.appendChild(section);
-      });
-
-      document.getElementById('dbModal').classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeDbEditor(){
-      document.getElementById('dbModal').classList.remove('open');
-      document.body.style.overflow = '';
-      editingId = null;
-    }
-
-    document.getElementById('dbModalClose')?.addEventListener('click', closeDbEditor);
-    document.getElementById('dbModalCancel')?.addEventListener('click', closeDbEditor);
-    document.getElementById('dbModal')?.addEventListener('click', (e) => {
-      if(e.target.id === 'dbModal') closeDbEditor();
+  function achatarFicha(raw){
+    const d   = raw.dados_imovel || {};
+    const dg  = d.DadosGeraisImovel || {}, ac = d.AreaConstruidaCompl || {}, ei = d.EnderecoImovel || {};
+    const sr  = d.ServicoRegistroImovel || {}, cn = d.CartorioNotas || {}, itbi = d.ITBI || {};
+    const dc  = d.DadosComplementares || {}, loc = dc.localizacaoCadastral || {}, co = dc.construcao || {};
+    const ft  = dc.foto || null;
+    const extras = Array.isArray(dc.fotosAdicionais) ? dc.fotosAdicionais.filter(x => x && (x.arquivo || x.base64)) : [];
+    return Object.assign({}, dg, ac, ei, sr, cn, itbi, {
+      id: raw.id,
+      bairro_imovel:      raw.bairro_imovel || loc.bairro || '',
+      quadra_imovel:      raw.quadra_imovel || loc.quadra || '',
+      lote_letra:         raw.lote_letra || loc.lote || '',
+      segmento_lote:      raw.segmento_lote || loc.segmento || '',
+      tipo_segmento_lote: raw.tipo_segmento_lote || loc.tipoSegmento || '',
+      status:             raw.status || dc.status || 'pendente',
+      criado_em:          raw.criado_em,
+      atualizado_em:      raw.atualizado_em,
+      criado_por_email:   raw.criado_por_email || '',
+      num_frentes:        co.numFrentes,
+      num_andares:        co.numAndares,
+      Titular:            Array.isArray(d.Titular) ? d.Titular : [],
+      TransmitenteITBI:   Array.isArray(itbi.TransmitenteITBI) ? itbi.TransmitenteITBI : [],
+      AdquirenteITBI:     Array.isArray(itbi.AdquirenteITBI) ? itbi.AdquirenteITBI : [],
+      temFoto:            !!(ft && (ft.arquivo || ft.base64)),
+      fotoGeo:            (ft && ft.latitude != null && ft.longitude != null) ? ft : null,
+      extras:             extras.length
     });
+  }
 
-    document.getElementById('dbModalSave')?.addEventListener('click', async () => {
-      if(!editingId) return;
-      const body = document.getElementById('dbModalBody');
-      const updates = {};
-      
-      SCHEMA.forEach(group => {
-        if (group.type === 'array') {
-          const arrContainer = document.getElementById('db-array-' + group.name);
-          const rows = arrContainer.querySelectorAll('.db-array-item');
-          const arr = [];
-          rows.forEach(row => {
-            const obj = {};
-            row.querySelectorAll('[data-arr-field]').forEach(inp => {
-              let v = inp.value;
-              if (inp.type === 'number') v = v === '' ? null : Number(v);
-              obj[inp.dataset.arrField] = v;
-            });
-            arr.push(obj);
-          });
-          updates[group.path] = arr;
-        } else {
-          group.fields.forEach(field => {
-            const input = body.querySelector('[data-field="' + field.name + '"]');
-            if(!input) return;
-            let v = input.value;
-            if(field.type === 'number'){
-              v = v === '' ? null : Number(v);
-              if(!Number.isFinite(v)) v = null;
-            }
-            updates[field.path || field.name] = v;
-          });
-        }
-      });
-
-      if(updates['tipo_segmento_lote'] && !String(updates['segmento_lote'] || '').trim()){
-        toast('Informe o segmento do lote para usar a classificação.', 'error');
-        return;
+  async function carregarSalvas(force){
+    if(salvasCarregando) return;
+    salvasCarregando = true;
+    const btn = document.getElementById('btnRecarregarFichas');
+    if(btn) btn.classList.add('spin');
+    renderSalvas();
+    try {
+      const v = await api('GET', '/fichas/versao');
+      if(force || salvasVersao === null || v.versao !== salvasVersao){
+        const r = await api('GET', '/fichas');
+        salvas = (r.fichas || []).map(achatarFicha);
+        salvasVersao = v.versao;
       }
+      salvasFalhou = false;
+    } catch(err){
+      salvasFalhou = true;
+      console.warn('[fichas salvas]', err);
+      toast(err.mensagemUsuario || 'Não foi possível carregar as fichas.', 'error');
+    } finally {
+      salvasCarregando = false;
+      if(btn) btn.classList.remove('spin');
+      renderSalvas();
+    }
+  }
 
-      const ficha = dbFichas.find(f => f.id === editingId);
-      const bNovo = updates['bairro_imovel'] !== undefined ? updates['bairro_imovel'] : (ficha.bairro_imovel || '');
-      const qNovo = updates['quadra_imovel'] !== undefined ? updates['quadra_imovel'] : (ficha.quadra_imovel || '');
-      const lNovo = updates['lote_letra']    !== undefined ? updates['lote_letra']    : (ficha.lote_letra    || '');
-      if(bNovo && /^\d{3}$/.test(qNovo) && /^\d{3}$/.test(lNovo)){
-        const bInfo = getBairros().find(x => x.nome === bNovo);
-        const bNum  = bInfo ? bInfo.numero : '000';
-        updates['dados_imovel.DadosGeraisImovel.inscricaoImobiliaria'] =
-          '00.00.' + qNovo + '.' + lNovo + '.' + bNum;
-      }
+  function textoBusca(f){
+    const nomes = f.Titular.map(t => t.nomeTitular || '').join(' ');
+    return [f.bairro_imovel, f.quadra_imovel, f.lote_letra, f.segmento_lote, f.nomeLogradouro,
+            f.numeroImovel, f.inscricaoImobiliaria, f.cep, nomes].join(' ').toLowerCase();
+  }
 
-      const btn = document.getElementById('dbModalSave');
-      btn.disabled = true;
-      const original = btn.textContent;
-      btn.textContent = 'Salvando...';
-      try {
-        await api('PATCH', '/fichas/' + encodeURIComponent(editingId), { updates });
-        toast('Ficha atualizada com sucesso.', 'success');
-        closeDbEditor();
-        await loadDbFichas(true);
-      } catch(err){
-        console.error('[db-edit]', err);
-        toast((err && err.mensagemUsuario) || 'Não foi possível salvar as alterações.', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = original;
-      }
+  function renderSalvas(){
+    const lista = document.getElementById('savedList');
+    const cont  = document.getElementById('savedCount');
+    const q = String(document.getElementById('buscaFichas').value || '').trim().toLowerCase();
+    document.getElementById('tabSalvasCount').textContent = salvas.length ? String(salvas.length) : '';
+
+    if(salvasCarregando && !salvas.length){
+      lista.innerHTML = '<div class="saved-empty">Carregando fichas…</div>'; cont.textContent = ''; return;
+    }
+    if(salvasFalhou && !salvas.length){
+      lista.innerHTML = '<div class="saved-empty">Não foi possível carregar as fichas.<br>Toque em atualizar para tentar de novo.</div>';
+      cont.textContent = ''; return;
+    }
+    const filtradas = q ? salvas.filter(f => textoBusca(f).includes(q)) : salvas;
+    if(!filtradas.length){
+      lista.innerHTML = '<div class="saved-empty">' + (q ? 'Nenhuma ficha encontrada para a busca.' : 'Nenhuma ficha salva ainda.') + '</div>';
+      cont.textContent = ''; return;
+    }
+    const visiveis = filtradas.slice(0, salvasLimite);
+    cont.textContent = filtradas.length + (filtradas.length === 1 ? ' ficha' : ' fichas');
+
+    lista.innerHTML = visiveis.map(f => {
+      const nome = (f.Titular[0] && f.Titular[0].nomeTitular) || '';
+      const end  = [f.nomeLogradouro, f.numeroImovel].filter(x => !vazio(x)).join(', ');
+      const st   = f.status === 'aprovado' ? 'aprovado' : 'pendente';
+      return '<button type="button" class="saved-card" data-id="' + esc(f.id) + '">' +
+        '<span class="saved-thumb">' + (f.temFoto ? '<img data-img="' + esc(f.id) + '|foto" alt="">' : ICONE_CAM) + '</span>' +
+        '<span class="saved-info">' +
+          '<span class="saved-title">Quadra ' + esc(f.quadra_imovel || '—') + ' · Lote ' + esc(f.lote_letra || '—') + (f.segmento_lote ? '-' + esc(f.segmento_lote) : '') + '</span>' +
+          '<span class="saved-line strong">' + esc(f.bairro_imovel || '—') + '</span>' +
+          '<span class="saved-line">' + esc(end || 'Sem endereço') + '</span>' +
+          (nome ? '<span class="saved-line">' + esc(nome) + '</span>' : '') +
+          '<span class="badge-st ' + st + '">' + (st === 'aprovado' ? 'Aprovado' : 'Pendente') + '</span>' +
+        '</span></button>';
+    }).join('') + (filtradas.length > visiveis.length
+      ? '<button type="button" class="btn btn-ghost btn-more" id="btnMaisFichas">Mostrar mais (' + (filtradas.length - visiveis.length) + ')</button>'
+      : '');
+    hidratarImagens(lista);
+  }
+
+  document.getElementById('savedList').addEventListener('click', e => {
+    const mais = e.target.closest ? e.target.closest('#btnMaisFichas') : null;
+    if(mais){ salvasLimite += 30; renderSalvas(); return; }
+    const card = e.target.closest ? e.target.closest('.saved-card') : null;
+    if(card) abrirFicha(card.dataset.id);
+  });
+  let buscaTimer = null;
+  document.getElementById('buscaFichas').addEventListener('input', () => {
+    clearTimeout(buscaTimer);
+    buscaTimer = setTimeout(() => { salvasLimite = 30; renderSalvas(); }, 200);
+  });
+  document.getElementById('btnRecarregarFichas').addEventListener('click', () => carregarSalvas(true));
+
+  /* ---------- diálogos: confirmação e "ocupado" ---------- */
+  function confirmar(o){
+    return new Promise(resolve => {
+      const dlg = document.getElementById('dlgConfirm');
+      const yes = document.getElementById('dlgYes'), no = document.getElementById('dlgNo');
+      document.getElementById('dlgTitle').textContent = o.titulo || 'Confirmar';
+      document.getElementById('dlgMsg').textContent = o.msg || '';
+      yes.textContent = o.ok || 'Confirmar';
+      yes.className = 'btn ' + (o.perigo === false ? 'btn-primary' : 'btn-danger');
+      const fim = v => { dlg.classList.add('hidden'); yes.onclick = no.onclick = dlg.onclick = null; resolve(v); };
+      yes.onclick = () => fim(true);
+      no.onclick  = () => fim(false);
+      dlg.onclick = ev => { if(ev.target === dlg) fim(false); };
+      dlg.classList.remove('hidden');
     });
-  })();
+  }
+  function mostrarBusy(txt){ document.getElementById('busyTxt').textContent = txt || 'Aguarde…'; document.getElementById('busy').classList.remove('hidden'); }
+  function setBusyTexto(txt){ document.getElementById('busyTxt').textContent = txt; }
+  function esconderBusy(){ document.getElementById('busy').classList.add('hidden'); }
 
+  /* ---------- folha de detalhe / edição ---------- */
+  const sheetEl   = document.getElementById('sheet');
+  const sheetBody = document.getElementById('sheetBody');
+  const sheetFoot = document.getElementById('sheetFoot');
+  let fichaAberta = null;
+  let modoSheet = 'ver';   // ver | editar
+
+  function fichaAtual(){ return salvas.find(f => f.id === fichaAberta) || null; }
+  function abrirFicha(id){
+    fichaAberta = id; modoSheet = 'ver';
+    sheetEl.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    renderSheet(false);
+  }
+  function fecharSheet(){
+    sheetEl.classList.add('hidden');
+    document.body.style.overflow = '';
+    fichaAberta = null; modoSheet = 'ver';
+  }
+  function renderSheet(manterScroll){
+    const f = fichaAtual();
+    if(!f){ fecharSheet(); return; }
+    const st = sheetBody.scrollTop;
+    document.getElementById('sheetTitle').textContent = 'Quadra ' + (f.quadra_imovel || '—') + ' · Lote ' + (f.lote_letra || '—') + (f.segmento_lote ? '-' + f.segmento_lote : '');
+    document.getElementById('sheetSub').textContent = (modoSheet === 'editar' ? 'Editando · ' : '') + (f.bairro_imovel || '—');
+    document.getElementById('sheetEditBtn').style.display = modoSheet === 'ver' ? '' : 'none';
+    sheetFoot.classList.toggle('hidden', modoSheet !== 'editar');
+    sheetBody.innerHTML = modoSheet === 'ver' ? htmlDetalhe(f) : htmlEdicao(f);
+    if(modoSheet === 'editar') ligarEdicao();
+    hidratarImagens(sheetBody);
+    sheetBody.scrollTop = manterScroll ? st : 0;
+  }
+  async function atualizarFichaAberta(){
+    await carregarSalvas(true);
+    renderSheet(true);
+  }
+
+  document.getElementById('sheetBack').addEventListener('click', () => { if(modoSheet === 'editar') sairEdicao(); else fecharSheet(); });
+  document.getElementById('sheetEditBtn').addEventListener('click', () => { modoSheet = 'editar'; renderSheet(false); });
+  document.getElementById('sheetCancel').addEventListener('click', () => sairEdicao());
+  document.getElementById('sheetSave').addEventListener('click', () => salvarEdicao());
+
+  /* ---------- detalhe (somente leitura) ---------- */
+  function blocoFoto(f, slot, rotulo, existe){
+    const extra = slot !== 'foto';
+    let h = '<div class="sv-photo' + (extra ? ' extra' : '') + '">' +
+      '<div class="sv-title">' + esc(rotulo) + '</div>' +
+      '<div class="sv-img">' + (existe ? '<img data-img="' + esc(f.id) + '|' + slot + '" alt="' + esc(rotulo) + '">' : '<span>Nenhuma imagem</span>') + '</div>';
+    if(existe && !extra && f.fotoGeo){
+      h += '<div class="sv-meta">📍 ' + Number(f.fotoGeo.latitude).toFixed(6) + ', ' + Number(f.fotoGeo.longitude).toFixed(6) +
+        (f.fotoGeo.precisaoM ? ' (±' + Math.round(Number(f.fotoGeo.precisaoM)) + ' m)' : '') + '</div>';
+    }
+    h += '<div class="photo-actions">';
+    if(existe){
+      h += '<button type="button" data-foto-act="trocar" data-slot="' + slot + '">Trocar foto</button>' +
+           '<button type="button" class="btn-photo-danger" data-foto-act="remover" data-slot="' + slot + '">Excluir</button>';
+    } else {
+      h += '<button type="button" data-foto-act="trocar" data-slot="' + slot + '">+ Adicionar foto</button>';
+    }
+    return h + '</div></div>';
+  }
+
+  function htmlDetalhe(f){
+    let fotos = blocoFoto(f, 'foto', 'Foto do imóvel', f.temFoto);
+    for(let i = 1; i <= f.extras; i++) fotos += blocoFoto(f, 'anexo' + i, 'Foto adicional ' + i, true);
+    if(f.extras < 2) fotos += blocoFoto(f, 'anexo' + (f.extras + 1), 'Foto adicional ' + (f.extras + 1), false);
+    fotos += '<p class="hint" style="margin:12px 0 0;font-size:11.5px;color:var(--muted);">Fotos adicionais são excluídas automaticamente 30 dias após o envio.</p>';
+
+    const loc =
+      linha('Inscrição imobiliária', f.inscricaoImobiliaria) +
+      linha('Bairro', f.bairro_imovel) +
+      linha('Quadra', f.quadra_imovel) +
+      linha('Lote', f.lote_letra) +
+      linhaSe('Segmento do lote', f.segmento_lote) +
+      linhaSe('Classificação', rotuloSel('tipo_segmento_lote', f.tipo_segmento_lote));
+
+    const end =
+      linha('Tipo de logradouro', rotuloSel('tipoLogradouro', f.tipoLogradouro)) +
+      linha('Logradouro', f.nomeLogradouro) +
+      linha('Número', f.numeroImovel) +
+      linhaSe('Compl. Nº', f.complNroImovel) +
+      linhaSe('Complemento', f.complEndereco) +
+      linha('Bairro (endereço)', f.bairro) +
+      linha('CEP', f.cep);
+
+    const gerais =
+      linha('Tipo de imóvel', rotuloSel('tipoImovel', f.tipoImovel)) +
+      linhaSe('Tipo arquitetônico', rotuloSel('tpArquitetonico', f.tpArquitetonico)) +
+      linhaSe('Destinação', rotuloSel('destinacaoImovel', f.destinacaoImovel)) +
+      linhaSe('Padrão construtivo', rotuloSel('padraoConstrutivo', f.padraoConstrutivo)) +
+      linhaSe('Qtd. garagens', f.qtdGaragem) +
+      linhaSe('ID da parcela/lote', f.idParcela) +
+      linhaSe('Ano construtivo', f.anoConstrutivo) +
+      linhaSe('Valor venal', fmtNum(f.valorVenal)) +
+      linhaSe('Último valor venal', fmtData(f.dtUltimoValorVenal)) +
+      linhaSe('Valor ref. mercado', fmtNum(f.valorRefMercado)) +
+      linhaSe('Últ. valor de mercado', fmtData(f.dataUltVlrMercado)) +
+      linhaSe('BICE', rotuloSel('bice', f.bice)) +
+      linha('Possui piscina', f.temPiscina ? 'Sim' : 'Não') +
+      linha('Divisão política (bairro)', f.temBairro ? 'Sim' : 'Não');
+
+    // Fichas antigas guardavam as medidas separadas; continuam visíveis (somente leitura)
+    const legado = linhaSe('Área do terreno (antiga)', fmtNum(f.areaTerreno)) +
+                   linhaSe('Área construída (antiga)', fmtNum(f.areaConstruida));
+    const area =
+      linha('Área total (m²)', fmtNum(f.areaTotal)) +
+      legado +
+      linhaSe('Nº de frentes', f.num_frentes) +
+      linhaSe('Nº de andares', f.num_andares) +
+      linhaSe('Área privativa (m²)', fmtNum(f.areaPrivativa, 4)) +
+      linhaSe('Área comum (m²)', fmtNum(f.areaComum, 4)) +
+      linhaSe('Fração ideal', fmtNum(f.fraIdeal, 4));
+
+    const titulares = f.Titular.length ? f.Titular.map((t, i) =>
+      '<div class="sv-sub"><strong>Titular ' + (i + 1) + '</strong>' +
+        linha('Nome', t.nomeTitular) +
+        linha('CPF/CNPJ', formatCpfCnpj(t.niTitular)) +
+        linhaSe('% participação', fmtNum(t.percTitularidade, 4)) +
+        linhaSe('Data de aquisição', fmtData(t.dtAquisicaoTitular)) +
+        linhaSe('Contato', fmtTel(t.contatoTitular)) +
+        linhaSe('E-mail', t.emailTitular) +
+        linhaSe('Tipo de titularidade', rotuloTitular('tipoTitularidade', t.tipoTitularidade)) +
+        linhaSe('Doc. de titularidade', rotuloTitular('docTitularidade', t.docTitularidade)) +
+      '</div>').join('') : '<div class="saved-empty" style="margin-top:12px">Nenhum titular informado.</div>';
+
+    const registro =
+      linhaSe('Serventia (RI)', f.nomeServentiaRI) + linhaSe('CNS (RI)', f.cnsRI) + linhaSe('CNM', f.cnmRI) +
+      linhaSe('Nº matrícula', f.numMatriculaRI) + linhaSe('Nº último ato', f.numUltimoAtoRI) +
+      linhaSe('Livro (RI)', f.lvCartRI) + linhaSe('Folha (RI)', f.flCartRI) + linhaSe('Últ. atualização', fmtData(f.dtUltAtualizacao)) +
+      linhaSe('Serventia (Notas)', f.nomeServentiaNotas) + linhaSe('CNS (Notas)', f.cnsNotas) +
+      linhaSe('Livro (Notas)', f.lvCartNotas) + linhaSe('Folha (Notas)', f.flCartNotas);
+
+    const itbi =
+      linhaSe('Base de cálculo', fmtNum(f.baseCalculITBI)) + linhaSe('Valor de referência', fmtNum(f.valorRefITBI)) +
+      linhaSe('Data da transação', fmtData(f.dtTransacaoITBI)) + linhaSe('Tipo da transação', rotuloSel('tpTransacaoITBI', f.tpTransacaoITBI)) +
+      linhaSe('% transacionado', fmtNum(f.percTransacionadoITBI, 6)) +
+      f.TransmitenteITBI.map((t, i) => linhaSe('Transmitente ' + (i + 1), [t.nomeTransmitenteITBI, formatCpfCnpj(t.idTransmitenteITBI)].filter(x => !vazio(x)).join(' · '))).join('') +
+      f.AdquirenteITBI.map((t, i) => linhaSe('Adquirente ' + (i + 1), [t.nomeAdquirenteITBI, formatCpfCnpj(t.idAdquirenteITBI), vazio(t.percTransacAdquirenteITBI) ? '' : fmtNum(t.percTransacAdquirenteITBI, 6) + '%'].filter(x => !vazio(x)).join(' · '))).join('');
+
+    const aud =
+      linha('Status', f.status === 'aprovado' ? 'Aprovado' : 'Pendente') +
+      linhaSe('Cadastrada por', f.criado_por_email) +
+      linhaSe('Criada em', fmtDataHora(f.criado_em)) +
+      linhaSe('Última alteração', fmtDataHora(f.atualizado_em));
+
+    return cartao('Fotos', fotos) + cartao('Localização cadastral', loc) + cartao('Endereço', end) +
+      cartao('Dados gerais', gerais) + cartao('Área e construção', area) +
+      cartao('Titulares', titulares) +
+      (registro ? cartao('Registro e cartório', registro) : '') +
+      (itbi ? cartao('ITBI', itbi) : '') + cartao('Informações da ficha', aud);
+  }
+
+  /* ---------- ações de foto: trocar / adicionar / excluir ---------- */
+  const trocaInput = document.getElementById('foto_troca_input');
+  let fotoAlvo = null;
+
+  sheetBody.addEventListener('click', async e => {
+    const b = e.target.closest ? e.target.closest('[data-foto-act]') : null;
+    if(!b) return;
+    const f = fichaAtual(); if(!f) return;
+    const slot = b.dataset.slot;
+    if(b.dataset.fotoAct === 'trocar'){
+      fotoAlvo = { id: f.id, slot: slot };
+      trocaInput.value = '';
+      trocaInput.click();
+    } else if(b.dataset.fotoAct === 'remover'){
+      await excluirFoto(f, slot);
+    }
+  });
+
+  async function excluirFoto(f, slot){
+    const ok = await confirmar({
+      titulo: 'Excluir foto?',
+      msg: 'Você vai excluir ' + (slot === 'foto' ? 'a foto do imóvel' : 'esta foto adicional') +
+           ' desta ficha. Essa ação não pode ser desfeita.',
+      ok: 'Excluir'
+    });
+    if(!ok) return;
+    mostrarBusy('Excluindo foto…');
+    try {
+      await api('DELETE', '/fichas/' + encodeURIComponent(f.id) + '/anexos/' + slot);
+      invalidarImagensFicha(f.id);
+      await atualizarFichaAberta();
+      toast('Foto excluída.', 'success');
+    } catch(err){
+      console.error('[excluir foto]', err);
+      toast(err.mensagemUsuario || 'Não foi possível excluir a foto.', 'error');
+    } finally { esconderBusy(); }
+  }
+
+  function infoDaFicha(f){
+    return { bairroCad: f.bairro_imovel || '', quadra: f.quadra_imovel || '', lote: f.lote_letra || '',
+             segmento: f.segmento_lote || '', logradouro: f.nomeLogradouro || '',
+             numero: f.numeroImovel || '', complemento: f.complNroImovel || '' };
+  }
+
+  trocaInput.addEventListener('change', async () => {
+    const file = trocaInput.files && trocaInput.files[0];
+    const alvo = fotoAlvo;
+    if(!file || !alvo) return;
+    fotoAlvo = null;
+    if(!/^image\//.test(file.type)){
+      toast('Selecione um arquivo de imagem.', 'error'); trocaInput.value = ''; return;
+    }
+    const f = salvas.find(x => x.id === alvo.id);
+    if(!f) return;
+    const principal = alvo.slot === 'foto';
+    mostrarBusy(principal ? 'Localizando… buscando sinal de GPS' : 'Processando imagem…');
+    try {
+      let geo = null, info = null;
+      if(principal){
+        geo = await obterLocalizacaoPrecisa({
+          timeoutMs: 8000, alvoPrecisao: 8,
+          onUpdate: (melhor, ms) => {
+            const restante = Math.max(0, Math.round((8000 - ms) / 1000));
+            setBusyTexto(!melhor || melhor.precisao == null
+              ? 'Localizando… aguardando leitura (' + restante + 's)'
+              : 'Localizando… precisão ' + Math.round(melhor.precisao) + ' m (restam ' + restante + 's)');
+          }
+        });
+        setBusyTexto('Aplicando informações na imagem…');
+        info = infoDaFicha(f);
+      }
+      const res = await comprimirImagem(file, 150 * 1024, geo, info);
+      setBusyTexto('Enviando imagem…');
+      const fd = new FormData();
+      const ext = /webp/i.test(res.tipo) ? 'webp' : (/png/i.test(res.tipo) ? 'png' : 'jpg');
+      fd.append('arquivo', res.blob, alvo.slot + '.' + ext);
+      if(geo){
+        fd.append('meta', JSON.stringify({
+          latitude: geo.lat, longitude: geo.lng, precisaoM: geo.precisao, geolocalizacaoHorario: geo.horario
+        }));
+      }
+      await apiUpload('PUT', '/fichas/' + encodeURIComponent(alvo.id) + '/anexos/' + alvo.slot, fd);
+      invalidarImagensFicha(alvo.id);
+      await atualizarFichaAberta();
+      toast(principal ? 'Foto do imóvel atualizada.' : 'Foto adicional salva.', 'success');
+    } catch(err){
+      console.error('[trocar foto]', err);
+      toast(err.mensagemUsuario || 'Não foi possível salvar a foto.', 'error');
+    } finally {
+      esconderBusy();
+      trocaInput.value = '';
+    }
+  });
+
+  /* ---------- edição ---------- */
+  const DG = 'dados_imovel.DadosGeraisImovel.', AC = 'dados_imovel.AreaConstruidaCompl.',
+        EI = 'dados_imovel.EnderecoImovel.', SR = 'dados_imovel.ServicoRegistroImovel.',
+        CN = 'dados_imovel.CartorioNotas.', IT = 'dados_imovel.ITBI.',
+        CO = 'dados_imovel.DadosComplementares.construcao.';
+
+  /* Campo do formulário → caminho(s) gravado(s) no banco */
+  const CAMINHOS = {
+    bairro_imovel: ['bairro_imovel', LOC + 'bairro'],
+    quadra_imovel: ['quadra_imovel', LOC + 'quadra'],
+    lote_letra:    ['lote_letra', LOC + 'lote'],
+    segmento_lote: ['segmento_lote', LOC + 'segmento'],
+    tipo_segmento_lote: ['tipo_segmento_lote', LOC + 'tipoSegmento'],
+    tipoLogradouro: EI + 'tipoLogradouro', bairro: EI + 'bairro', nomeLogradouro: EI + 'nomeLogradouro',
+    numeroImovel: EI + 'numeroImovel', complNroImovel: EI + 'complNroImovel', complEndereco: EI + 'complEndereco',
+    cep: EI + 'cep', temBairro: EI + 'temBairro',
+    tipoImovel: DG + 'tipoImovel', tpArquitetonico: DG + 'tpArquitetonico', destinacaoImovel: DG + 'destinacaoImovel',
+    padraoConstrutivo: DG + 'padraoConstrutivo', qtdGaragem: DG + 'qtdGaragem', idParcela: DG + 'idParcela',
+    anoConstrutivo: DG + 'anoConstrutivo', valorVenal: DG + 'valorVenal', dtUltimoValorVenal: DG + 'dtUltimoValorVenal',
+    valorRefMercado: DG + 'valorRefMercado', dataUltVlrMercado: DG + 'dataUltVlrMercado', bice: DG + 'bice',
+    temPiscina: DG + 'temPiscina', areaTotal: DG + 'areaTotal',
+    num_frentes: CO + 'numFrentes', num_andares: CO + 'numAndares',
+    areaPrivativa: AC + 'areaPrivativa', areaComum: AC + 'areaComum', fraIdeal: AC + 'fraIdeal',
+    nomeServentiaRI: SR + 'nomeServentiaRI', cnsRI: SR + 'cnsRI', cnmRI: SR + 'cnmRI',
+    numMatriculaRI: SR + 'numMatriculaRI', numUltimoAtoRI: SR + 'numUltimoAtoRI',
+    lvCartRI: SR + 'lvCartRI', flCartRI: SR + 'flCartRI', dtUltAtualizacao: SR + 'dtUltAtualizacao',
+    nomeServentiaNotas: CN + 'nomeServentiaNotas', cnsNotas: CN + 'cnsNotas',
+    lvCartNotas: CN + 'lvCartNotas', flCartNotas: CN + 'flCartNotas',
+    baseCalculITBI: IT + 'baseCalculITBI', valorRefITBI: IT + 'valorRefITBI', dtTransacaoITBI: IT + 'dtTransacaoITBI',
+    tpTransacaoITBI: IT + 'tpTransacaoITBI', percTransacionadoITBI: IT + 'percTransacionadoITBI'
+  };
+
+  /* t: text | number | date | sel | logra | bool · k: int | num | area · up: grava em MAIÚSCULAS
+     Um array dentro de "campos" = duas colunas lado a lado. */
+  const EDIT_SECOES = [
+    { titulo:'Localização cadastral', campos:[
+      { n:'bairro_imovel', l:'Bairro', t:'sel', src:'bairro_imovel', req:true, up:true },
+      [ { n:'quadra_imovel', l:'Quadra', t:'text', req:true, dig:3 }, { n:'lote_letra', l:'Lote', t:'text', req:true, dig:3 } ],
+      [ { n:'segmento_lote', l:'Segmento (opcional)', t:'text', seg:true, up:true }, { n:'tipo_segmento_lote', l:'Classificação', t:'sel', src:'tipo_segmento_lote' } ]
+    ]},
+    { titulo:'Endereço', campos:[
+      { n:'tipoLogradouro', l:'Tipo de logradouro', t:'sel', src:'tipoLogradouro', k:'int', req:true },
+      { n:'bairro', l:'Bairro (endereço)', t:'sel', src:'bairro', up:true, req:true },
+      { n:'nomeLogradouro', l:'Nome do logradouro', t:'logra', up:true, req:true },
+      [ { n:'numeroImovel', l:'Número', t:'text', up:true, max:8 }, { n:'cep', l:'CEP', t:'text', dig:8, req:true } ],
+      [ { n:'complNroImovel', l:'Compl. Nº', t:'text', up:true, max:30 }, { n:'complEndereco', l:'Complemento', t:'text', up:true, max:30 } ],
+      { n:'temBairro', l:'Há divisão política (bairro)', t:'bool' }
+    ]},
+    { titulo:'Dados gerais', campos:[
+      { n:'tipoImovel', l:'Tipo de imóvel', t:'sel', src:'tipoImovel', k:'int', req:true },
+      { n:'tpArquitetonico', l:'Tipo arquitetônico', t:'sel', src:'tpArquitetonico', k:'int' },
+      { n:'destinacaoImovel', l:'Destinação', t:'sel', src:'destinacaoImovel', k:'int' },
+      [ { n:'padraoConstrutivo', l:'Padrão construtivo', t:'sel', src:'padraoConstrutivo', k:'int' }, { n:'qtdGaragem', l:'Qtd. garagens', t:'number', k:'int' } ],
+      [ { n:'idParcela', l:'ID da parcela/lote', t:'text', up:true, max:35 }, { n:'anoConstrutivo', l:'Ano construtivo', t:'number', k:'int' } ],
+      [ { n:'valorVenal', l:'Valor venal', t:'number', k:'num' }, { n:'dtUltimoValorVenal', l:'Último valor venal', t:'date' } ],
+      [ { n:'valorRefMercado', l:'Valor ref. mercado', t:'number', k:'num' }, { n:'dataUltVlrMercado', l:'Últ. valor de mercado', t:'date' } ],
+      { n:'bice', l:'BICE', t:'sel', src:'bice', k:'int' },
+      { n:'temPiscina', l:'Possui piscina', t:'bool' }
+    ]},
+    { titulo:'Área e construção', campos:[
+      { n:'areaTotal', l:'Área total (m²)', t:'text', k:'area', dica:'Preenchimento manual. Use vírgula nos decimais (ex.: 250,50).' },
+      [ { n:'num_frentes', l:'Nº de frentes', t:'sel', src:'num_frentes', k:'int' }, { n:'num_andares', l:'Nº de andares', t:'sel', src:'num_andares', k:'int' } ],
+      [ { n:'areaPrivativa', l:'Área privativa (m²)', t:'number', k:'num' }, { n:'areaComum', l:'Área comum (m²)', t:'number', k:'num' } ],
+      { n:'fraIdeal', l:'Fração ideal', t:'number', k:'num' }
+    ]},
+    { titulo:'Registro de imóvel', campos:[
+      { n:'nomeServentiaRI', l:'Nome da serventia', t:'text', up:true, max:300 },
+      [ { n:'cnsRI', l:'CNS', t:'number', k:'int' }, { n:'cnmRI', l:'CNM', t:'text', dig:16, k:'num' } ],
+      [ { n:'numMatriculaRI', l:'Nº matrícula', t:'text', up:true, max:15 }, { n:'numUltimoAtoRI', l:'Nº último ato', t:'text', up:true, max:7 } ],
+      [ { n:'lvCartRI', l:'Livro', t:'text', up:true, max:4 }, { n:'flCartRI', l:'Folha', t:'text', up:true, max:4 } ],
+      { n:'dtUltAtualizacao', l:'Últ. atualização', t:'date' }
+    ]},
+    { titulo:'Cartório de notas', campos:[
+      { n:'nomeServentiaNotas', l:'Nome da serventia', t:'text', up:true, max:300 },
+      [ { n:'cnsNotas', l:'CNS', t:'number', k:'int' }, { n:'lvCartNotas', l:'Livro', t:'text', up:true, max:4 } ],
+      { n:'flCartNotas', l:'Folha', t:'text', up:true, max:4 }
+    ]},
+    { titulo:'ITBI', nota:'Se preencher um campo do ITBI, preencha todos. Transmitentes e adquirentes não são editáveis aqui.', campos:[
+      [ { n:'baseCalculITBI', l:'Base de cálculo', t:'number', k:'num' }, { n:'valorRefITBI', l:'Valor de referência', t:'number', k:'num' } ],
+      [ { n:'dtTransacaoITBI', l:'Data da transação', t:'date' }, { n:'percTransacionadoITBI', l:'% transacionado', t:'number', k:'num' } ],
+      { n:'tpTransacaoITBI', l:'Tipo da transação', t:'sel', src:'tpTransacaoITBI', k:'int' }
+    ]}
+  ];
+  function todosCampos(){
+    const out = [];
+    EDIT_SECOES.forEach(s => s.campos.forEach(c => { (Array.isArray(c) ? c : [c]).forEach(x => out.push(x)); }));
+    return out;
+  }
+
+  function opcoesSel(c, cur){
+    const s = document.getElementById(c.src);
+    const opts = s ? [...s.options].map(o => ({ v:o.value, l:o.textContent })) : [{ v:'', l:'Selecione…' }];
+    const atual = vazio(cur) ? '' : String(cur);
+    const casa = o => atual && o.v !== '' && o.v.toUpperCase() === atual.toUpperCase();
+    if(atual && !opts.some(casa)) opts.push({ v:atual, l: atual + ' (valor atual)' });
+    return opts.map(o => '<option value="' + esc(o.v) + '"' + ((casa(o) || (!atual && o.v === '')) ? ' selected' : '') + '>' + esc(o.l) + '</option>').join('');
+  }
+  function opcoesLogra(bairro, cur){
+    const grupo = BAIRROS_LOGRA.find(b => b.nome === String(bairro || '').toUpperCase());
+    const atual = vazio(cur) ? '' : String(cur);
+    const lista = grupo ? grupo.logradouros.map(([cod, nome]) => ({ v:nome.toUpperCase(), l:cod + ' - ' + nome })) : [];
+    let h = '<option value="">' + (grupo ? 'Selecione…' : 'Selecione o bairro primeiro…') + '</option>';
+    if(atual && !lista.some(o => o.v === atual.toUpperCase())) h += '<option value="' + esc(atual) + '" selected>' + esc(atual) + ' (valor atual)</option>';
+    return h + lista.map(o => '<option value="' + esc(o.v) + '"' + (o.v === atual.toUpperCase() ? ' selected' : '') + '>' + esc(o.l) + '</option>').join('');
+  }
+  function valorInicial(c, v){
+    if(vazio(v)) return '';
+    if(c.k === 'area') return String(v).replace('.', ',');
+    return String(v);
+  }
+  function htmlCampo(c, f){
+    const id = 'ef_' + c.n, v = f[c.n];
+    if(c.t === 'bool'){
+      return '<div class="chk-field"><input type="checkbox" id="' + id + '" data-ef="' + c.n + '"' + (v ? ' checked' : '') + '><label for="' + id + '">' + esc(c.l) + '</label></div>';
+    }
+    let ctl;
+    if(c.t === 'sel') ctl = '<select id="' + id + '" data-ef="' + c.n + '">' + opcoesSel(c, v) + '</select>';
+    else if(c.t === 'logra') ctl = '<select id="' + id + '" data-ef="' + c.n + '">' + opcoesLogra(f.bairro, v) + '</select>';
+    else {
+      ctl = '<input id="' + id + '" data-ef="' + c.n + '" type="' + (c.t === 'number' ? 'number' : (c.t === 'date' ? 'date' : 'text')) + '"' +
+        (c.t === 'number' ? ' step="any" inputmode="decimal"' : '') +
+        (c.k === 'area' ? ' inputmode="decimal" placeholder="0,00" data-area="1"' : '') +
+        (c.dig ? ' inputmode="numeric" maxlength="' + c.dig + '" data-dig="' + c.dig + '"' : '') +
+        (c.seg ? ' maxlength="4" data-seg="1" autocapitalize="characters"' : '') +
+        (c.max ? ' maxlength="' + c.max + '"' : '') +
+        ' autocomplete="off" value="' + esc(valorInicial(c, v)) + '">';
+    }
+    return '<div class="field"><label for="' + id + '">' + esc(c.l) + (c.req ? ' <span class="req">*</span>' : '') + '</label>' + ctl +
+      (c.dica ? '<div class="hint">' + esc(c.dica) + '</div>' : '') + '</div>';
+  }
+  function htmlEdicao(f){
+    const secoes = EDIT_SECOES.map(s => {
+      const corpo = s.campos.map(c => Array.isArray(c)
+        ? '<div class="row row-2">' + c.map(x => htmlCampo(x, f)).join('') + '</div>'
+        : htmlCampo(c, f)).join('');
+      return cartao(s.titulo, (s.nota ? '<p class="sub-note">' + esc(s.nota) + '</p>' : '') + corpo);
+    }).join('');
+    return '<div class="alert warn show" style="margin:0 0 12px">Titulares não são editáveis por aqui. As fotos são gerenciadas na tela de detalhe (botão voltar).</div>' + secoes;
+  }
+  function ligarEdicao(){
+    sheetBody.querySelectorAll('[data-dig]').forEach(el => el.addEventListener('input', () => {
+      el.value = el.value.replace(/\D/g, '').slice(0, Number(el.dataset.dig));
+    }));
+    sheetBody.querySelectorAll('[data-seg]').forEach(el => el.addEventListener('input', () => {
+      el.value = el.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+    }));
+    sheetBody.querySelectorAll('[data-area]').forEach(el => el.addEventListener('input', () => { el.value = sanearArea(el.value); }));
+    const bEnd = sheetBody.querySelector('[data-ef="bairro"]');
+    const logra = sheetBody.querySelector('[data-ef="nomeLogradouro"]');
+    if(bEnd && logra) bEnd.addEventListener('change', () => { logra.innerHTML = opcoesLogra(bEnd.value, ''); });
+  }
+
+  function lerCampo(c){
+    const el = sheetBody.querySelector('[data-ef="' + c.n + '"]');
+    if(!el) return undefined;
+    if(c.t === 'bool') return !!el.checked;
+    const v = String(el.value || '').trim();
+    if(c.k === 'int') return v === '' ? null : Math.trunc(Number(v));
+    if(c.k === 'num') return v === '' ? null : Number(v);
+    if(c.k === 'area'){ const n = lerAreaTotal(v); return n === null ? null : n; }
+    if(c.t === 'date') return v === '' ? null : v;
+    return c.up ? v.toUpperCase() : v;
+  }
+  function mudou(c, orig, novo){
+    if(c.t === 'bool') return !!orig !== !!novo;
+    const a = vazio(orig) ? '' : String(orig);
+    const b = (novo === null || novo === undefined || (typeof novo === 'number' && !Number.isFinite(novo))) ? '' : String(novo);
+    if(c.k === 'int' || c.k === 'num' || c.k === 'area'){
+      if(a === '' || b === '') return a !== b;
+      return Number(a) !== Number(b);
+    }
+    if(c.up) return a.toUpperCase() !== b.toUpperCase();
+    return a !== b;
+  }
+  function coletarEdicao(f){
+    const novos = {}, alterados = [];
+    todosCampos().forEach(c => {
+      novos[c.n] = lerCampo(c);
+      if(mudou(c, f[c.n], novos[c.n])) alterados.push(c);
+    });
+    return { novos, alterados };
+  }
+  function validarEdicao(v){
+    const e = (n, msg) => ({ n, msg });
+    if(!v.bairro_imovel) return e('bairro_imovel', 'Selecione o bairro.');
+    if(!/^\d{3}$/.test(v.quadra_imovel || '')) return e('quadra_imovel', 'Quadra deve ter exatamente 3 dígitos.');
+    if(!/^\d{3}$/.test(v.lote_letra || '')) return e('lote_letra', 'Lote deve ter exatamente 3 dígitos.');
+    if(v.segmento_lote && !/^[A-Z0-9]{1,4}$/.test(v.segmento_lote)) return e('segmento_lote', 'Segmento: use até 4 letras ou números.');
+    if(v.tipo_segmento_lote && !v.segmento_lote) return e('segmento_lote', 'Informe o segmento do lote para usar a classificação.');
+    if(v.tipoLogradouro == null) return e('tipoLogradouro', 'Selecione o tipo de logradouro.');
+    if(!v.bairro) return e('bairro', 'Selecione o bairro do endereço.');
+    if(!v.nomeLogradouro) return e('nomeLogradouro', 'Selecione o nome do logradouro.');
+    if(!/^\d{8}$/.test(v.cep || '')) return e('cep', 'CEP deve conter 8 dígitos.');
+    const tipo = v.tipoImovel == null ? '' : String(v.tipoImovel);
+    if(!tipo) return e('tipoImovel', 'Selecione o tipo de imóvel.');
+    if(tipo === '2' && v.tpArquitetonico == null) return e('tpArquitetonico', 'Tipo arquitetônico é obrigatório para imóvel predial.');
+    if(tipo === '2' && v.anoConstrutivo == null) return e('anoConstrutivo', 'Ano construtivo é obrigatório para imóvel predial.');
+    if(tipo === '1' && v.anoConstrutivo != null) return e('anoConstrutivo', 'Ano construtivo não deve ser informado para territorial.');
+    if(tipo === '1' && v.idParcela) return e('idParcela', 'ID da parcela não deve ser informado para territorial.');
+    if(tipo === '3' && v.bice == null) return e('bice', 'BICE é obrigatório para bem especial.');
+    if(tipo !== '1' && v.destinacaoImovel == null) return e('destinacaoImovel', 'Destinação é obrigatória, exceto para territorial.');
+    if(v.areaTotal != null && !(v.areaTotal > 0)) return e('areaTotal', 'Informe uma área total válida (maior que zero).');
+    if(v.cnmRI != null && !/^\d{15,16}$/.test(String(v.cnmRI))) return e('cnmRI', 'CNM deve ter 15 ou 16 dígitos.');
+    const itbi = ['baseCalculITBI', 'valorRefITBI', 'dtTransacaoITBI', 'tpTransacaoITBI', 'percTransacionadoITBI'];
+    if(itbi.some(k => v[k] != null && v[k] !== '')){
+      const falta = itbi.find(k => v[k] == null || v[k] === '');
+      if(falta) return e(falta, 'ITBI incompleto. Preencha todos os campos de ITBI.');
+    }
+    return null;
+  }
+
+  async function sairEdicao(){
+    const f = fichaAtual();
+    if(f && coletarEdicao(f).alterados.length){
+      const ok = await confirmar({ titulo:'Descartar alterações?', msg:'Você alterou campos que ainda não foram salvos.', ok:'Descartar' });
+      if(!ok) return;
+    }
+    modoSheet = 'ver';
+    renderSheet(false);
+  }
+
+  async function salvarEdicao(){
+    const f = fichaAtual(); if(!f) return;
+    const { novos, alterados } = coletarEdicao(f);
+    const erro = validarEdicao(novos);
+    if(erro){
+      toast(erro.msg, 'error');
+      const el = sheetBody.querySelector('[data-ef="' + erro.n + '"]');
+      if(el){
+        try { el.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(e){}
+        setTimeout(() => { try { el.focus({ preventScroll:true }); } catch(e){} }, 320);
+      }
+      return;
+    }
+    if(!alterados.length){ toast('Nenhuma alteração para salvar.', 'warning'); return; }
+
+    const updates = {};
+    alterados.forEach(c => { [].concat(CAMINHOS[c.n]).forEach(p => { updates[p] = novos[c.n]; }); });
+
+    // A inscrição acompanha bairro/quadra/lote
+    const locMudou = alterados.some(c => ['bairro_imovel', 'quadra_imovel', 'lote_letra'].includes(c.n));
+    if(locMudou || vazio(f.inscricaoImobiliaria)){
+      const info = getBairros().find(x => x.nome === novos.bairro_imovel);
+      const b = (info && info.numero ? String(info.numero) : '000').padStart(3, '0');
+      updates[DG + 'inscricaoImobiliaria'] = '00.00.' + novos.quadra_imovel + '.' + novos.lote_letra + '.' + b;
+    }
+
+    const btn = document.getElementById('sheetSave');
+    btn.disabled = true;
+    const rotulo = btn.textContent;
+    btn.textContent = 'Salvando…';
+    try {
+      await api('PATCH', '/fichas/' + encodeURIComponent(f.id), { updates: updates });
+      modoSheet = 'ver';
+      await atualizarFichaAberta();
+      toast('Ficha atualizada.', 'success');
+    } catch(err){
+      console.error('[editar ficha]', err);
+      toast(err.mensagemUsuario || 'Não foi possível salvar as alterações.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = rotulo;
+    }
+  }
+
+  /* ---------- INIT ---------- */
   renderStep();
   popularBairros();
   popularRuas();

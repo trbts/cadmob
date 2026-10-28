@@ -1,7 +1,33 @@
 /**
- * sw.js — Service Worker do YMOB
+ * sw.js — Service Worker do YMOB (Painel de Formulários / Cadastro Imobiliário)
+ * ------------------------------------------------------------------
+ * Escopo: apenas as páginas do formulário mobile.
+ *   index.html            → roteamento (decide login x formulário)
+ *   formulario-login.html → autenticação
+ *   formulario.html       → ficha de cadastro
+ *
+ * Estratégia:
+ *   - App shell (HTML/manifest/ícones/logo) fica em cache, permitindo
+ *     abrir o app offline ou com conexão instável.
+ *   - Navegações (HTML) usam "network-first": tenta a rede primeiro
+ *     (para sempre pegar a versão mais nova) e cai para o cache
+ *     apenas se a rede falhar.
+ *   - Assets estáticos do próprio app (ícones, manifest, logo) usam
+ *     "cache-first" com atualização em segundo plano.
+ *   - Tudo que for de outra origem (Firebase Auth, Firestore, APIs
+ *     do Google, o Worker de gravação em /fichas etc.) NÃO é
+ *     interceptado — passa direto para a rede, sem cache. Isso evita
+ *     qualquer interferência em login, sessão ou envio de fichas.
+ * ------------------------------------------------------------------
  */
-const CACHE_NAME = 'cadmob-form-v12'; // <-- Atualizado
+
+// v8: abas Cadastro / Fichas salvas, foto e inscrição opcionais, área total única (m²).
+// v7: segmentação opcional de lotes e envio das imagens em binário (multipart).
+// v6: marca YMOB, novos campos do titular (contato/e-mail), vias em mais de um
+//     bairro e novo manifest. Ao subir uma nova versão do app, basta
+//     incrementar este número para forçar a invalidação de todo o cache
+//     antigo no activate.
+const CACHE_NAME = 'cadmob-form-v8';
 
 const APP_SHELL = [
   './index.html',
@@ -16,6 +42,9 @@ const APP_SHELL = [
   './icons/apple-touch-icon.png'
 ];
 
+// ============================================================
+// INSTALL — pré-carrega o app shell
+// ============================================================
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -24,6 +53,9 @@ self.addEventListener('install', (event) => {
   );
 });
 
+// ============================================================
+// ACTIVATE — remove caches de versões antigas
+// ============================================================
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
@@ -36,12 +68,19 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// ============================================================
+// FETCH
+// ============================================================
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
+  // Só GET, e só mesma origem — qualquer outra coisa (Firebase,
+  // Firestore, o Worker de /fichas, fontes externas etc.) segue
+  // direto para a rede, sem passar pelo Service Worker.
   if (request.method !== 'GET') return;
   if (new URL(request.url).origin !== self.location.origin) return;
 
+  // Navegações (carregar uma página HTML): network-first.
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -55,6 +94,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Demais requisições same-origin conhecidas do app shell (ícones,
+  // manifest, logo, css/js referenciados no futuro): cache-first,
+  // com atualização em segundo plano.
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request)

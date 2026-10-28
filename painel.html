@@ -372,6 +372,7 @@ ul{ list-style:none; }
 .filters-bar .filters-count{ margin-left:auto; font-size:12px; color:var(--muted); font-weight:600; }
 .filters-bar .filters-count strong{ color:var(--text); }
 
+/* Foto na pré-visualização da ficha */
 .ficha-photo-frame{
   display:flex; justify-content:center; align-items:center;
   padding:8px 0 4px; cursor:zoom-in; position:relative;
@@ -409,6 +410,7 @@ ul{ list-style:none; }
   .topbar-search{ width:200px; }
 }
 
+/* ===== Imagens: download, lado a lado, galeria fotográfica ===== */
 .dl-btn{
   position:absolute; top:12px; right:12px; z-index:2;
   width:36px; height:36px; border-radius:10px; border:0; cursor:pointer;
@@ -443,6 +445,14 @@ ul{ list-style:none; }
 .foto-card .fc-actions button{ flex:1; height:34px; border-radius:9px; border:1px solid var(--border); background:#fff; color:var(--text); font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
 .foto-card .fc-actions button:hover{ background:var(--primary-light); color:var(--primary); border-color:var(--primary); }
 .foto-card .fc-actions svg{ width:15px; height:15px; }
+.foto-card .fc-actions.row2{ padding-top:0; }
+.foto-card .fc-actions button.fc-danger{ color:var(--danger); border-color:#fecaca; background:#fff6f6; }
+.foto-card .fc-actions button.fc-danger:hover{ background:var(--danger); color:#fff; border-color:var(--danger); }
+.foto-acoes{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.foto-acoes.center{ justify-content:center; }
+.extra-item-box{ display:flex; flex-direction:column; }
+.extra-item-box .foto-acoes{ margin-top:8px; }
+.legado-note{ margin-top:10px; padding:10px 12px; border-radius:10px; background:#f8fafc; border:1px dashed var(--border); font-size:12px; color:var(--muted); }
 </style>
 </head>
 <body>
@@ -591,6 +601,7 @@ ul{ list-style:none; }
 <div class="overlay" id="overlay"></div>
 <div id="toastRoot"></div>
 
+<input type="file" id="fotoUploadInput" accept="image/*" hidden>
 <div class="lightbox" id="lightbox" aria-hidden="true">
   <button class="lb-close" id="lbClose" title="Fechar (Esc)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -616,6 +627,8 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const WORKER_URL = 'https://cadmob.dw0mc7.workers.dev';
 
+/* Chamada autenticada ao Worker (banco de dados no Cloudflare D1).
+   A autenticação continua no Firebase Auth: enviamos o ID Token. */
 async function api(method, path, body){
   const u = auth.currentUser;
   if(!u){
@@ -649,7 +662,8 @@ async function api(method, path, body){
   return data;
 }
 
-async function apiBlob(path){
+/* Envia multipart (imagens) ao Worker. Sem Content-Type manual: o navegador define o boundary. */
+async function apiUpload(method, path, formData){
   const u = auth.currentUser;
   if(!u){
     const e = new Error('sem_sessao');
@@ -659,7 +673,35 @@ async function apiBlob(path){
   const idToken = await u.getIdToken();
   let resp;
   try {
-    resp = await fetch(WORKER_URL + path, { headers: { 'Authorization': 'Bearer ' + idToken } });
+    resp = await fetch(WORKER_URL + path, { method: method, headers: { 'Authorization': 'Bearer ' + idToken }, body: formData });
+  } catch(netErr){
+    const e = new Error('falha_rede');
+    e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
+    throw e;
+  }
+  let data = null;
+  try { data = await resp.json(); } catch(_){}
+  if(!resp.ok){
+    const e = new Error((data && data.error) || 'erro_worker_' + resp.status);
+    e.status = resp.status;
+    e.mensagemUsuario = (data && data.message) || 'Falha ao enviar a imagem.';
+    throw e;
+  }
+  return data;
+}
+
+/* Baixa uma imagem em BINÁRIO do Worker (precisa do ID Token, por isso não dá para usar <img src> direto). */
+async function apiBlob(path, ignorarCache){
+  const u = auth.currentUser;
+  if(!u){
+    const e = new Error('sem_sessao');
+    e.mensagemUsuario = 'Sua sessão expirou. Faça login novamente.';
+    throw e;
+  }
+  const idToken = await u.getIdToken();
+  let resp;
+  try {
+    resp = await fetch(WORKER_URL + path, { headers: { 'Authorization': 'Bearer ' + idToken }, cache: ignorarCache ? 'reload' : 'default' });
   } catch(netErr){
     const e = new Error('falha_rede');
     e.mensagemUsuario = 'Não foi possível contatar o servidor. Verifique sua conexão.';
@@ -673,16 +715,29 @@ async function apiBlob(path){
   return await resp.blob();
 }
 
+/* Cache em memória: "idDaFicha|slot" → Promise<{ blob, url }>  (slot: foto | anexo1 | anexo2) */
 const _imgCache = {};
+const _imgBust = {};   // slots que mudaram: a próxima leitura ignora o cache HTTP do navegador
+function imagemInvalidar(id){
+  ['foto', 'anexo1', 'anexo2'].forEach(function(slot){
+    const k = id + '|' + slot;
+    const p = _imgCache[k];
+    delete _imgCache[k];
+    _imgBust[k] = true;
+    if(p) p.then(function(r){ try { URL.revokeObjectURL(r.url); } catch(e){} }).catch(function(){});
+  });
+}
 function imagemObter(id, slot){
   const k = id + '|' + slot;
   if(!_imgCache[k]){
-    _imgCache[k] = apiBlob('/fichas/' + encodeURIComponent(id) + '/anexos/' + slot)
+    const bust = !!_imgBust[k]; delete _imgBust[k];
+    _imgCache[k] = apiBlob('/fichas/' + encodeURIComponent(id) + '/anexos/' + slot, bust)
       .then(function(blob){ return { blob: blob, url: URL.createObjectURL(blob) }; })
       .catch(function(e){ delete _imgCache[k]; throw e; });
   }
   return _imgCache[k];
 }
+/* Preenche os <img data-img="id|slot"> de um container (carrega só o que aparece na tela). */
 function hidratarImagens(root){
   const imgs = (root || document).querySelectorAll('img[data-img]');
   const carregar = function(img){
@@ -708,6 +763,8 @@ function blobParaDataUrl(blob){
 }
 
 const ROLE_LEVELS = { user:0, funcionario:1, admin:2, superadmin:3 };
+/* A aba "Configuração" é exclusiva do desenvolvedor (superadmin).
+   O perfil administrativo (admin) NÃO tem acesso a ela. */
 const ROLE_PAGES = {
   user:        [],
   funcionario: [],
@@ -779,6 +836,9 @@ function navigate(page){
   if(page === 'dados')     renderStorageInfo();
 }
 
+/* ============================================================
+   ESTADO
+   ============================================================ */
 const State = {
   registros: [],
   hier: { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' },
@@ -809,6 +869,10 @@ function todayISO(){
   return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
 }
 
+/* ============================================================
+   NORMALIZAÇÃO — Converte o documento aninhado (dados_imovel.*)
+   para o formato flat que o painel consome.
+   ============================================================ */
 function normalizarFicha(raw){
   if(!raw || typeof raw !== 'object') return raw;
   if(!raw.dados_imovel || typeof raw.dados_imovel !== 'object') return raw;
@@ -847,8 +911,9 @@ function normalizarFicha(raw){
     destinacaoImovel:     dg.destinacaoImovel,
     idParcela:            dg.idParcela,
     cib:                  dg.cib,
-    areaTerreno:          dg.areaTerreno,
-    areaConstruida:       dg.areaConstruida,
+    areaTotal:            dg.areaTotal,
+    areaTerreno:          dg.areaTerreno,     // legado (fichas antigas)
+    areaConstruida:       dg.areaConstruida,  // legado (fichas antigas)
     bice:                 dg.bice,
     anoConstrutivo:       dg.anoConstrutivo,
     valorVenal:           dg.valorVenal,
@@ -908,7 +973,7 @@ function normalizarFicha(raw){
     num_frentes:      co.numFrentes,
     num_andares:      co.numAndares,
 
-    foto_arquivo:       !!(ft && (ft.arquivo || ft.base64)),
+    foto_arquivo:       !!(ft && (ft.arquivo || ft.base64)),   // a imagem vem em binário, sob demanda
     foto_tipo:          ft ? ft.tipo                 : undefined,
     foto_tamanho_bytes: ft ? ft.tamanhoBytes         : undefined,
     foto_latitude:      ft ? ft.latitude             : undefined,
@@ -920,6 +985,11 @@ function normalizarFicha(raw){
   });
 }
 
+/* ============================================================
+   MAPA FLAT → DOT-PATH — gravar edições preservando a estrutura
+   ============================================================ */
+/* Numeração padrão dos bairros (igual à planilha de ruas e ao formulário).
+   Usada quando não há lista configurada no banco. */
 const BAIRROS_NUMERACAO_PADRAO = [
   { label:'CENTRO',           numero:'001' },
   { label:'VISTA ALEGRE',     numero:'002' },
@@ -938,6 +1008,7 @@ const FIELD_PATHS = {
   destinacaoImovel:     'dados_imovel.DadosGeraisImovel.destinacaoImovel',
   idParcela:            'dados_imovel.DadosGeraisImovel.idParcela',
   cib:                  'dados_imovel.DadosGeraisImovel.cib',
+  areaTotal:            'dados_imovel.DadosGeraisImovel.areaTotal',
   areaTerreno:          'dados_imovel.DadosGeraisImovel.areaTerreno',
   areaConstruida:       'dados_imovel.DadosGeraisImovel.areaConstruida',
   bice:                 'dados_imovel.DadosGeraisImovel.bice',
@@ -983,16 +1054,6 @@ const FIELD_PATHS = {
   tpTransacaoITBI:       'dados_imovel.ITBI.tpTransacaoITBI',
   percTransacionadoITBI: 'dados_imovel.ITBI.percTransacionadoITBI',
 
-  frente_terreno:   'dados_imovel.DadosComplementares.medidasTerreno.frente',
-  fundo_terreno:    'dados_imovel.DadosComplementares.medidasTerreno.fundo',
-  lado_dir_terreno: 'dados_imovel.DadosComplementares.medidasTerreno.ladoDireito',
-  lado_esq_terreno: 'dados_imovel.DadosComplementares.medidasTerreno.ladoEsquerdo',
-
-  frente_edif:      'dados_imovel.DadosComplementares.medidasEdificacao.frente',
-  fundo_edif:       'dados_imovel.DadosComplementares.medidasEdificacao.fundo',
-  lado_dir_edif:    'dados_imovel.DadosComplementares.medidasEdificacao.ladoDireito',
-  lado_esq_edif:    'dados_imovel.DadosComplementares.medidasEdificacao.ladoEsquerdo',
-
   adicional:   'dados_imovel.DadosComplementares.construcao.adicional',
   num_frentes: 'dados_imovel.DadosComplementares.construcao.numFrentes',
   num_andares: 'dados_imovel.DadosComplementares.construcao.numAndares',
@@ -1007,6 +1068,9 @@ const FIELD_PATHS = {
   responsavel:    'responsavel'
 };
 
+/* ============================================================
+   MAPEAMENTO DOS CAMPOS DO NOVO FORMULÁRIO SINTER
+   ============================================================ */
 const SELECT_OPTIONS = {
   tipoImovel: [
     { v:'1', l:'1 - TERRITORIAL (SEM EDIFICAÇÃO)' },
@@ -1106,6 +1170,12 @@ function statusLabel(s){ return labelFromOptions('status', s || 'pendente'); }
 function normalizeStatus(s){ return (s === 'aprovado') ? 'aprovado' : 'pendente'; }
 function getStatusFromReg(r){ return normalizeStatus(r.status); }
 
+/* ============================================================
+   FOTO
+   ============================================================ */
+/* A imagem não vem mais embutida (base64) na ficha: é buscada em binário por imagemObter(id, slot). */
+
+/* ---------- Download de imagens ---------- */
 const ICON_DOWNLOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 function extDeTipo(t){
   t = String(t || '').toLowerCase();
@@ -1174,6 +1244,9 @@ document.addEventListener('keydown', function(e){
   if(e.key === 'Escape' && Lightbox.el.classList.contains('open')) Lightbox.close();
 });
 
+/* ============================================================
+   TOAST
+   ============================================================ */
 function toast(message, type, subtitle){
   const root = document.getElementById('toastRoot');
   const el = document.createElement('div');
@@ -1184,6 +1257,9 @@ function toast(message, type, subtitle){
   setTimeout(function(){ el.classList.add('hide'); setTimeout(function(){ el.remove(); }, 260); }, 3600);
 }
 
+/* ============================================================
+   MODAL
+   ============================================================ */
 const Modal = {
   el: document.getElementById('overlay'),
   open(opts){
@@ -1230,11 +1306,14 @@ const Modal = {
         '<div style="display:flex;gap:10px;margin-top:22px;"><button class="btn btn-ghost" style="flex:1" data-close>Cancelar</button>' +
         '<button class="btn ' + (danger?'btn-danger':'btn-primary') + '" style="flex:1" data-go>' + esc(confirmText || 'Confirmar') + '</button></div>'
     });
-    this.el.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', function(){ self.close(); }); });
+    this.el.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', function(){ self.close(); if(opts.onCancel) opts.onCancel(); }); });
     this.el.querySelector('[data-go]').addEventListener('click', async function(){ self.close(); if(onConfirm) await onConfirm(); });
   }
 };
 
+/* ============================================================
+   CARREGAMENTO DE FICHAS — Cloudflare D1 (via Worker)
+   ============================================================ */
 let _fichasVersao = null;
 function renderPaginaAtual(){
   if(State.page === 'dashboard' && hasAccess('dashboard')) renderDashboard();
@@ -1243,6 +1322,8 @@ function renderPaginaAtual(){
   if(State.page === 'dados'     && hasAccess('dados'))     renderStorageInfo();
 }
 
+/* Busca a "versão" das fichas (1 leitura barata no D1) e só baixa a lista
+   completa quando algo mudou. force=true ignora a versão e baixa sempre. */
 async function recarregarFichas(force){
   try {
     const v = await api('GET', '/fichas/versao');
@@ -1267,6 +1348,9 @@ function escutarFichas(){
   });
 }
 
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
 function getBairroNome(r){
   return norm(r.bairro_imovel) || norm(r.bairro) || 'SEM BAIRRO';
 }
@@ -1298,6 +1382,7 @@ function renderDashboard(){
     '<div class="stat-trend' + (s.down?' down':'') + '">' + s.trend + '</div></div>';
   }).join('');
 
+  /* ----- Agrupamentos por bairro: ruas e lotes ----- */
   const ruasPorBairro  = {};
   const lotesPorBairro = {};
   regs.forEach(function(r){
@@ -1342,6 +1427,9 @@ function renderDashboard(){
   renderLista('lotesPorBairro', lotesPorBairro, maxLotes, 'linear-gradient(90deg,#10b981,#34d399)');
 }
 
+/* ============================================================
+   REGISTROS — navegação
+   ============================================================ */
 const Pages = { registros:{} };
 
 Pages.registros.goRoot   = function(){ State.hier = { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' }; renderRegistros(); };
@@ -1562,6 +1650,11 @@ function renderLotesView(){
   });
 }
 
+/* ============================================================
+   REGISTROS FOTOGRÁFICOS — mesmo fluxo: Bairro → Quadra → Fotos
+   Só entram fichas com foto do imóvel (foto principal). Anexos e
+   documentos NÃO aparecem aqui; ficam na ficha completa.
+   ============================================================ */
 Pages.fotos = {};
 Pages.fotos.goRoot   = function(){ State.fotosHier = { bairro:null, quadra:null }; renderFotos(); };
 Pages.fotos.goBairro = function(b){ State.fotosHier = { bairro:b, quadra:null }; renderFotos(); };
@@ -1689,6 +1782,10 @@ function renderFotosGaleria(){
       '<div class="fc-actions">' +
         '<button type="button" data-act="download" title="Baixar foto">' + ICON_DOWNLOAD + 'Baixar</button>' +
         '<button type="button" data-act="ficha" title="Abrir ficha completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.doc + '</svg>Ficha</button>' +
+      '</div>' +
+      '<div class="fc-actions row2">' +
+        '<button type="button" data-act="substituir" title="Substituir foto">Substituir</button>' +
+        '<button type="button" class="fc-danger" data-act="excluir" title="Excluir foto">Excluir</button>' +
       '</div></div>';
   }).join('') + '</div>';
   el.querySelectorAll('.foto-card').forEach(function(card){
@@ -1703,10 +1800,15 @@ function renderFotosGaleria(){
       baixarImagemFicha(r, 'foto', 'foto');
     });
     card.querySelector('[data-act="ficha"]').addEventListener('click', function(){ Pages.registros.view(r.id); });
+    card.querySelector('[data-act="substituir"]').addEventListener('click', function(){ FotoOps.substituir(r.id, 'foto', null); });
+    card.querySelector('[data-act="excluir"]').addEventListener('click', function(){ FotoOps.excluir(r.id, 'foto', null, null); });
   });
   hidratarImagens(el);
 }
 
+/* ============================================================
+   HELPERS DE RENDER — FICHA
+   ============================================================ */
 const SVG_ICONS = {
   user:  '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   home:  '<path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>',
@@ -1739,7 +1841,134 @@ function dSection(title, svg){
     esc(title) + '</div>';
 }
 
-Pages.registros.view = function(id){
+/* Fichas antigas guardavam frente/fundo/lados e duas áreas separadas. Seguem visíveis (somente leitura). */
+function temMedidasLegado(r){
+  return ['frente_terreno','fundo_terreno','lado_dir_terreno','lado_esq_terreno','frente_edif','fundo_edif','lado_dir_edif','lado_esq_edif','areaTerreno','areaConstruida']
+    .some(function(k){ return r[k] !== undefined && r[k] !== null && r[k] !== ''; });
+}
+function legadoItens(r, fn){
+  return [
+    ['Terreno — Frente (m)', r.frente_terreno], ['Terreno — Fundo (m)', r.fundo_terreno],
+    ['Terreno — Lado Direito (m)', r.lado_dir_terreno], ['Terreno — Lado Esquerdo (m)', r.lado_esq_terreno],
+    ['Área do Terreno (m²)', r.areaTerreno],
+    ['Edificação — Frente (m)', r.frente_edif], ['Edificação — Fundo (m)', r.fundo_edif],
+    ['Edificação — Lado Direito (m)', r.lado_dir_edif], ['Edificação — Lado Esquerdo (m)', r.lado_esq_edif],
+    ['Área Construída (m²)', r.areaConstruida]
+  ].filter(function(p){ return p[1] !== undefined && p[1] !== null && p[1] !== ''; })
+   .map(function(p){ return fn(p[0], p[1]); }).join('');
+}
+
+/* ============================================================
+   FOTOS — substituir e excluir (com confirmação)
+   ============================================================ */
+const FotoOps = {
+  alvo: null,
+  /* Reduz a imagem para caber no limite do servidor (300 KB) */
+  comprimir: function(file){
+    return new Promise(function(resolve, reject){
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = function(){
+        URL.revokeObjectURL(url);
+        try {
+          const MAX = 1600, ALVO = 270 * 1024;
+          let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+          if(w > MAX || h > MAX){ const k = Math.min(MAX / w, MAX / h); w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k)); }
+          const webp = (function(){ try { return document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0; } catch(e){ return false; } })();
+          const tipo = webp ? 'image/webp' : 'image/jpeg';
+          const tentar = function(ww, hh, q){
+            return new Promise(function(res){
+              const c = document.createElement('canvas'); c.width = ww; c.height = hh;
+              c.getContext('2d').drawImage(img, 0, 0, ww, hh);
+              c.toBlob(function(b){ res(b); }, tipo, q);
+            });
+          };
+          (async function(){
+            let melhor = null;
+            const qs = [0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.28];
+            for(let i = 0; i < qs.length; i++){
+              const b = await tentar(w, h, qs[i]);
+              if(!b) continue;
+              if(!melhor || b.size < melhor.size) melhor = b;
+              if(b.size <= ALVO){ melhor = b; break; }
+            }
+            let n = 0;
+            while(melhor && melhor.size > ALVO && n < 6){
+              n++;
+              const esc2 = Math.sqrt(ALVO / melhor.size) * 0.92;
+              w = Math.max(320, Math.round(w * esc2)); h = Math.max(320, Math.round(h * esc2));
+              const b = await tentar(w, h, 0.72);
+              if(!b || b.size >= melhor.size) break;
+              melhor = b;
+            }
+            if(!melhor) throw new Error('compress_fail');
+            resolve(melhor);
+          })().catch(reject);
+        } catch(e){ reject(e); }
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('img_load')); };
+      img.src = url;
+    });
+  },
+  /* Abre o seletor de arquivos; depois envia e atualiza a tela via depois() */
+  substituir: function(id, slot, depois){
+    const inp = document.getElementById('fotoUploadInput');
+    FotoOps.alvo = { id: id, slot: slot, depois: depois };
+    inp.value = '';
+    inp.click();
+  },
+  excluir: function(id, slot, depois, aoCancelar){
+    const r = State.registros.find(function(x){ return x.id === id; });
+    const oque = slot === 'foto' ? 'a foto do imóvel' : 'o anexo ' + slot.replace('anexo', '');
+    Modal.confirm({
+      title:'Excluir ' + (slot === 'foto' ? 'foto' : 'anexo') + '?',
+      message:'Você vai excluir ' + oque + (r ? ' da ficha de "' + getNomeProprietario(r) + '"' : '') + '. Essa ação não pode ser desfeita.',
+      confirmText:'Excluir',
+      danger:true,
+      onCancel: aoCancelar,
+      onConfirm: async function(){
+        try {
+          await api('DELETE', '/fichas/' + encodeURIComponent(id) + '/anexos/' + slot);
+          imagemInvalidar(id);
+          await recarregarFichas(true);
+          toast(slot === 'foto' ? 'Foto excluída.' : 'Anexo excluído.', 'success');
+        } catch(err){
+          console.error('[foto] excluir falhou:', err);
+          toast('Não foi possível excluir.', 'error', err.mensagemUsuario || '');
+        }
+        if(depois) depois();
+      }
+    });
+  }
+};
+document.getElementById('fotoUploadInput').addEventListener('change', async function(e){
+  const file = e.target.files && e.target.files[0];
+  const alvo = FotoOps.alvo;
+  e.target.value = '';
+  if(!file || !alvo) return;
+  FotoOps.alvo = null;
+  if(!/^image\//.test(file.type)){ toast('Selecione um arquivo de imagem.', 'warning'); return; }
+  toast('Enviando imagem…', 'info');
+  try {
+    const blob = await FotoOps.comprimir(file);
+    const ext = /webp/i.test(blob.type) ? 'webp' : (/png/i.test(blob.type) ? 'png' : 'jpg');
+    const fd = new FormData();
+    fd.append('arquivo', blob, alvo.slot + '.' + ext);
+    await apiUpload('PUT', '/fichas/' + encodeURIComponent(alvo.id) + '/anexos/' + alvo.slot, fd);
+    imagemInvalidar(alvo.id);
+    await recarregarFichas(true);
+    toast(alvo.slot === 'foto' ? 'Foto atualizada.' : 'Anexo salvo.', 'success');
+  } catch(err){
+    console.error('[foto] substituir falhou:', err);
+    toast('Não foi possível salvar a imagem.', 'error', err.mensagemUsuario || '');
+  }
+  if(alvo.depois) alvo.depois();
+});
+
+/* ============================================================
+   FICHA — VISUALIZAÇÃO (abas)
+   ============================================================ */
+Pages.registros.view = function(id, abaInicial){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   const st = getStatusFromReg(r);
   const temFoto = !!r.foto_arquivo;
@@ -1808,17 +2037,21 @@ Pages.registros.view = function(id){
     '</div>';
 
   const tabMedidas =
-    dSection('Áreas do Imóvel', SVG_ICONS.ruler) +
+    dSection('Área do Imóvel', SVG_ICONS.ruler) +
     '<div class="detail-grid">' +
-      dItem('Área do Terreno (m²)', r.areaTerreno) +
-      dItem('Área Construída (m²)', r.areaConstruida) +
+      dItem('Área Total (m²)', r.areaTotal) +
     '</div>' +
     dSection('Construção', SVG_ICONS.build) +
     '<div class="detail-grid">' +
       dItem('Adicional', r.adicional) +
       dItem('N° de Frentes', r.num_frentes) +
       dItem('N° de Andares', r.num_andares) +
-    '</div>';
+    '</div>' +
+    (temMedidasLegado(r)
+      ? dSection('Medidas anteriores (cadastro antigo)', SVG_ICONS.ruler) +
+        '<div class="detail-grid">' + legadoItens(r, function(l, val){ return dItem(l, val); }) + '</div>' +
+        '<div class="legado-note">Medidas informadas separadamente no formulário antigo. Aparecem só para consulta; o campo atual é a Área Total.</div>'
+      : '');
 
   const tabTitulares =
     dSection('Titulares do Imóvel', SVG_ICONS.users) +
@@ -1877,30 +2110,41 @@ Pages.registros.view = function(id){
     dSection('Transmitentes', SVG_ICONS.users) + transHTML +
     dSection('Adquirentes', SVG_ICONS.users) + adqHTML;
 
-  const fotoBloco = temFoto
+  const acoes = function(slot, existe){
+    return '<div class="foto-acoes">' +
+      (existe
+        ? '<button type="button" class="btn btn-soft btn-sm" data-foto-act="substituir" data-slot="' + slot + '">Substituir</button>' +
+          '<button type="button" class="btn btn-danger btn-sm" data-foto-act="excluir" data-slot="' + slot + '">Excluir</button>'
+        : '<button type="button" class="btn btn-soft btn-sm" data-foto-act="substituir" data-slot="' + slot + '">+ Adicionar ' + (slot === 'foto' ? 'foto' : 'anexo') + '</button>') +
+      '</div>';
+  };
+
+  const fotoBloco = (temFoto
     ? '<div class="ficha-photo-frame" id="photoFrame">' +
         '<div class="photo-wrap">' +
           '<button type="button" class="dl-btn" data-dl="main" title="Baixar foto do imóvel">' + ICON_DOWNLOAD + '</button>' +
           '<img data-img="' + esc(r.id) + '|foto" alt="Foto do imóvel" id="photoViewImg">' +
         '</div>' +
       '</div>'
-    : '<div class="ficha-photo-empty">Nenhuma foto anexada a esta ficha.</div>';
+    : '<div class="ficha-photo-empty">Nenhuma foto anexada a esta ficha.</div>') + acoes('foto', temFoto);
 
   const extras = Array.isArray(r.fotos_adicionais) ? r.fotos_adicionais.filter(function(f){ return f && (f.arquivo || f.base64); }) : [];
-  const extrasHTML = extras.length
+  const extrasHTML = (extras.length
     ? '<div class="extra-photos-grid">' +
         extras.map(function(f, i){
-          return '<div class="extra-wrap">' +
+          return '<div class="extra-item-box"><div class="extra-wrap">' +
             '<button type="button" class="dl-btn" data-dl="extra-' + i + '" title="Baixar anexo ' + (i+1) + '">' + ICON_DOWNLOAD + '</button>' +
             '<img class="extra-thumb" data-extra="' + i + '" data-img="' + esc(r.id) + '|anexo' + (i+1) + '" alt="Anexo ' + (i+1) + '">' +
-          '</div>';
+          '</div>' + acoes('anexo' + (i+1), true) + '</div>';
         }).join('') +
       '</div>' +
       '<div class="hint-anexos" style="font-size:11.5px;color:var(--muted);margin-top:8px;">Os anexos são excluídos automaticamente 30 dias após o envio da ficha. Baixe-os antes, se precisar guardá-los.</div>'
     : (r.anexos_excluidos_em
         ? '<div class="ficha-photo-empty">Anexos excluídos automaticamente em ' + esc(fmtDateTime(r.anexos_excluidos_em)) + ' (retenção de 30 dias).</div>'
-        : '<div class="ficha-photo-empty">Nenhum anexo nesta ficha.</div>');
+        : '<div class="ficha-photo-empty">Nenhum anexo nesta ficha.</div>')) +
+    (extras.length < 2 ? acoes('anexo' + (extras.length + 1), false) : '');
 
+  /* Foto do imóvel (esquerda) e anexos (direita), lado a lado */
   const tabFoto =
     '<div class="foto-compare">' +
       '<div class="foto-col">' + dSection('Foto do Imóvel', SVG_ICONS.cam) + fotoBloco + '</div>' +
@@ -1929,10 +2173,11 @@ Pages.registros.view = function(id){
     { key:'auditoria',   label:'Auditoria',   icon:SVG_ICONS.info,  html:tabAuditoria }
   ];
 
+  const ativa = abaInicial || 'localizacao';
   const tabsHTML =
     '<div class="ficha-tabs" id="fichaTabs">' +
       tabs.map(function(t, i){
-        return '<button type="button" class="ficha-tab' + (i === 0 ? ' active' : '') + '" data-ftab="' + t.key + '">' +
+        return '<button type="button" class="ficha-tab' + (t.key === ativa ? ' active' : '') + '" data-ftab="' + t.key + '">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + t.icon + '</svg>' +
           esc(t.label) +
         '</button>';
@@ -1940,7 +2185,7 @@ Pages.registros.view = function(id){
     '</div>' +
     '<div class="ficha-content">' +
       tabs.map(function(t, i){
-        return '<div class="ficha-panel' + (i === 0 ? ' active' : '') + '" data-fpanel="' + t.key + '">' + t.html + '</div>';
+        return '<div class="ficha-panel' + (t.key === ativa ? ' active' : '') + '" data-fpanel="' + t.key + '">' + t.html + '</div>';
       }).join('') +
     '</div>';
 
@@ -1996,7 +2241,7 @@ Pages.registros.view = function(id){
         .catch(function(){ toast('Não foi possível abrir a imagem.', 'error'); });
     });
   });
-  hidratarImagens(document.querySelector('.ficha-content') || document);
+  hidratarImagens(document.querySelector('.ficha-content') || document);   // todos os painéis (a aba de fotos fica oculta até ser aberta)
 
   document.querySelectorAll('.ficha-panel [data-dl]').forEach(function(btn){
     btn.addEventListener('click', function(e){
@@ -2011,6 +2256,19 @@ Pages.registros.view = function(id){
     });
   });
 
+  document.querySelectorAll('.ficha-panel [data-foto-act]').forEach(function(btn){
+    btn.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      const slot = btn.dataset.slot;
+      const reabrir = function(){ Pages.registros.view(id, 'foto'); };
+      if(btn.dataset.fotoAct === 'substituir'){
+        FotoOps.substituir(id, slot, function(){ if(document.getElementById('fichaTabs')) reabrir(); });
+      } else {
+        FotoOps.excluir(id, slot, reabrir, reabrir);
+      }
+    });
+  });
+
   const frame = document.getElementById('photoFrame');
   if(frame && temFoto){
     frame.addEventListener('click', function(){
@@ -2020,10 +2278,13 @@ Pages.registros.view = function(id){
   }
 };
 
+/* ============================================================
+   FICHA — EDIÇÃO
+   ============================================================ */
 const EDIT_SCHEMA = {
   localizacao: [
     { section:'Localização Cadastral', icon:SVG_ICONS.home, fields: [
-      { n:'inscricaoImobiliaria', l:'Inscrição Imobiliária', t:'text', full:true },
+      { n:'inscricaoImobiliaria', l:'Inscrição Imobiliária (auto)', t:'text', readonly:true, full:true },
       { n:'bairro_imovel', l:'Bairro', t:'text' },
       { n:'quadra_imovel', l:'Quadra', t:'text' },
       { n:'lote_letra', l:'Lote', t:'text' },
@@ -2063,15 +2324,15 @@ const EDIT_SCHEMA = {
     ]}
   ],
   medidas: [
-    { section:'Áreas e Medidas', icon:SVG_ICONS.ruler, fields: [
-      { n:'areaTerreno', l:'Área do Terreno (m²)', t:'number' },
-      { n:'areaConstruida', l:'Área Construída (m²)', t:'number' }
+    { section:'Área do Imóvel', icon:SVG_ICONS.ruler, fields: [
+      { n:'areaTotal', l:'Área Total (m²)', t:'number', step:'0.01', min:'0', full:true }
     ]},
     { section:'Construção', icon:SVG_ICONS.build, fields: [
       { n:'adicional', l:'Adicional', t:'number' },
       { n:'num_frentes', l:'N° de Frentes', t:'text' },
       { n:'num_andares', l:'N° de Andares', t:'text' }
-    ]}
+    ]},
+    { section:'Medidas anteriores (somente leitura)', icon:SVG_ICONS.ruler, custom:'medidasLegado' }
   ],
   titulares: [
     { section:'Titulares (não editável)', icon:SVG_ICONS.users, custom:'titularesReadonly' }
@@ -2135,6 +2396,8 @@ function eField(f, values){
   } else {
     inner = '<input type="' + f.t + '" data-edit-field="' + f.n + '" value="' + esc(v) + '"' +
       (f.max ? ' maxlength="' + f.max + '"' : '') +
+      (f.step ? ' step="' + f.step + '"' : '') +
+      (f.min !== undefined ? ' min="' + f.min + '"' : '') +
       (f.req ? ' required' : '') +
       (f.readonly ? ' readonly' : '') +
       '>';
@@ -2172,6 +2435,15 @@ Pages.registros.edit = function(id){
           { n:'percTitularidade', l:'% Participação' }, { n:'dtAquisicaoTitular', l:'Data de Aquisição' },
           { n:'tipoTitularidade', l:'Tipo de Titularidade' }, { n:'docTitularidade', l:'Documento' }
         ]);
+        continue;
+      }
+      if(block.custom === 'medidasLegado'){
+        html = html.replace(/<div class="detail-section">(?:(?!<div class="detail-section">)[\s\S])*$/, '');
+        if(temMedidasLegado(values)){
+          html += dSection(block.section, block.icon || '') +
+            '<div class="detail-grid">' + legadoItens(values, function(l, val){ return dItem(l, val); }) + '</div>' +
+            '<div class="legado-note">Medidas do cadastro antigo, só para consulta. O campo atual é a Área Total.</div>';
+        }
         continue;
       }
       if(block.custom === 'transmitentesReadonly'){
@@ -2242,12 +2514,19 @@ Pages.registros.edit = function(id){
         flatUpdates[name] = v;
       });
 
-      const ft = Number(String(flatUpdates.frente_terreno||'').replace(',','.')) || 0;
-      const fu = Number(String(flatUpdates.fundo_terreno||'').replace(',','.')) || 0;
-      const fe = Number(String(flatUpdates.frente_edif||'').replace(',','.')) || 0;
-      const fo = Number(String(flatUpdates.fundo_edif||'').replace(',','.')) || 0;
-      if(ft > 0 && fu > 0) flatUpdates.areaTerreno = ft * fu;
-      if(fe > 0 && fo > 0) flatUpdates.areaConstruida = fe * fo;
+      /* Área Total: preenchimento manual, gravada como número (vazio = sem valor) */
+      if('areaTotal' in flatUpdates){
+        const txt = String(flatUpdates.areaTotal || '').trim().replace(',', '.');
+        if(txt === ''){ flatUpdates.areaTotal = null; }
+        else {
+          const n = Number(txt);
+          if(!Number.isFinite(n) || n <= 0){
+            toast('Área Total inválida.', 'warning', 'Informe um valor maior que zero ou deixe em branco.');
+            return false;
+          }
+          flatUpdates.areaTotal = n;
+        }
+      }
 
       if(!String(flatUpdates.inscricaoImobiliaria || '').trim()){
         const biCfg = (State.listas && State.listas.grupos && State.listas.grupos.bairros) || [];
@@ -2311,6 +2590,9 @@ Pages.registros.edit = function(id){
   }, 60);
 };
 
+/* ============================================================
+   STATUS / REMOÇÃO
+   ============================================================ */
 Pages.registros.openStatus = function(id){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
   Modal.open({
@@ -2364,6 +2646,9 @@ Pages.registros.remove = function(id){
   });
 };
 
+/* ============================================================
+   IMPRESSÃO / PDF
+   ============================================================ */
 function getPrintCSS(){
   return `
     @page { size: A4; margin: 12mm 14mm; }
@@ -2422,7 +2707,7 @@ function getPrintCSS(){
 
 function montarHTMLFichaParaImpressao(r, fotoSrc){
   const st = getStatusFromReg(r);
-  const dataUrl = fotoSrc || '';
+  const dataUrl = fotoSrc || '';   // data URL gerada na hora a partir do binário (só para o documento impresso)
   const dt = new Date();
   const dataEmissao = dt.toLocaleDateString('pt-BR');
 
@@ -2532,10 +2817,10 @@ function montarHTMLFichaParaImpressao(r, fotoSrc){
       row('Fração Ideal', r.fraIdeal) +
     '</div>' +
 
-    section('5. Áreas e Medidas') +
+    section('5. Área do Imóvel') +
     '<div class="grid">' +
-      row('Área do Terreno (m²)', r.areaTerreno) +
-      row('Área Construída (m²)', r.areaConstruida) +
+      row('Área Total (m²)', r.areaTotal) +
+      legadoItens(r, function(l, val){ return row(l, val); }) +
     '</div>' +
 
     section('6. Construção') +
@@ -2603,6 +2888,9 @@ Pages.registros.imprimirPDF = function(id){
     .catch(function(){ escrever(''); });
 };
 
+/* ============================================================
+   EXPORTAÇÃO — prefere a estrutura aninhada (dados_imovel)
+   ============================================================ */
 function toExportModel(r){
   if(!r || typeof r !== 'object') return null;
 
@@ -2646,6 +2934,7 @@ function toExportModel(r){
       destinacaoImovel:     I(pick('DadosGeraisImovel', 'destinacaoImovel')),
       idParcela:            S(pick('DadosGeraisImovel', 'idParcela')),
       cib:                  S(pick('DadosGeraisImovel', 'cib')),
+      areaTotal:            N(pick('DadosGeraisImovel', 'areaTotal')),
       areaTerreno:          N(pick('DadosGeraisImovel', 'areaTerreno')),
       areaConstruida:       N(pick('DadosGeraisImovel', 'areaConstruida')),
       bice:                 I(pick('DadosGeraisImovel', 'bice')),
@@ -2724,6 +3013,9 @@ function toExportModel(r){
   };
 }
 
+/* ============================================================
+   CONFIGURAÇÃO / BACKUP
+   ============================================================ */
 const Data = {
   exportJSON(){
     if(!State.registros.length){
@@ -2849,6 +3141,9 @@ function renderStorageInfo(){
   }).join('');
 }
 
+/* ============================================================
+   NAV / EVENTOS
+   ============================================================ */
 function updateNavForRole(){
   document.querySelectorAll('.nav-item').forEach(function(n){
     const page = n.dataset.page;
@@ -2936,6 +3231,9 @@ function bindEvents(){
   });
 }
 
+/* ============================================================
+   BOOT
+   ============================================================ */
 function bootApp(){
   if(AppBooted) return;
   AppBooted = true;
@@ -2947,7 +3245,7 @@ function bootApp(){
   });
   const startPage = hasAccess('dashboard') ? 'dashboard' : (ROLE_PAGES[CurrentRole][0] || 'dashboard');
   navigate(startPage);
-  console.log('%c[YMOB Admin v5.1] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
+  console.log('%c[YMOB Admin v5.0] Autenticado como ' + CurrentRole, 'color:#4f46e5;font-weight:700;');
 }
 
 onAuthStateChanged(auth, async function(user){
@@ -2998,4 +3296,4 @@ window.Lightbox = Lightbox;
 window.montarHTMLFichaParaImpressao = montarHTMLFichaParaImpressao;
 </script>
 </body>
-</html>
+</html>
