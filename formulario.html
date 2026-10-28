@@ -332,32 +332,28 @@ body{
       <div class="card"><div class="card-body">
         <p class="sub-head">Localização Cadastral</p>
         <div class="field">
-          <label for="bairro_imovel">Bairro</label>
+          <label for="bairro_imovel">Bairro <span class="opt-tag">(opcional)</span></label>
           <select id="bairro_imovel" name="bairro_imovel"><option value="">Carregando…</option></select>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="quadra_imovel">Quadra <span class="req">*</span></label>
-            <input type="text" id="quadra_imovel" name="quadra_imovel" maxlength="3" inputmode="numeric" placeholder="000" disabled>
+          <div class="field"><label for="quadra_imovel">Quadra <span class="opt-tag">(opcional)</span></label>
+            <input type="text" id="quadra_imovel" name="quadra_imovel" maxlength="3" inputmode="numeric" placeholder="000">
           </div>
-          <div class="field"><label for="lote_letra">Lote <span class="req">*</span></label>
-            <input type="text" id="lote_letra" name="lote_letra" maxlength="3" inputmode="numeric" placeholder="000" disabled>
+          <div class="field"><label for="lote_letra">Lote <span class="opt-tag">(opcional)</span></label>
+            <input type="text" id="lote_letra" name="lote_letra" maxlength="3" inputmode="numeric" placeholder="000">
           </div>
         </div>
         <div class="row row-2">
           <div class="field"><label for="segmento_lote">Segmento do Lote <span class="opt-tag">(opcional)</span></label>
-            <input type="text" id="segmento_lote" name="segmento_lote" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="Ex.: A" disabled>
+            <input type="text" id="segmento_lote" name="segmento_lote" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="Ex.: A">
           </div>
           <div class="field"><label for="tipo_segmento_lote">Classificação <span class="opt-tag">(opcional)</span></label>
-            <select id="tipo_segmento_lote" name="tipo_segmento_lote" disabled>
+            <select id="tipo_segmento_lote" name="tipo_segmento_lote">
               <option value="">Lote inteiro</option>
               <option value="desmembrado">Desmembrado</option>
-              <option value="remembrado">Remembrado</option>
-              <option value="fracao">Fração ideal / condomínio</option>
-              <option value="outro">Outro</option>
             </select>
           </div>
         </div>
-        <div class="hint">Use só quando o lote for dividido em partes (A, B…) ou unido a outro. Identifica cada segmento sem alterar a inscrição.</div>
         <div class="field">
           <label for="inscricaoImobiliaria">Inscrição Imobiliária <span class="opt-tag">(opcional)</span></label>
           <input type="text" id="inscricaoImobiliaria" name="inscricaoImobiliaria" maxlength="45" readonly placeholder="00.00.000.000.000">
@@ -498,6 +494,11 @@ body{
           <label for="areaTotal">Área Total (m²) <span class="opt-tag">(opcional)</span></label>
           <input type="text" id="areaTotal" name="areaTotal" inputmode="decimal" autocomplete="off" placeholder="0,00">
           <div class="hint">Preenchimento manual, em metros quadrados. Use vírgula nos decimais (ex.: 250,50).</div>
+        </div>
+        <div class="field">
+          <label for="areaTerreno">Área Total do Terreno (m²) <span class="opt-tag">(opcional)</span></label>
+          <input type="text" id="areaTerreno" name="areaTerreno" inputmode="decimal" autocomplete="off" placeholder="0,00">
+          <div class="hint">Preenchimento manual, em metros quadrados.</div>
         </div>
 
         <p class="sub-head">Construção</p>
@@ -1263,22 +1264,6 @@ function initFormulario(){
   }
 
   function syncLocalizacao(){
-    const bairro = document.getElementById('bairro_imovel').value;
-    const qEl = document.getElementById('quadra_imovel');
-    const lEl = document.getElementById('lote_letra');
-    const sEl = document.getElementById('segmento_lote');
-    const tEl = document.getElementById('tipo_segmento_lote');
-    const hasBairro = !!bairro;
-    qEl.disabled = !hasBairro;
-    lEl.disabled = !hasBairro;
-    if(sEl) sEl.disabled = !hasBairro;
-    if(tEl) tEl.disabled = !hasBairro;
-    if(!hasBairro){
-      qEl.value = '';
-      lEl.value = '';
-      if(sEl) sEl.value = '';
-      if(tEl) tEl.value = '';
-    }
     gerarInscricao();
   }
 
@@ -1309,7 +1294,9 @@ function initFormulario(){
     if(!s) return null;
     return Number(s.replace(',', '.'));
   }
-  document.getElementById('areaTotal')?.addEventListener('input', function(){ this.value = sanearArea(this.value); });
+  ['areaTotal','areaTerreno'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', function(){ this.value = sanearArea(this.value); });
+  });
 
   /* ============================================================
      VALIDAÇÃO DE CPF / CNPJ
@@ -2189,15 +2176,12 @@ function initFormulario(){
     const q = n => form.querySelector('[name="' + n + '"]');
 
     if(stepNum === 1){
-      const bairro = g('bairro_imovel');
       const quadra = String(g('quadra_imovel') || '').trim();
       const lote   = String(g('lote_letra') || '').trim();
 
-      if(!bairro) invalidos.push({ el: q('bairro_imovel'), msg: 'Selecione o bairro (localização cadastral).' });
-      if(!quadra) invalidos.push({ el: q('quadra_imovel'), msg: 'Informe a quadra (3 dígitos).' });
-      else if(!/^\d{3}$/.test(quadra)) invalidos.push({ el: q('quadra_imovel'), msg: 'Quadra deve ter exatamente 3 dígitos.' });
-      if(!lote) invalidos.push({ el: q('lote_letra'), msg: 'Informe o lote (3 dígitos).' });
-      else if(!/^\d{3}$/.test(lote)) invalidos.push({ el: q('lote_letra'), msg: 'Lote deve ter exatamente 3 dígitos.' });
+      /* Bairro, quadra e lote são opcionais; quando informados, quadra e lote têm 3 dígitos */
+      if(quadra && !/^\d{3}$/.test(quadra)) invalidos.push({ el: q('quadra_imovel'), msg: 'Quadra deve ter exatamente 3 dígitos.' });
+      if(lote && !/^\d{3}$/.test(lote)) invalidos.push({ el: q('lote_letra'), msg: 'Lote deve ter exatamente 3 dígitos.' });
 
       const segLote = String(g('segmento_lote') || '').trim();
       if(g('tipo_segmento_lote') && !segLote) invalidos.push({ el: q('segmento_lote'), msg: 'Informe o segmento do lote para usar a classificação.' });
@@ -2214,6 +2198,8 @@ function initFormulario(){
     if(stepNum === 2){
       const at = lerAreaTotal(g('areaTotal'));
       if(at !== null && !(at > 0)) invalidos.push({ el: q('areaTotal'), msg: 'Área total inválida. Informe um valor maior que zero (ex.: 250,50) ou deixe em branco.' });
+      const att = lerAreaTotal(g('areaTerreno'));
+      if(att !== null && !(att > 0)) invalidos.push({ el: q('areaTerreno'), msg: 'Área total do terreno inválida. Informe um valor maior que zero (ex.: 250,50) ou deixe em branco.' });
     }
     if(stepNum === 3){
       if(!g('bairro')) invalidos.push({ el: q('bairro'), msg: 'Selecione o bairro.' });
@@ -2345,6 +2331,7 @@ function initFormulario(){
       destinacaoImovel:     toInt(g('destinacaoImovel')),
       idParcela:            up(g('idParcela')),
       areaTotal:            (n => Number.isFinite(n) ? n : null)(lerAreaTotal(g('areaTotal'))),
+      areaTerreno:          (n => Number.isFinite(n) ? n : null)(lerAreaTotal(g('areaTerreno'))),
       bice:                 toInt(g('bice')),
       anoConstrutivo:       toInt(g('anoConstrutivo')),
       valorVenal:           toNum(g('valorVenal')),
@@ -2917,7 +2904,7 @@ function initFormulario(){
       linha('Quadra', f.quadra_imovel) +
       linha('Lote', f.lote_letra) +
       linhaSe('Segmento do lote', f.segmento_lote) +
-      linhaSe('Classificação', rotuloSel('tipo_segmento_lote', f.tipo_segmento_lote));
+      linha('Classificação', rotuloSel('tipo_segmento_lote', f.tipo_segmento_lote) || 'Lote inteiro');
 
     const end =
       linha('Tipo de logradouro', rotuloSel('tipoLogradouro', f.tipoLogradouro)) +
@@ -2944,12 +2931,9 @@ function initFormulario(){
       linha('Possui piscina', f.temPiscina ? 'Sim' : 'Não') +
       linha('Divisão política (bairro)', f.temBairro ? 'Sim' : 'Não');
 
-    // Fichas antigas guardavam as medidas separadas; continuam visíveis (somente leitura)
-    const legado = linhaSe('Área do terreno (antiga)', fmtNum(f.areaTerreno)) +
-                   linhaSe('Área construída (antiga)', fmtNum(f.areaConstruida));
     const area =
       linha('Área total (m²)', fmtNum(f.areaTotal)) +
-      legado +
+      linha('Área total do terreno (m²)', fmtNum(f.areaTerreno)) +
       linhaSe('Nº de frentes', f.num_frentes) +
       linhaSe('Nº de andares', f.num_andares) +
       linhaSe('Área privativa (m²)', fmtNum(f.areaPrivativa, 4)) +
@@ -3109,7 +3093,7 @@ function initFormulario(){
     padraoConstrutivo: DG + 'padraoConstrutivo', qtdGaragem: DG + 'qtdGaragem', idParcela: DG + 'idParcela',
     anoConstrutivo: DG + 'anoConstrutivo', valorVenal: DG + 'valorVenal', dtUltimoValorVenal: DG + 'dtUltimoValorVenal',
     valorRefMercado: DG + 'valorRefMercado', dataUltVlrMercado: DG + 'dataUltVlrMercado', bice: DG + 'bice',
-    temPiscina: DG + 'temPiscina', areaTotal: DG + 'areaTotal',
+    temPiscina: DG + 'temPiscina', areaTotal: DG + 'areaTotal', areaTerreno: DG + 'areaTerreno',
     num_frentes: CO + 'numFrentes', num_andares: CO + 'numAndares',
     areaPrivativa: AC + 'areaPrivativa', areaComum: AC + 'areaComum', fraIdeal: AC + 'fraIdeal',
     nomeServentiaRI: SR + 'nomeServentiaRI', cnsRI: SR + 'cnsRI', cnmRI: SR + 'cnmRI',
@@ -3125,8 +3109,8 @@ function initFormulario(){
      Um array dentro de "campos" = duas colunas lado a lado. */
   const EDIT_SECOES = [
     { titulo:'Localização cadastral', campos:[
-      { n:'bairro_imovel', l:'Bairro', t:'sel', src:'bairro_imovel', req:true, up:true },
-      [ { n:'quadra_imovel', l:'Quadra', t:'text', req:true, dig:3 }, { n:'lote_letra', l:'Lote', t:'text', req:true, dig:3 } ],
+      { n:'bairro_imovel', l:'Bairro (opcional)', t:'sel', src:'bairro_imovel', up:true },
+      [ { n:'quadra_imovel', l:'Quadra (opcional)', t:'text', dig:3 }, { n:'lote_letra', l:'Lote (opcional)', t:'text', dig:3 } ],
       [ { n:'segmento_lote', l:'Segmento (opcional)', t:'text', seg:true, up:true }, { n:'tipo_segmento_lote', l:'Classificação', t:'sel', src:'tipo_segmento_lote' } ]
     ]},
     { titulo:'Endereço', campos:[
@@ -3150,6 +3134,7 @@ function initFormulario(){
     ]},
     { titulo:'Área e construção', campos:[
       { n:'areaTotal', l:'Área total (m²)', t:'text', k:'area', dica:'Preenchimento manual. Use vírgula nos decimais (ex.: 250,50).' },
+      { n:'areaTerreno', l:'Área total do terreno (m²)', t:'text', k:'area', dica:'Preenchimento manual, em metros quadrados.' },
       [ { n:'num_frentes', l:'Nº de frentes', t:'sel', src:'num_frentes', k:'int' }, { n:'num_andares', l:'Nº de andares', t:'sel', src:'num_andares', k:'int' } ],
       [ { n:'areaPrivativa', l:'Área privativa (m²)', t:'number', k:'num' }, { n:'areaComum', l:'Área comum (m²)', t:'number', k:'num' } ],
       { n:'fraIdeal', l:'Fração ideal', t:'number', k:'num' }
@@ -3273,9 +3258,8 @@ function initFormulario(){
   }
   function validarEdicao(v){
     const e = (n, msg) => ({ n, msg });
-    if(!v.bairro_imovel) return e('bairro_imovel', 'Selecione o bairro.');
-    if(!/^\d{3}$/.test(v.quadra_imovel || '')) return e('quadra_imovel', 'Quadra deve ter exatamente 3 dígitos.');
-    if(!/^\d{3}$/.test(v.lote_letra || '')) return e('lote_letra', 'Lote deve ter exatamente 3 dígitos.');
+    if(v.quadra_imovel && !/^\d{3}$/.test(v.quadra_imovel)) return e('quadra_imovel', 'Quadra deve ter exatamente 3 dígitos.');
+    if(v.lote_letra && !/^\d{3}$/.test(v.lote_letra)) return e('lote_letra', 'Lote deve ter exatamente 3 dígitos.');
     if(v.segmento_lote && !/^[A-Z0-9]{1,4}$/.test(v.segmento_lote)) return e('segmento_lote', 'Segmento: use até 4 letras ou números.');
     if(v.tipo_segmento_lote && !v.segmento_lote) return e('segmento_lote', 'Informe o segmento do lote para usar a classificação.');
     if(v.tipoLogradouro == null) return e('tipoLogradouro', 'Selecione o tipo de logradouro.');
@@ -3291,6 +3275,7 @@ function initFormulario(){
     if(tipo === '3' && v.bice == null) return e('bice', 'BICE é obrigatório para bem especial.');
     if(tipo !== '1' && v.destinacaoImovel == null) return e('destinacaoImovel', 'Destinação é obrigatória, exceto para territorial.');
     if(v.areaTotal != null && !(v.areaTotal > 0)) return e('areaTotal', 'Informe uma área total válida (maior que zero).');
+    if(v.areaTerreno != null && !(v.areaTerreno > 0)) return e('areaTerreno', 'Informe uma área do terreno válida (maior que zero).');
     if(v.cnmRI != null && !/^\d{15,16}$/.test(String(v.cnmRI))) return e('cnmRI', 'CNM deve ter 15 ou 16 dígitos.');
     const itbi = ['baseCalculITBI', 'valorRefITBI', 'dtTransacaoITBI', 'tpTransacaoITBI', 'percTransacionadoITBI'];
     if(itbi.some(k => v[k] != null && v[k] !== '')){
@@ -3330,7 +3315,7 @@ function initFormulario(){
 
     // A inscrição acompanha bairro/quadra/lote
     const locMudou = alterados.some(c => ['bairro_imovel', 'quadra_imovel', 'lote_letra'].includes(c.n));
-    if(locMudou || vazio(f.inscricaoImobiliaria)){
+    if((locMudou || vazio(f.inscricaoImobiliaria)) && novos.bairro_imovel && novos.quadra_imovel && novos.lote_letra){
       const info = getBairros().find(x => x.nome === novos.bairro_imovel);
       const b = (info && info.numero ? String(info.numero) : '000').padStart(3, '0');
       updates[DG + 'inscricaoImobiliaria'] = '00.00.' + novos.quadra_imovel + '.' + novos.lote_letra + '.' + b;
