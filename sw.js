@@ -21,6 +21,7 @@
  * ------------------------------------------------------------------
  */
 
+// v10: área total construída (rótulo) e CEP fixo 69.250-000.
 // v9: bairro/quadra/lote opcionais, classificação (lote inteiro/desmembrado), área total do terreno.
 // v8: abas Cadastro / Fichas salvas, foto e inscrição opcionais, área total única (m²).
 // v7: segmentação opcional de lotes e envio das imagens em binário (multipart).
@@ -28,7 +29,7 @@
 //     bairro e novo manifest. Ao subir uma nova versão do app, basta
 //     incrementar este número para forçar a invalidação de todo o cache
 //     antigo no activate.
-const CACHE_NAME = 'cadmob-form-v9';
+const CACHE_NAME = 'cadmob-form-v10';
 
 const APP_SHELL = [
   './index.html',

@@ -491,7 +491,7 @@ body{
       <div class="card"><div class="card-body">
         <p class="sub-head">Área do Imóvel</p>
         <div class="field">
-          <label for="areaTotal">Área Total (m²) <span class="opt-tag">(opcional)</span></label>
+          <label for="areaTotal">Área Total Construída (m²) <span class="opt-tag">(opcional)</span></label>
           <input type="text" id="areaTotal" name="areaTotal" inputmode="decimal" autocomplete="off" placeholder="0,00">
           <div class="hint">Preenchimento manual, em metros quadrados. Use vírgula nos decimais (ex.: 250,50).</div>
         </div>
@@ -584,8 +584,9 @@ body{
             <input type="text" id="complEndereco" name="complEndereco" maxlength="30"></div>
         </div>
         <div class="field">
-          <label for="cep">CEP <span class="req">*</span></label>
-          <input type="text" id="cep" name="cep" maxlength="8" pattern="\d{8}" required inputmode="numeric" data-mask="cep" placeholder="00000000">
+          <label for="cep">CEP</label>
+          <input type="text" id="cep" name="cep" value="69.250-000" readonly tabindex="-1" aria-readonly="true">
+          <div class="hint">CEP padrão do município. Não pode ser alterado.</div>
         </div>
       </div></div>
     </section>
@@ -1632,13 +1633,12 @@ function initFormulario(){
   }
   tipoImovel.addEventListener('change', syncTipo); syncTipo();
 
-  /* ---------- MASK CEP ---------- */
-  const cepEl = document.getElementById('cep');
-  if(cepEl){
-    cepEl.addEventListener('input', () => {
-      let v = cepEl.value.replace(/\D/g,'').slice(0,8);
-      cepEl.value = v;
-    });
+  /* ---------- CEP: predefinido (69.250-000), sem edição. O valor padrão vem do atributo value do
+     input, então form.reset() (limpar ficha) também o restaura. Enviado só com dígitos. ---------- */
+  const CEP_PADRAO = '69250000';
+  function fmtCep(v){
+    const d = String(v == null ? '' : v).replace(/\D/g, '');
+    return d.length === 8 ? d.slice(0,2) + '.' + d.slice(2,5) + '-' + d.slice(5) : d;
   }
 
   /* ============================================================
@@ -2197,7 +2197,7 @@ function initFormulario(){
     }
     if(stepNum === 2){
       const at = lerAreaTotal(g('areaTotal'));
-      if(at !== null && !(at > 0)) invalidos.push({ el: q('areaTotal'), msg: 'Área total inválida. Informe um valor maior que zero (ex.: 250,50) ou deixe em branco.' });
+      if(at !== null && !(at > 0)) invalidos.push({ el: q('areaTotal'), msg: 'Área total construída inválida. Informe um valor maior que zero (ex.: 250,50) ou deixe em branco.' });
       const att = lerAreaTotal(g('areaTerreno'));
       if(att !== null && !(att > 0)) invalidos.push({ el: q('areaTerreno'), msg: 'Área total do terreno inválida. Informe um valor maior que zero (ex.: 250,50) ou deixe em branco.' });
     }
@@ -2205,7 +2205,7 @@ function initFormulario(){
       if(!g('bairro')) invalidos.push({ el: q('bairro'), msg: 'Selecione o bairro.' });
       if(!g('tipoLogradouro')) invalidos.push({ el: q('tipoLogradouro'), msg: 'Selecione o tipo de logradouro.' });
       if(!g('nomeLogradouro')) invalidos.push({ el: q('nomeLogradouro'), msg: 'Selecione o nome do logradouro.' });
-      const cepVal = g('cep').replace(/\D/g,'');
+      const cepVal = (g('cep').replace(/\D/g,'') || CEP_PADRAO);
       if(!cepVal) invalidos.push({ el: q('cep'), msg: 'Informe o CEP.' });
       else if(!/^\d{8}$/.test(cepVal)) invalidos.push({ el: q('cep'), msg: 'CEP deve conter 8 dígitos.' });
     }
@@ -2319,7 +2319,7 @@ function initFormulario(){
       if(!el) return '';
       return el.type === 'checkbox' ? el.checked : el.value;
     };
-    const cepOnlyDigits = String(g('cep') || '').replace(/\D/g,'');
+    const cepOnlyDigits = String(g('cep') || '').replace(/\D/g,'') || CEP_PADRAO;
     const onlyDigits = v => String(v == null ? '' : v).replace(/\D/g, '');
 
     const dadosImovel = {};
@@ -2932,7 +2932,7 @@ function initFormulario(){
       linha('Divisão política (bairro)', f.temBairro ? 'Sim' : 'Não');
 
     const area =
-      linha('Área total (m²)', fmtNum(f.areaTotal)) +
+      linha('Área total construída (m²)', fmtNum(f.areaTotal)) +
       linha('Área total do terreno (m²)', fmtNum(f.areaTerreno)) +
       linhaSe('Nº de frentes', f.num_frentes) +
       linhaSe('Nº de andares', f.num_andares) +
@@ -3117,7 +3117,7 @@ function initFormulario(){
       { n:'tipoLogradouro', l:'Tipo de logradouro', t:'sel', src:'tipoLogradouro', k:'int', req:true },
       { n:'bairro', l:'Bairro (endereço)', t:'sel', src:'bairro', up:true, req:true },
       { n:'nomeLogradouro', l:'Nome do logradouro', t:'logra', up:true, req:true },
-      [ { n:'numeroImovel', l:'Número', t:'text', up:true, max:8 }, { n:'cep', l:'CEP', t:'text', dig:8, req:true } ],
+      [ { n:'numeroImovel', l:'Número', t:'text', up:true, max:8 }, { n:'cep', l:'CEP', t:'text', ro:true, dica:'CEP padrão do município. Não pode ser alterado.' } ],
       [ { n:'complNroImovel', l:'Compl. Nº', t:'text', up:true, max:30 }, { n:'complEndereco', l:'Complemento', t:'text', up:true, max:30 } ],
       { n:'temBairro', l:'Há divisão política (bairro)', t:'bool' }
     ]},
@@ -3133,7 +3133,7 @@ function initFormulario(){
       { n:'temPiscina', l:'Possui piscina', t:'bool' }
     ]},
     { titulo:'Área e construção', campos:[
-      { n:'areaTotal', l:'Área total (m²)', t:'text', k:'area', dica:'Preenchimento manual. Use vírgula nos decimais (ex.: 250,50).' },
+      { n:'areaTotal', l:'Área total construída (m²)', t:'text', k:'area', dica:'Preenchimento manual. Use vírgula nos decimais (ex.: 250,50).' },
       { n:'areaTerreno', l:'Área total do terreno (m²)', t:'text', k:'area', dica:'Preenchimento manual, em metros quadrados.' },
       [ { n:'num_frentes', l:'Nº de frentes', t:'sel', src:'num_frentes', k:'int' }, { n:'num_andares', l:'Nº de andares', t:'sel', src:'num_andares', k:'int' } ],
       [ { n:'areaPrivativa', l:'Área privativa (m²)', t:'number', k:'num' }, { n:'areaComum', l:'Área comum (m²)', t:'number', k:'num' } ],
@@ -3180,6 +3180,7 @@ function initFormulario(){
     return h + lista.map(o => '<option value="' + esc(o.v) + '"' + (o.v === atual.toUpperCase() ? ' selected' : '') + '>' + esc(o.l) + '</option>').join('');
   }
   function valorInicial(c, v){
+    if(c.n === 'cep') return fmtCep(vazio(v) ? CEP_PADRAO : v);
     if(vazio(v)) return '';
     if(c.k === 'area') return String(v).replace('.', ',');
     return String(v);
@@ -3199,6 +3200,7 @@ function initFormulario(){
         (c.dig ? ' inputmode="numeric" maxlength="' + c.dig + '" data-dig="' + c.dig + '"' : '') +
         (c.seg ? ' maxlength="4" data-seg="1" autocapitalize="characters"' : '') +
         (c.max ? ' maxlength="' + c.max + '"' : '') +
+        (c.ro ? ' readonly tabindex="-1" aria-readonly="true"' : '') +
         ' autocomplete="off" value="' + esc(valorInicial(c, v)) + '">';
     }
     return '<div class="field"><label for="' + id + '">' + esc(c.l) + (c.req ? ' <span class="req">*</span>' : '') + '</label>' + ctl +
@@ -3231,6 +3233,7 @@ function initFormulario(){
     if(!el) return undefined;
     if(c.t === 'bool') return !!el.checked;
     const v = String(el.value || '').trim();
+    if(c.n === 'cep') return v.replace(/\D/g, '') || CEP_PADRAO;
     if(c.k === 'int') return v === '' ? null : Math.trunc(Number(v));
     if(c.k === 'num') return v === '' ? null : Number(v);
     if(c.k === 'area'){ const n = lerAreaTotal(v); return n === null ? null : n; }
@@ -3274,7 +3277,7 @@ function initFormulario(){
     if(tipo === '1' && v.idParcela) return e('idParcela', 'ID da parcela não deve ser informado para territorial.');
     if(tipo === '3' && v.bice == null) return e('bice', 'BICE é obrigatório para bem especial.');
     if(tipo !== '1' && v.destinacaoImovel == null) return e('destinacaoImovel', 'Destinação é obrigatória, exceto para territorial.');
-    if(v.areaTotal != null && !(v.areaTotal > 0)) return e('areaTotal', 'Informe uma área total válida (maior que zero).');
+    if(v.areaTotal != null && !(v.areaTotal > 0)) return e('areaTotal', 'Informe uma área total construída válida (maior que zero).');
     if(v.areaTerreno != null && !(v.areaTerreno > 0)) return e('areaTerreno', 'Informe uma área do terreno válida (maior que zero).');
     if(v.cnmRI != null && !/^\d{15,16}$/.test(String(v.cnmRI))) return e('cnmRI', 'CNM deve ter 15 ou 16 dígitos.');
     const itbi = ['baseCalculITBI', 'valorRefITBI', 'dtTransacaoITBI', 'tpTransacaoITBI', 'percTransacionadoITBI'];

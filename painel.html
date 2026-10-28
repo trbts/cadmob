@@ -2020,7 +2020,7 @@ Pages.registros.view = function(id, abaInicial){
   const tabMedidas =
     dSection('Área do Imóvel', SVG_ICONS.ruler) +
     '<div class="detail-grid">' +
-      dItem('Área Total (m²)', r.areaTotal) +
+      dItem('Área Total Construída (m²)', r.areaTotal) +
       dItem('Área Total do Terreno (m²)', r.areaTerreno) +
     '</div>' +
     dSection('Construção', SVG_ICONS.build) +
@@ -2302,7 +2302,7 @@ const EDIT_SCHEMA = {
   ],
   medidas: [
     { section:'Área do Imóvel', icon:SVG_ICONS.ruler, fields: [
-      { n:'areaTotal', l:'Área Total (m²)', t:'number', step:'0.01', min:'0' },
+      { n:'areaTotal', l:'Área Total Construída (m²)', t:'number', step:'0.01', min:'0' },
       { n:'areaTerreno', l:'Área Total do Terreno (m²)', t:'number', step:'0.01', min:'0' }
     ]},
     { section:'Construção', icon:SVG_ICONS.build, fields: [
@@ -2483,7 +2483,7 @@ Pages.registros.edit = function(id){
       });
 
       /* Área Total: preenchimento manual, gravada como número (vazio = sem valor) */
-      const camposArea = [['areaTotal', 'Área Total'], ['areaTerreno', 'Área Total do Terreno']];
+      const camposArea = [['areaTotal', 'Área Total Construída'], ['areaTerreno', 'Área Total do Terreno']];
       for(let ai = 0; ai < camposArea.length; ai++){
         const kA = camposArea[ai][0];
         if(!(kA in flatUpdates)) continue;
@@ -2788,7 +2788,7 @@ function montarHTMLFichaParaImpressao(r, fotoSrc){
 
     section('5. Área do Imóvel') +
     '<div class="grid">' +
-      row('Área Total (m²)', r.areaTotal) +
+      row('Área Total Construída (m²)', r.areaTotal) +
       row('Área Total do Terreno (m²)', r.areaTerreno) +
     '</div>' +
 
