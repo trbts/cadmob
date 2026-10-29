@@ -168,8 +168,21 @@ ul{ list-style:none; }
 
 .badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:99px; font-size:11.5px; font-weight:700; border:1px solid transparent; white-space:nowrap; }
 .badge::before{ content:""; width:6px; height:6px; border-radius:99px; background:currentColor; }
-.badge.pendente{ background:var(--warning-bg); color:#b45309; border-color:#fde68a; }
-.badge.aprovado{ background:var(--success-bg); color:#047857; border-color:#a7f3d0; }
+.lc-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:5px; }
+.lc-tag{ font-size:10.5px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; padding:2px 10px; border-radius:99px; border:1px solid transparent; }
+.lc-tag.sinter{ background:#e0ecff; color:#1d4ed8; border-color:#bfdbfe; }
+.lc-tag.tributos{ background:#e3f8ec; color:#047857; border-color:#a7f3d0; }
+.classif-menu{ position:fixed; z-index:400; min-width:240px; padding:6px; background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 14px 34px rgba(15,23,42,.18); }
+.classif-menu .cm-title{ padding:6px 10px 4px; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+.classif-menu button{ display:flex; align-items:center; gap:9px; width:100%; padding:9px 10px; border:0; background:transparent; border-radius:8px; font:inherit; font-size:13px; font-weight:600; color:inherit; cursor:pointer; text-align:left; }
+.classif-menu button:hover{ background:var(--primary-light); }
+.classif-menu button .dot{ width:10px; height:10px; border-radius:99px; background:#cbd5e1; flex:0 0 auto; }
+.classif-menu button.on .dot.sinter{ background:#1d4ed8; }
+.classif-menu button.on .dot.tributos{ background:#047857; }
+.classif-menu button small{ margin-left:auto; color:var(--muted); font-weight:600; }
+.chip-filter{ padding:6px 12px; border-radius:99px; border:1.5px solid var(--border-strong); background:#fff; color:var(--muted); font:inherit; font-size:12.5px; font-weight:700; cursor:pointer; }
+.chip-filter:hover{ border-color:var(--primary); color:var(--primary); }
+.chip-filter.on{ background:var(--primary); border-color:var(--primary); color:#fff; }
 
 .empty{ padding:60px 20px; text-align:center; color:var(--muted); }
 .empty svg{ width:52px; height:52px; color:var(--soft); margin-bottom:14px; }
@@ -583,7 +596,8 @@ ul{ list-style:none; }
         <div class="page-head">
           <div><h2>Configuração</h2><p>Exportação, importação e informações do sistema.</p></div>
           <div style="display:flex;gap:10px;">
-            <button class="btn btn-ghost" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar</button>
+            <button class="btn btn-ghost" id="btnExportSinter" title="Exporta só os dados do imóvel, no formato oficial (SINTER)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar SINTER</button>
+            <button class="btn btn-ghost" id="btnExport" title="Todas as informações do sistema, sem imagens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar backup</button>
             <label class="btn btn-ghost" style="cursor:pointer;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               Importar
@@ -845,7 +859,7 @@ function navigate(page){
    ============================================================ */
 const State = {
   registros: [],
-  hier: { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' },
+  hier: { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', naoSinter:false, naoTributos:false },
   fotosHier: { bairro:null, quadra:null },
   page: 'dashboard'
 };
@@ -902,7 +916,8 @@ function normalizarFicha(raw){
     segmento_lote:      raw.segmento_lote      || loc.segmento      || '',
     tipo_segmento_lote: raw.tipo_segmento_lote || loc.tipoSegmento  || '',
     unidade_imovel:    raw.unidade_imovel   || loc.unidade || '',
-    status:            raw.status           || dc.status   || 'pendente',
+    classif_sinter:    !!(dc.classificacao && dc.classificacao.sinter),
+    classif_tributos:  !!(dc.classificacao && dc.classificacao.tributos),
     origem:            raw.origem           || dc.origem   || 'sinter',
     criado_em:         raw.criado_em        || dc.criado_em,
     criado_por_uid:    raw.criado_por_uid   || dc.criado_por_uid,
@@ -1160,10 +1175,6 @@ const SELECT_OPTIONS = {
     { v:'10', l:'10 - TERRAS INDÍGENAS E TERRAS DEVOLUTAS' },
     { v:'11', l:'11 - LAGOS, RIOS, AÇUDES, MANANCIAIS E ESPELHO D\'ÁGUA' },
     { v:'12', l:'12 - PARQUES, FLORESTAS E UNIDADES DE CONSERVAÇÃO' }
-  ],
-  status: [
-    { v:'pendente', l:'PENDENTE' },
-    { v:'aprovado', l:'APROVADO' }
   ]
 };
 
@@ -1173,9 +1184,6 @@ function labelFromOptions(optKey, val){
   const hit = opts.find(function(o){ return String(o.v) === String(val); });
   return hit ? hit.l : String(val);
 }
-function statusLabel(s){ return labelFromOptions('status', s || 'pendente'); }
-function normalizeStatus(s){ return (s === 'aprovado') ? 'aprovado' : 'pendente'; }
-function getStatusFromReg(r){ return normalizeStatus(r.status); }
 
 /* ============================================================
    FOTO
@@ -1337,7 +1345,8 @@ async function recarregarFichas(force){
     if(!force && v.versao === _fichasVersao) return;
     const r = await api('GET', '/fichas');
     _fichasVersao = v.versao;
-    State.registros = (r.fichas || []).map(normalizarFicha);
+    State.rawFichas = r.fichas || [];
+    State.registros = State.rawFichas.map(normalizarFicha);
     renderPaginaAtual();
   } catch(err){
     console.warn('[fichas] falha ao carregar:', err);
@@ -1370,19 +1379,19 @@ function renderDashboard(){
     if(r.bairro_imovel) bSet.add(norm(r.bairro_imovel));
     if(r.bairro_imovel && r.quadra_imovel) qSet.add(norm(r.bairro_imovel)+'|'+norm(r.quadra_imovel));
   });
-  const aprov = regs.filter(function(r){ return getStatusFromReg(r) === 'aprovado'; }).length;
-  const pend  = total - aprov;
+  const nSinter = regs.filter(function(r){ return r.classif_sinter; }).length;
+  const nTrib   = regs.filter(function(r){ return r.classif_tributos; }).length;
 
   document.getElementById('statGrid').innerHTML = [
     { ico:'i1', label:'Total de Fichas', value: total,
       trend: bSet.size + ' bairros · ' + qSet.size + ' quadras',
       svg:'<path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>' },
-    { ico:'i2', label:'Aprovados', value: aprov,
-      trend: total ? Math.round(aprov/total*100)+'% do total' : '—',
+    { ico:'i2', label:'No Sinter', value: nSinter,
+      trend: total ? Math.round(nSinter/total*100)+'% do total' : '—',
       svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' },
-    { ico:'i3', label:'Pendentes', value: pend,
-      trend: pend>0?'Aguardando análise':'Tudo em dia', down: pend>0,
-      svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' }
+    { ico:'i3', label:'Em Tributos', value: nTrib,
+      trend: total ? Math.round(nTrib/total*100)+'% do total' : '—',
+      svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' }
   ].map(function(s){
     return '<div class="stat"><div class="stat-ico ' + s.ico + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + s.svg + '</svg></div>' +
     '<div class="stat-value">' + s.value + '</div><div class="stat-label">' + s.label + '</div>' +
@@ -1439,13 +1448,13 @@ function renderDashboard(){
    ============================================================ */
 const Pages = { registros:{} };
 
-Pages.registros.goRoot   = function(){ State.hier = { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', filterStatus:'' }; renderRegistros(); };
+Pages.registros.goRoot   = function(){ State.hier = { bairro:null, quadra:null, sortQuadras:'asc', sortLotes:'lote_asc', naoSinter:false, naoTributos:false }; renderRegistros(); };
 Pages.registros.goBairro = function(b){ State.hier.bairro = b; State.hier.quadra = null; renderRegistros(); };
 Pages.registros.goBairroLevel = function(){ State.hier.quadra = null; renderRegistros(); };
 Pages.registros.goQuadra = function(q){ State.hier.quadra = q; renderRegistros(); };
 Pages.registros.setSortQuadras = function(v){ State.hier.sortQuadras = v; renderRegistros(); };
 Pages.registros.setSortLotes  = function(v){ State.hier.sortLotes  = v; renderRegistros(); };
-Pages.registros.setFilterStatus = function(v){ State.hier.filterStatus = v; renderRegistros(); };
+Pages.registros.setFiltroClassif = function(chave, v){ State.hier[chave] = !!v; renderRegistros(); };
 
 function renderRegistros(){
   renderBreadcrumb();
@@ -1575,9 +1584,10 @@ function renderLotesView(){
     return getBairroNome(r) === bairro && getQuadraNome(r) === quadra;
   });
 
-  if(State.hier.filterStatus){
-    fichas = fichas.filter(function(f){ return getStatusFromReg(f) === State.hier.filterStatus; });
-  }
+  const totalNaoSinter   = fichas.filter(function(f){ return !f.classif_sinter; }).length;
+  const totalNaoTributos = fichas.filter(function(f){ return !f.classif_tributos; }).length;
+  if(State.hier.naoSinter)   fichas = fichas.filter(function(f){ return !f.classif_sinter; });
+  if(State.hier.naoTributos) fichas = fichas.filter(function(f){ return !f.classif_tributos; });
 
   const sortL = State.hier.sortLotes || 'lote_asc';
   fichas.sort(function(a, b){
@@ -1594,12 +1604,9 @@ function renderLotesView(){
 
   document.getElementById('hierExtra').innerHTML =
     '<div class="filters-bar">' +
-      '<label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Status:</label>' +
-      '<select id="filterStatus">' +
-        '<option value=""'         + (State.hier.filterStatus === ''         ? ' selected' : '') + '>Todos</option>' +
-        '<option value="pendente"' + (State.hier.filterStatus === 'pendente' ? ' selected' : '') + '>Pendente</option>' +
-        '<option value="aprovado"' + (State.hier.filterStatus === 'aprovado' ? ' selected' : '') + '>Aprovado</option>' +
-      '</select>' +
+      '<label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Classificação:</label>' +
+      '<button type="button" class="chip-filter' + (State.hier.naoSinter ? ' on' : '') + '" id="chipNaoSinter">Não Sinter (' + totalNaoSinter + ')</button>' +
+      '<button type="button" class="chip-filter' + (State.hier.naoTributos ? ' on' : '') + '" id="chipNaoTributos">Não Tributos (' + totalNaoTributos + ')</button>' +
       '<label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>Ordenar:</label>' +
       '<select id="sortLotesSel">' +
         '<option value="lote_asc"'  + (sortL === 'lote_asc'  ? ' selected' : '') + '>Lote: A → Z</option>' +
@@ -1612,7 +1619,8 @@ function renderLotesView(){
       '<span class="filters-count"><strong>' + fichas.length + '</strong> ficha' + (fichas.length === 1 ? '' : 's') + '</span>' +
     '</div>';
 
-  document.getElementById('filterStatus').addEventListener('change', function(e){ Pages.registros.setFilterStatus(e.target.value); });
+  document.getElementById('chipNaoSinter').addEventListener('click', function(){ Pages.registros.setFiltroClassif('naoSinter', !State.hier.naoSinter); });
+  document.getElementById('chipNaoTributos').addEventListener('click', function(){ Pages.registros.setFiltroClassif('naoTributos', !State.hier.naoTributos); });
   document.getElementById('sortLotesSel').addEventListener('change', function(e){ Pages.registros.setSortLotes(e.target.value); });
 
   if(!fichas.length){
@@ -1621,7 +1629,6 @@ function renderLotesView(){
   }
 
   document.getElementById('hierContent').innerHTML = '<div class="lote-list">' + fichas.map(function(l){
-    const status = getStatusFromReg(l);
     const nomeProp = getNomeProprietario(l);
     const unid = l.unidade_imovel ? ' · Unid. ' + esc(l.unidade_imovel) : '';
     const endereco = (l.nomeLogradouro || l.logradouro_imovel || '') + (l.numeroImovel ? ', ' + l.numeroImovel : '');
@@ -1630,12 +1637,12 @@ function renderLotesView(){
       '<div class="lc-info">' +
         '<div class="lc-title">' + esc(nomeProp) + '</div>' +
         '<div class="lc-sub">' + esc(endereco || '—') + unid + '</div>' +
+        classifTagsHTML(l) +
       '</div>' +
-      '<span class="badge ' + esc(status) + '">' + statusLabel(status) + '</span>' +
       '<div class="lote-actions">' +
         '<button class="action-btn" data-action="view" title="Ver ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
+        '<button class="action-btn" data-action="classif" title="Classificar lote (Sinter / Tributos)">' + ICON_TAG + '</button>' +
         '<button class="action-btn" data-action="edit" title="Editar ficha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
-        '<button class="action-btn" data-action="status" title="Alterar status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>' +
         (CurrentRole === 'superadmin'
           ? '<button class="action-btn danger" data-action="remove" title="Remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>'
           : '') +
@@ -1650,7 +1657,7 @@ function renderLotesView(){
         const a = btn.dataset.action;
         if(a === 'view')   Pages.registros.view(id);
         if(a === 'edit')   Pages.registros.edit(id);
-        if(a === 'status') Pages.registros.openStatus(id);
+        if(a === 'classif') Pages.registros.openClassif(id, btn);
         if(a === 'remove') Pages.registros.remove(id);
       });
     });
@@ -1790,10 +1797,13 @@ function renderFotosGaleria(){
         '<button type="button" data-act="download" title="Baixar foto">' + ICON_DOWNLOAD + 'Baixar</button>' +
         '<button type="button" data-act="ficha" title="Abrir ficha completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + SVG_ICONS.doc + '</svg>Ficha</button>' +
       '</div>' +
-      '<div class="fc-actions row2">' +
-        '<button type="button" data-act="substituir" title="Substituir foto">Substituir</button>' +
-        '<button type="button" class="fc-danger" data-act="excluir" title="Excluir foto">Excluir</button>' +
-      '</div></div>';
+      (CurrentRole === 'superadmin'
+        ? '<div class="fc-actions row2">' +
+            '<button type="button" data-act="substituir" title="Substituir foto">Substituir</button>' +
+            '<button type="button" class="fc-danger" data-act="excluir" title="Excluir foto">Excluir</button>' +
+          '</div>'
+        : '') +
+      '</div>';
   }).join('') + '</div>';
   el.querySelectorAll('.foto-card').forEach(function(card){
     const r = State.registros.find(function(x){ return x.id === card.dataset.id; });
@@ -1807,8 +1817,9 @@ function renderFotosGaleria(){
       baixarImagemFicha(r, 'foto', 'foto');
     });
     card.querySelector('[data-act="ficha"]').addEventListener('click', function(){ Pages.registros.view(r.id); });
-    card.querySelector('[data-act="substituir"]').addEventListener('click', function(){ FotoOps.substituir(r.id, 'foto', null); });
-    card.querySelector('[data-act="excluir"]').addEventListener('click', function(){ FotoOps.excluir(r.id, 'foto', null, null); });
+    const bSub = card.querySelector('[data-act="substituir"]'), bExc = card.querySelector('[data-act="excluir"]');
+    if(bSub) bSub.addEventListener('click', function(){ FotoOps.substituir(r.id, 'foto', null); });
+    if(bExc) bExc.addEventListener('click', function(){ FotoOps.excluir(r.id, 'foto', null, null); });
   });
   hidratarImagens(el);
 }
@@ -1908,6 +1919,7 @@ const FotoOps = {
     inp.click();
   },
   excluir: function(id, slot, depois, aoCancelar){
+    if(CurrentRole !== 'superadmin'){ toast('Somente o perfil Desenvolvedor pode excluir fotos.', 'warning'); return; }
     const r = State.registros.find(function(x){ return x.id === id; });
     const oque = slot === 'foto' ? 'a foto do imóvel' : 'o anexo ' + slot.replace('anexo', '');
     Modal.confirm({
@@ -1960,7 +1972,6 @@ document.getElementById('fotoUploadInput').addEventListener('change', async func
    ============================================================ */
 Pages.registros.view = function(id, abaInicial){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
-  const st = getStatusFromReg(r);
   const temFoto = !!r.foto_arquivo;
 
   const titularesHTML = (Array.isArray(r.Titular) && r.Titular.length)
@@ -2106,7 +2117,9 @@ Pages.registros.view = function(id, abaInicial){
     dSection('Transmitentes', SVG_ICONS.users) + transHTML +
     dSection('Adquirentes', SVG_ICONS.users) + adqHTML;
 
+  const ehDev = (CurrentRole === 'superadmin');   // substituir/excluir: só o Desenvolvedor
   const acoes = function(slot, existe){
+    if(existe && !ehDev) return '';
     return '<div class="foto-acoes">' +
       (existe
         ? '<button type="button" class="btn btn-soft btn-sm" data-foto-act="substituir" data-slot="' + slot + '">Substituir</button>' +
@@ -2147,17 +2160,6 @@ Pages.registros.view = function(id, abaInicial){
       '<div class="foto-col">' + dSection('Anexos (' + extras.length + ')', SVG_ICONS.doc) + extrasHTML + '</div>' +
     '</div>';
 
-  const tabAuditoria =
-    dSection('Auditoria', SVG_ICONS.info) +
-    '<div class="detail-grid">' +
-      dItem('Status atual', statusLabel(st)) +
-      dItem('Responsável', r.responsavel) +
-      dItem('Criado em', fmtDateTime(r.criado_em)) +
-      dItem('Criado por (email)', r.criado_por_email, { full:true }) +
-      dItem('Criado por (UID)', r.criado_por_uid, { mono:true, full:true }) +
-      dItem('ID do documento', r.id, { mono:true, full:true }) +
-    '</div>';
-
   const tabs = [
     { key:'localizacao', label:'Localização', icon:SVG_ICONS.home,  html:tabLocalizacao },
     { key:'gerais',      label:'Dados Gerais',icon:SVG_ICONS.doc,   html:tabDadosGerais },
@@ -2165,8 +2167,7 @@ Pages.registros.view = function(id, abaInicial){
     { key:'titulares',   label:'Titulares',   icon:SVG_ICONS.users, html:tabTitulares },
     { key:'registro',    label:'Registro',    icon:SVG_ICONS.doc,   html:tabRegistro },
     { key:'itbi',        label:'ITBI',        icon:SVG_ICONS.money, html:tabITBI },
-    { key:'foto',        label:'Fotos e Anexos', icon:SVG_ICONS.cam, html:tabFoto },
-    { key:'auditoria',   label:'Auditoria',   icon:SVG_ICONS.info,  html:tabAuditoria }
+    { key:'foto',        label:'Fotos e Anexos', icon:SVG_ICONS.cam, html:tabFoto }
   ];
 
   const ativa = abaInicial || 'localizacao';
@@ -2361,12 +2362,6 @@ const EDIT_SCHEMA = {
     ]},
     { section:'Transmitentes', icon:SVG_ICONS.users, custom:'listaTransmitenteITBI' },
     { section:'Adquirentes', icon:SVG_ICONS.users, custom:'listaAdquirenteITBI' }
-  ],
-  auditoria: [
-    { section:'Registro da Ficha', icon:SVG_ICONS.info, fields: [
-      { n:'responsavel', l:'Responsável pelo preenchimento', t:'text' },
-      { n:'status', l:'Status', t:'select', opt:'status' }
-    ]}
   ]
 };
 
@@ -2654,8 +2649,7 @@ Pages.registros.edit = function(id){
     { key:'medidas',     label:'Medidas',      icon:SVG_ICONS.ruler },
     { key:'titulares',   label:'Titulares',    icon:SVG_ICONS.users },
     { key:'registro',    label:'Registro',     icon:SVG_ICONS.doc },
-    { key:'itbi',        label:'ITBI',         icon:SVG_ICONS.money },
-    { key:'auditoria',   label:'Auditoria',    icon:SVG_ICONS.info }
+    { key:'itbi',        label:'ITBI',         icon:SVG_ICONS.money }
   ];
 
   const tabsHTML =
@@ -2794,36 +2788,70 @@ Pages.registros.edit = function(id){
 };
 
 /* ============================================================
-   STATUS / REMOÇÃO
+   CLASSIFICAÇÃO (Sinter / Tributos) · REMOÇÃO
+   Uma ficha pode estar nas duas. Grava em DadosComplementares.classificacao.
    ============================================================ */
-Pages.registros.openStatus = function(id){
+const ICON_TAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>';
+function classifTagsHTML(l){
+  let h = '';
+  if(l.classif_sinter)   h += '<span class="lc-tag sinter">Sinter</span>';
+  if(l.classif_tributos) h += '<span class="lc-tag tributos">Tributos</span>';
+  return h ? '<div class="lc-tags">' + h + '</div>' : '';
+}
+function fecharMenuClassif(){
+  const m = document.getElementById('classifMenu');
+  if(m) m.remove();
+  document.removeEventListener('mousedown', _classifFora, true);
+  document.removeEventListener('keydown', _classifEsc, true);
+}
+function _classifFora(e){ const m = document.getElementById('classifMenu'); if(m && !m.contains(e.target)) fecharMenuClassif(); }
+function _classifEsc(e){ if(e.key === 'Escape') fecharMenuClassif(); }
+
+Pages.registros.openClassif = function(id, anchor){
   const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
-  Modal.open({
-    title:'Alterar Status',
-    subtitle: getNomeProprietario(r),
-    size:'sm',
-    confirmText:'Atualizar',
-    body:'<div class="field"><label>Novo status</label>' +
-      '<select id="newStatus">' +
-        SELECT_OPTIONS.status.map(function(o){
-          return '<option value="' + o.v + '"' + (getStatusFromReg(r) === o.v ? ' selected' : '') + '>' + o.l + '</option>';
-        }).join('') +
-      '</select></div>',
-    onConfirm: async function(modal){
-      const v = modal.querySelector('#newStatus').value;
-      try {
-        await api('PATCH', '/fichas/' + encodeURIComponent(id), {
-          updates: { 'status': v, 'dados_imovel.DadosComplementares.status': v }
-        });
-        await recarregarFichas(false);
-        toast('Status atualizado.', 'success');
-      } catch(err){
-        console.error('[status] falha:', err);
-        toast('Não foi possível atualizar o status.', 'error', err.mensagemUsuario || '');
-        return false;
-      }
-    }
+  fecharMenuClassif();
+  const menu = document.createElement('div');
+  menu.id = 'classifMenu';
+  menu.className = 'classif-menu';
+  const item = function(chave, nome, ativo){
+    return '<button type="button" data-classif="' + chave + '" class="' + (ativo ? 'on' : '') + '">' +
+      '<span class="dot ' + chave + '"></span>' +
+      (ativo ? 'Remover ' + (chave === 'sinter' ? 'do Sinter' : 'dos Tributos') : 'Adicionar ' + (chave === 'sinter' ? 'ao Sinter' : 'aos Tributos')) +
+      (ativo ? '<small>✓ ' + nome + '</small>' : '') + '</button>';
+  };
+  menu.innerHTML = '<div class="cm-title">Classificar lote ' + esc(getLoteNome(r)) + '</div>' +
+    item('sinter', 'Sinter', r.classif_sinter) + item('tributos', 'Tributos', r.classif_tributos);
+  document.body.appendChild(menu);
+  const rc = anchor.getBoundingClientRect();
+  const w = menu.offsetWidth, h = menu.offsetHeight;
+  menu.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, rc.right - w)) + 'px';
+  menu.style.top  = ((rc.bottom + 6 + h > window.innerHeight) ? Math.max(8, rc.top - h - 6) : rc.bottom + 6) + 'px';
+  menu.querySelectorAll('[data-classif]').forEach(function(b){
+    b.addEventListener('click', function(){
+      const chave = b.dataset.classif;
+      fecharMenuClassif();
+      Pages.registros.toggleClassif(id, chave);
+    });
   });
+  setTimeout(function(){
+    document.addEventListener('mousedown', _classifFora, true);
+    document.addEventListener('keydown', _classifEsc, true);
+  }, 0);
+};
+Pages.registros.toggleClassif = async function(id, chave){
+  const r = State.registros.find(function(x){ return x.id === id; }); if(!r) return;
+  const novo = !(chave === 'sinter' ? r.classif_sinter : r.classif_tributos);
+  try {
+    const up = {}; up['dados_imovel.DadosComplementares.classificacao.' + chave] = novo;
+    await api('PATCH', '/fichas/' + encodeURIComponent(id), { updates: up });
+    await recarregarFichas(true);
+    toast(novo
+      ? (chave === 'sinter' ? 'Lote adicionado ao Sinter.' : 'Lote adicionado aos Tributos.')
+      : (chave === 'sinter' ? 'Lote removido do Sinter.' : 'Lote removido dos Tributos.'), 'success');
+  } catch(err){
+    console.error('[classificação] falha:', err);
+    toast('Não foi possível classificar o lote.', 'error', err.mensagemUsuario || '');
+  }
 };
 Pages.registros.remove = function(id){
   if(CurrentRole !== 'superadmin'){
@@ -2865,8 +2893,6 @@ function getPrintCSS(){
     .doc-meta { text-align: right; font-size: 9pt; color: #475569; display: flex; flex-direction: column; gap: 3px; flex: 0 0 auto; }
     .doc-meta span { color: #94a3b8; font-weight: 700; text-transform: uppercase; font-size: 8pt; letter-spacing: .5px; margin-right: 4px; }
     .doc-meta strong { color: #0f172a; }
-    .badge-aprovado { color: #047857 !important; }
-    .badge-pendente { color: #b45309 !important; }
     .section { display: flex; align-items: center; gap: 6px; font-size: 9.5pt; font-weight: 800; text-transform: uppercase; color: #0d5cab; letter-spacing: .6px; margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1.5px solid #c7d9f0; page-break-after: avoid; break-after: avoid; }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 14px; }
     .item { padding: 5px 0 6px; border-bottom: 1px dashed #e2e8f0; min-width: 0; page-break-inside: avoid; }
@@ -2909,7 +2935,6 @@ function getPrintCSS(){
 }
 
 function montarHTMLFichaParaImpressao(r, fotoSrc){
-  const st = getStatusFromReg(r);
   const dataUrl = fotoSrc || '';   // data URL gerada na hora a partir do binário (só para o documento impresso)
   const dt = new Date();
   const dataEmissao = dt.toLocaleDateString('pt-BR');
@@ -2968,7 +2993,6 @@ function montarHTMLFichaParaImpressao(r, fotoSrc){
         '<div class="doc-sub">Inscrição: <strong>' + esc(r.inscricaoImobiliaria || '—') + '</strong></div>' +
       '</div>' +
       '<div class="doc-meta">' +
-        '<div><span>Status</span><strong class="badge-' + esc(st) + '">' + esc(statusLabel(st)) + '</strong></div>' +
         '<div><span>Emissão</span><strong>' + esc(dataEmissao) + '</strong></div>' +
       '</div>' +
     '</header>' +
@@ -3220,6 +3244,50 @@ function toExportModel(r){
    CONFIGURAÇÃO / BACKUP
    ============================================================ */
 const Data = {
+  /* Backup COMPLETO (sem imagens): documento inteiro de cada ficha + listas de bairros/ruas.
+     Reimportável pelo botão "Importar" (as fichas voltam com localização, geo, classificação etc.). */
+  exportBackupCompleto(){
+    const raws = State.rawFichas || [];
+    if(!raws.length){ toast('Nenhuma ficha para exportar.', 'warning'); return; }
+    const limpar = function(v){
+      if(Array.isArray(v)) return v.map(limpar);
+      if(v && typeof v === 'object'){
+        const o = {};
+        Object.keys(v).forEach(function(k){ if(k !== 'base64') o[k] = limpar(v[k]); });   // nunca leva imagem
+        return o;
+      }
+      return v;
+    };
+    const fichas = raws.map(limpar);
+    const payload = {
+      formato: 'ymob-backup-completo',
+      versao: 2,
+      exported_at: new Date().toISOString(),
+      imagens_incluidas: false,
+      total: fichas.length,
+      configuracoes: { listas: (State.listas && State.listas.grupos) ? State.listas.grupos : null },
+      fichas: fichas
+    };
+    Data._baixar(payload, 'ymob-backup-completo-' + todayISO() + '.json', fichas.length + ' ficha(s) · sem imagens');
+  },
+
+  _baixar(payload, nomeArquivo, resumo){
+    try {
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = nomeArquivo; a.rel = 'noopener'; a.style.display = 'none';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      toast('Backup exportado.', 'success', resumo);
+    } catch(err){
+      console.error('[export] falha:', err);
+      toast('Não foi possível exportar o arquivo.', 'error');
+    }
+  },
+
+  /* Exportação no formato oficial (modelo SINTER) — mantida à parte */
   exportJSON(){
     if(!State.registros.length){
       toast('Nenhuma ficha para exportar.', 'warning');
@@ -3250,7 +3318,7 @@ const Data = {
 
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'careiro-backup-' + todayISO() + '.json';
+      a.download = 'careiro-sinter-' + todayISO() + '.json';
       a.rel = 'noopener';
       a.style.display = 'none';
       document.body.appendChild(a);
@@ -3327,13 +3395,15 @@ function renderStorageInfo(){
     if(r.bairro_imovel && r.quadra_imovel) qSet.add(norm(r.bairro_imovel)+'|'+norm(r.quadra_imovel));
   });
   const comFoto = State.registros.filter(function(r){ return !!r.foto_arquivo; }).length;
-  const aprov = State.registros.filter(function(r){ return getStatusFromReg(r) === 'aprovado'; }).length;
+  const nSint = State.registros.filter(function(r){ return r.classif_sinter; }).length;
+  const nTrib = State.registros.filter(function(r){ return r.classif_tributos; }).length;
 
   const info = [
     ['Fonte oficial', 'Cloudflare D1'],
     ['Coleção', 'fichas'],
     ['Total de Fichas', State.registros.length],
-    ['Fichas aprovadas', aprov],
+    ['Fichas no Sinter', nSint],
+    ['Fichas em Tributos', nTrib],
     ['Fichas com foto', comFoto],
     ['Bairros', bSet.size],
     ['Quadras', qSet.size],
@@ -3368,7 +3438,8 @@ function bindEvents(){
     window.location.href = 'login.html';
   });
 
-  document.getElementById('btnExport').addEventListener('click', Data.exportJSON);
+  document.getElementById('btnExport').addEventListener('click', Data.exportBackupCompleto);
+  document.getElementById('btnExportSinter').addEventListener('click', Data.exportJSON);
   document.getElementById('importFile').addEventListener('change', function(e){
     Data.importJSON(e.target.files[0]);
     e.target.value = '';
@@ -3404,15 +3475,14 @@ function bindEvents(){
       document.getElementById('breadcrumb').innerHTML = '<button onclick="Pages.registros.goRoot()">Bairros</button><span class="sep">›</span><span class="current">Busca</span>';
       document.getElementById('hierContent').innerHTML = matches.length
         ? '<div class="lote-list">' + matches.slice(0, 80).map(function(l){
-            const status = getStatusFromReg(l);
             const nomeProp = getNomeProprietario(l);
             return '<div class="lote-card" data-id="' + esc(l.id) + '">' +
               '<div class="lc-badge"><div><small>Lote</small>' + esc(getLoteNome(l)) + '</div></div>' +
               '<div class="lc-info"><div class="lc-title">' + esc(nomeProp) + '</div>' +
-              '<div class="lc-sub">' + esc(l.bairro_imovel||l.bairro||'—') + ' · Q ' + esc(l.quadra_imovel||'—') + ' · ' + esc(l.nomeLogradouro||l.logradouro_imovel||'—') + '</div></div>' +
-              '<span class="badge ' + esc(status) + '">' + statusLabel(status) + '</span>' +
+              '<div class="lc-sub">' + esc(l.bairro_imovel||l.bairro||'—') + ' · Q ' + esc(l.quadra_imovel||'—') + ' · ' + esc(l.nomeLogradouro||l.logradouro_imovel||'—') + '</div>' + classifTagsHTML(l) + '</div>' +
               '<div class="lote-actions">' +
                 '<button class="action-btn" data-action="view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
+                '<button class="action-btn" data-action="classif" title="Classificar lote (Sinter / Tributos)">' + ICON_TAG + '</button>' +
                 '<button class="action-btn" data-action="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
               '</div></div>';
           }).join('') + '</div>'
@@ -3423,6 +3493,7 @@ function bindEvents(){
             ev.stopPropagation();
             const a = btn.dataset.action;
             if(a === 'view') Pages.registros.view(card.dataset.id);
+            if(a === 'classif') Pages.registros.openClassif(card.dataset.id, btn);
             if(a === 'edit') Pages.registros.edit(card.dataset.id);
           });
         });
@@ -3499,4 +3570,4 @@ window.Lightbox = Lightbox;
 window.montarHTMLFichaParaImpressao = montarHTMLFichaParaImpressao;
 </script>
 </body>
-</html>
+</html>

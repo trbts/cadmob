@@ -225,9 +225,9 @@ body{
 .saved-title{ font-size:14.5px; font-weight:800; letter-spacing:-.2px; }
 .saved-line{ font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .saved-line.strong{ color:#41536a; font-weight:600; }
-.badge-st{ display:inline-block !important; margin-top:4px; padding:2px 9px; border-radius:99px; font-size:10.5px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; background:#fff7e0; color:#b45309; }
-.badge-st.aprovado{ background:#e3f8ec; color:#047857; }
-.btn-more{ display:flex; width:100%; margin:4px 0 10px; }
+.pager{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:6px 0 14px; }
+.pager .btn{ flex:0 0 auto; min-height:42px; padding:0 14px; }
+.pager-info{ font-size:12.5px; font-weight:700; color:var(--muted); text-align:center; }
 
 .sheet{ position:fixed; inset:0; z-index:60; background:var(--bg); display:flex; flex-direction:column; animation:stepIn .25s ease; }
 .sheet-head{ flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:calc(var(--safe-top) + 12px) 12px 12px; color:#fff; background:linear-gradient(135deg,#0d5cab 0%,#08386b 100%); box-shadow:0 8px 24px rgba(8,56,107,.22); }
@@ -301,7 +301,7 @@ body{
     <h1 class="brand-title">YMOB · Cadastro Imobiliário</h1>
     <div class="main-tabs" id="mainTabs" role="tablist">
       <button type="button" class="main-tab active" data-main="cadastro" role="tab" aria-selected="true">Cadastro</button>
-      <button type="button" class="main-tab" data-main="salvas" role="tab" aria-selected="false">Fichas salvas <span class="main-tab-count" id="tabSalvasCount"></span></button>
+      <button type="button" class="main-tab" data-main="salvas" role="tab" aria-selected="false">Fichas salvas</button>
     </div>
     <div class="stepper" id="stepper">
       <div class="step" data-step="1"><span class="step-dot">1</span></div>
@@ -2644,6 +2644,7 @@ function initFormulario(){
   const stepperEl    = document.getElementById('stepper');
   const btnClearEl   = document.getElementById('btnClear');
   const SOU_ADMIN    = (currentRole === 'admin' || currentRole === 'superadmin');
+  const SOU_DEV      = (currentRole === 'superadmin');   // só o Desenvolvedor substitui/exclui fotos já enviadas
   const LOC = 'dados_imovel.DadosComplementares.localizacaoCadastral.';
   const ICONE_CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
 
@@ -2760,7 +2761,8 @@ function initFormulario(){
   let salvasVersao = null;
   let salvasCarregando = false;
   let salvasFalhou = false;
-  let salvasLimite = 30;
+  const POR_PAGINA = 20;
+  let salvasPagina = 1;
 
   function achatarFicha(raw){
     const d   = raw.dados_imovel || {};
@@ -2831,7 +2833,6 @@ function initFormulario(){
     const lista = document.getElementById('savedList');
     const cont  = document.getElementById('savedCount');
     const q = String(document.getElementById('buscaFichas').value || '').trim().toLowerCase();
-    document.getElementById('tabSalvasCount').textContent = salvas.length ? String(salvas.length) : '';
 
     if(salvasCarregando && !salvas.length){
       lista.innerHTML = '<div class="saved-empty">Carregando fichas…</div>'; cont.textContent = ''; return;
@@ -2845,13 +2846,16 @@ function initFormulario(){
       lista.innerHTML = '<div class="saved-empty">' + (q ? 'Nenhuma ficha encontrada para a busca.' : 'Nenhuma ficha salva ainda.') + '</div>';
       cont.textContent = ''; return;
     }
-    const visiveis = filtradas.slice(0, salvasLimite);
+    const totalPaginas = Math.max(1, Math.ceil(filtradas.length / POR_PAGINA));
+    if(salvasPagina > totalPaginas) salvasPagina = totalPaginas;
+    if(salvasPagina < 1) salvasPagina = 1;
+    const ini = (salvasPagina - 1) * POR_PAGINA;
+    const visiveis = filtradas.slice(ini, ini + POR_PAGINA);
     cont.textContent = filtradas.length + (filtradas.length === 1 ? ' ficha' : ' fichas');
 
     lista.innerHTML = visiveis.map(f => {
       const nome = (f.Titular[0] && f.Titular[0].nomeTitular) || '';
       const end  = [f.nomeLogradouro, f.numeroImovel].filter(x => !vazio(x)).join(', ');
-      const st   = f.status === 'aprovado' ? 'aprovado' : 'pendente';
       return '<button type="button" class="saved-card" data-id="' + esc(f.id) + '">' +
         '<span class="saved-thumb">' + (f.temFoto ? '<img data-img="' + esc(f.id) + '|foto" alt="">' : ICONE_CAM) + '</span>' +
         '<span class="saved-info">' +
@@ -2859,24 +2863,32 @@ function initFormulario(){
           '<span class="saved-line strong">' + esc(f.bairro_imovel || '—') + '</span>' +
           '<span class="saved-line">' + esc(end || 'Sem endereço') + '</span>' +
           (nome ? '<span class="saved-line">' + esc(nome) + '</span>' : '') +
-          '<span class="badge-st ' + st + '">' + (st === 'aprovado' ? 'Aprovado' : 'Pendente') + '</span>' +
         '</span></button>';
-    }).join('') + (filtradas.length > visiveis.length
-      ? '<button type="button" class="btn btn-ghost btn-more" id="btnMaisFichas">Mostrar mais (' + (filtradas.length - visiveis.length) + ')</button>'
+    }).join('') + (totalPaginas > 1
+      ? '<div class="pager">' +
+          '<button type="button" class="btn btn-ghost" data-pag="-1"' + (salvasPagina <= 1 ? ' disabled' : '') + '>‹ Anterior</button>' +
+          '<span class="pager-info">Página ' + salvasPagina + ' de ' + totalPaginas + '</span>' +
+          '<button type="button" class="btn btn-ghost" data-pag="1"' + (salvasPagina >= totalPaginas ? ' disabled' : '') + '>Próxima ›</button>' +
+        '</div>'
       : '');
     hidratarImagens(lista);
   }
 
   document.getElementById('savedList').addEventListener('click', e => {
-    const mais = e.target.closest ? e.target.closest('#btnMaisFichas') : null;
-    if(mais){ salvasLimite += 30; renderSalvas(); return; }
+    const pg = e.target.closest ? e.target.closest('[data-pag]') : null;
+    if(pg && !pg.disabled){
+      salvasPagina += Number(pg.dataset.pag);
+      renderSalvas();
+      try { document.getElementById('viewSalvas').scrollIntoView({ behavior:'smooth', block:'start' }); } catch(err){}
+      return;
+    }
     const card = e.target.closest ? e.target.closest('.saved-card') : null;
     if(card) abrirFicha(card.dataset.id);
   });
   let buscaTimer = null;
   document.getElementById('buscaFichas').addEventListener('input', () => {
     clearTimeout(buscaTimer);
-    buscaTimer = setTimeout(() => { salvasLimite = 30; renderSalvas(); }, 200);
+    buscaTimer = setTimeout(() => { salvasPagina = 1; renderSalvas(); }, 200);
   });
   document.getElementById('btnRecarregarFichas').addEventListener('click', () => carregarSalvas(true));
 
@@ -2950,8 +2962,10 @@ function initFormulario(){
       '<div class="sv-img">' + (existe ? '<img data-img="' + esc(f.id) + '|' + slot + '" alt="' + esc(rotulo) + '">' : '<span>Nenhuma imagem</span>') + '</div>';
     h += '<div class="photo-actions">';
     if(existe){
-      h += '<button type="button" data-foto-act="trocar" data-slot="' + slot + '">Trocar foto</button>' +
-           '<button type="button" class="btn-photo-danger" data-foto-act="remover" data-slot="' + slot + '">Excluir</button>';
+      if(SOU_DEV){
+        h += '<button type="button" data-foto-act="trocar" data-slot="' + slot + '">Trocar foto</button>' +
+             '<button type="button" class="btn-photo-danger" data-foto-act="remover" data-slot="' + slot + '">Excluir</button>';
+      }
     } else {
       h += '<button type="button" data-foto-act="trocar" data-slot="' + slot + '">+ Adicionar foto</button>';
     }
@@ -3050,7 +3064,6 @@ function initFormulario(){
       f.AdquirenteITBI.map((t, i) => linhaSe('Adquirente ' + (i + 1), [t.nomeAdquirenteITBI, formatCpfCnpj(t.idAdquirenteITBI), vazio(t.percTransacAdquirenteITBI) ? '' : fmtNum(t.percTransacAdquirenteITBI, 6) + '%'].filter(x => !vazio(x)).join(' · '))).join('');
 
     const aud =
-      linha('Status', f.status === 'aprovado' ? 'Aprovado' : 'Pendente') +
       linhaSe('Cadastrada por', f.criado_por_email) +
       linhaSe('Criada em', fmtDataHora(f.criado_em)) +
       linhaSe('Última alteração', fmtDataHora(f.atualizado_em));
@@ -3074,6 +3087,8 @@ function initFormulario(){
     if(!b) return;
     const f = fichaAtual(); if(!f) return;
     const slot = b.dataset.slot;
+    const jaTem = slot === 'foto' ? f.temFoto : Number(slot.replace('anexo', '')) <= f.extras;
+    if(jaTem && !SOU_DEV){ toast('Somente o perfil Desenvolvedor pode substituir ou excluir fotos.', 'warning'); return; }
     if(b.dataset.fotoAct === 'trocar'){
       fotoAlvo = { id: f.id, slot: slot };
       escolherFonteFoto(slot === 'foto' ? 'Foto do imóvel' : 'Foto adicional', fonte => {
@@ -3087,6 +3102,7 @@ function initFormulario(){
   });
 
   async function excluirFoto(f, slot){
+    if(!SOU_DEV){ toast('Somente o perfil Desenvolvedor pode excluir fotos.', 'warning'); return; }
     const ok = await confirmar({
       titulo: 'Excluir foto?',
       msg: 'Você vai excluir ' + (slot === 'foto' ? 'a foto do imóvel' : 'esta foto adicional') +

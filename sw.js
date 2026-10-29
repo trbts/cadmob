@@ -21,6 +21,7 @@
  * ------------------------------------------------------------------
  */
 
+// v13: paginação (20) e sem status em Fichas salvas; fotos só substituídas/excluídas pelo dev.
 // v12: georreferenciamento por botão, câmera/arquivo nas fichas salvas, nenhum campo obrigatório.
 // v11: edição de titulares, transmitentes e adquirentes na aba Fichas salvas.
 // v10: área total construída (rótulo) e CEP fixo 69.250-000.
@@ -31,7 +32,7 @@
 //     bairro e novo manifest. Ao subir uma nova versão do app, basta
 //     incrementar este número para forçar a invalidação de todo o cache
 //     antigo no activate.
-const CACHE_NAME = 'cadmob-form-v12';
+const CACHE_NAME = 'cadmob-form-v13';
 
 const APP_SHELL = [
   './index.html',
