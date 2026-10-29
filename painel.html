@@ -450,6 +450,11 @@ ul{ list-style:none; }
 .foto-card .fc-actions button.fc-danger:hover{ background:var(--danger); color:#fff; border-color:var(--danger); }
 .foto-acoes{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
 .foto-acoes.center{ justify-content:center; }
+.pl-row h4{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.pl-add{ margin-top:10px; }
+.pl-soma{ margin-top:10px; font-size:12.5px; font-weight:700; color:var(--muted); }
+.pl-soma.bad{ color:var(--danger); }
+.pl-row .edit-item.invalid input, .pl-row .edit-item.invalid select{ border-color:var(--danger); }
 .extra-item-box{ display:flex; flex-direction:column; }
 .extra-item-box .foto-acoes{ margin-top:8px; }
 </style>
@@ -979,6 +984,10 @@ function normalizarFicha(raw){
     foto_longitude:     ft ? ft.longitude            : undefined,
     foto_precisao_m:    ft ? ft.precisaoM            : undefined,
     foto_geo_horario:   ft ? ft.geolocalizacaoHorario: undefined,
+    geo_latitude:       (dc.georreferenciamento && dc.georreferenciamento.latitude != null) ? dc.georreferenciamento.latitude : (ft ? ft.latitude : undefined),
+    geo_longitude:      (dc.georreferenciamento && dc.georreferenciamento.latitude != null) ? dc.georreferenciamento.longitude : (ft ? ft.longitude : undefined),
+    geo_precisao_m:     (dc.georreferenciamento && dc.georreferenciamento.latitude != null) ? dc.georreferenciamento.precisaoM : (ft ? ft.precisaoM : undefined),
+    geo_horario:        (dc.georreferenciamento && dc.georreferenciamento.latitude != null) ? dc.georreferenciamento.geolocalizacaoHorario : (ft ? ft.geolocalizacaoHorario : undefined),
     fotos_adicionais:   Array.isArray(dc.fotosAdicionais) ? dc.fotosAdicionais : [],
     anexos_excluidos_em: dc.anexosExcluidosEm || ''
   });
@@ -1767,9 +1776,9 @@ function renderFotosGaleria(){
   el.innerHTML = '<div class="foto-grid">' + fichas.map(function(r){
     const endereco = (r.nomeLogradouro || r.logradouro_imovel || '') + (r.numeroImovel ? ', ' + r.numeroImovel : '');
     const unid = r.unidade_imovel ? ' · Unid. ' + esc(r.unidade_imovel) : '';
-    const geo = (r.foto_latitude != null && r.foto_longitude != null && r.foto_latitude !== '')
-      ? '<div class="fc-geo">' + Number(r.foto_latitude).toFixed(6) + ', ' + Number(r.foto_longitude).toFixed(6) +
-        (r.foto_precisao_m ? ' · ±' + Math.round(Number(r.foto_precisao_m)) + ' m' : '') + '</div>' : '';
+    const geo = (r.geo_latitude != null && r.geo_longitude != null && r.geo_latitude !== '')
+      ? '<div class="fc-geo">' + Number(r.geo_latitude).toFixed(6) + ', ' + Number(r.geo_longitude).toFixed(6) +
+        (r.geo_precisao_m ? ' · ±' + Math.round(Number(r.geo_precisao_m)) + ' m' : '') + '</div>' : '';
     return '<div class="foto-card" data-id="' + esc(r.id) + '">' +
       '<div class="fc-img" data-act="zoom"><img data-img="' + esc(r.id) + '|foto" alt="Foto do imóvel">' +
         '<span class="fc-tag">Lote ' + esc(getLoteNome(r)) + '</span></div>' +
@@ -1989,7 +1998,17 @@ Pages.registros.view = function(id, abaInicial){
       dItem('Complemento', r.complEndereco) +
       dItem('Bairro (endereço)', r.bairro) +
       dItem('CEP', r.cep, { mono:true }) +
-    '</div>';
+    '</div>' +
+    dSection('Georreferenciamento', SVG_ICONS.home) +
+    ((r.geo_latitude != null && r.geo_longitude != null && r.geo_latitude !== '')
+      ? '<div class="detail-grid">' +
+          dItem('Latitude', Number(r.geo_latitude).toFixed(6), { mono:true }) +
+          dItem('Longitude', Number(r.geo_longitude).toFixed(6), { mono:true }) +
+          dItem('Precisão', r.geo_precisao_m ? '± ' + Math.round(Number(r.geo_precisao_m)) + ' m' : '') +
+          dItem('Capturado em', r.geo_horario ? fmtDateTime(typeof r.geo_horario === 'number' ? new Date(r.geo_horario).toISOString() : r.geo_horario) : '') +
+        '</div>' +
+        '<div style="margin-top:8px"><a href="https://www.google.com/maps?q=' + encodeURIComponent(Number(r.geo_latitude) + ',' + Number(r.geo_longitude)) + '" target="_blank" rel="noopener" style="font-weight:700;font-size:13px;">Abrir no mapa ↗</a></div>'
+      : '<div class="ficha-photo-empty">Georreferenciamento não definido nesta ficha.</div>');
 
   const tabDadosGerais =
     dSection('Dados Gerais do Imóvel', SVG_ICONS.doc) +
@@ -2280,7 +2299,7 @@ const EDIT_SCHEMA = {
   ],
   gerais: [
     { section:'Dados Gerais do Imóvel', icon:SVG_ICONS.doc, fields: [
-      { n:'tipoImovel', l:'Tipo de Imóvel', t:'select', opt:'tipoImovel', req:true },
+      { n:'tipoImovel', l:'Tipo de Imóvel', t:'select', opt:'tipoImovel' },
       { n:'tpArquitetonico', l:'Tipo Arquitetônico', t:'select', opt:'tpArquitetonico' },
       { n:'destinacaoImovel', l:'Destinação do Imóvel', t:'select', opt:'destinacaoImovel' },
       { n:'padraoConstrutivo', l:'Padrão Construtivo', t:'select', opt:'padraoConstrutivo' },
@@ -2312,7 +2331,7 @@ const EDIT_SCHEMA = {
     ]}
   ],
   titulares: [
-    { section:'Titulares (não editável)', icon:SVG_ICONS.users, custom:'titularesReadonly' }
+    { section:'Titulares', icon:SVG_ICONS.users, custom:'listaTitular' }
   ],
   registro: [
     { section:'Registro de Imóvel', icon:SVG_ICONS.doc, fields: [
@@ -2340,8 +2359,8 @@ const EDIT_SCHEMA = {
       { n:'tpTransacaoITBI', l:'Tipo da Transação', t:'select', opt:'tpTransacaoITBI', full:true },
       { n:'percTransacionadoITBI', l:'% Transacionado', t:'number' }
     ]},
-    { section:'Transmitentes (não editável)', icon:SVG_ICONS.users, custom:'transmitentesReadonly' },
-    { section:'Adquirentes (não editável)', icon:SVG_ICONS.users, custom:'adquirentesReadonly' }
+    { section:'Transmitentes', icon:SVG_ICONS.users, custom:'listaTransmitenteITBI' },
+    { section:'Adquirentes', icon:SVG_ICONS.users, custom:'listaAdquirenteITBI' }
   ],
   auditoria: [
     { section:'Registro da Ficha', icon:SVG_ICONS.info, fields: [
@@ -2384,15 +2403,229 @@ function eField(f, values){
     inner + '</div>';
 }
 
-function eArrReadonly(arr, campos){
-  if(!Array.isArray(arr) || !arr.length){
-    return '<div style="padding:14px;text-align:center;color:var(--muted);background:#f8fafc;border-radius:10px;">Nenhum registro.</div>';
+/* ============================================================
+   LISTAS EDITÁVEIS — titulares · transmitentes · adquirentes
+   (a rota PUT /fichas/:id/listas substitui a lista inteira)
+   ============================================================ */
+function plDig(v){ return String(v == null ? '' : v).replace(/\D/g, ''); }
+function plMaiusc(v){ return String(v == null ? '' : v).toUpperCase().trim(); }
+function plNum(v){
+  if(v === '' || v == null) return null;
+  const n = Number(String(v).replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+function plR4(n){ return Math.round(n * 10000) / 10000; }
+function plCpfOk(d){
+  if(d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+  for(let n = 9; n <= 10; n++){
+    let s = 0;
+    for(let i = 0; i < n; i++) s += Number(d[i]) * (n + 1 - i);
+    if(((s * 10) % 11) % 10 !== Number(d[n])) return false;
   }
-  return arr.map(function(t, i){
-    return '<div class="arr-card"><h4>Registro ' + (i+1) + '</h4><div class="detail-grid">' +
-      campos.map(function(c){ return dItem(c.l, t[c.n]); }).join('') +
+  return true;
+}
+function plCnpjOk(d){
+  if(d.length !== 14 || /^(\d)\1+$/.test(d)) return false;
+  const calc = function(base){
+    const pesos = base.length === 12 ? [5,4,3,2,9,8,7,6,5,4,3,2] : [6,5,4,3,2,9,8,7,6,5,4,3,2];
+    let s = 0;
+    for(let i = 0; i < base.length; i++) s += Number(base[i]) * pesos[i];
+    const r = s % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  return calc(d.slice(0, 12)) === Number(d[12]) && calc(d.slice(0, 13)) === Number(d[13]);
+}
+function plDocOk(d){ return plCpfOk(d) || plCnpjOk(d); }
+function plFmtDoc(v){
+  const d = plDig(v).slice(0, 14);
+  if(d.length <= 11) return d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1-$2');
+  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+}
+
+const PL_DEF = {
+  Titular: { rot:'Titular', aba:'titulares', add:'+ Adicionar titular', campos:[
+    { k:'niTitular', l:'CPF/CNPJ', t:'text', doc:true },
+    { k:'nomeTitular', l:'Nome', t:'text', max:100 },
+    { k:'percTitularidade', l:'% Participação', t:'number', step:'0.0001', min:'0' },
+    { k:'dtAquisicaoTitular', l:'Data de Aquisição', t:'date' },
+    { k:'contatoTitular', l:'Contato (DDD + número)', t:'text', max:15 },
+    { k:'emailTitular', l:'E-mail', t:'text', max:120 },
+    { k:'tipoTitularidade', l:'Tipo de Titularidade', t:'select', opt:'tipoTitularidade', full:true },
+    { k:'docTitularidade', l:'Documento de Titularidade', t:'select', opt:'docTitularidade', full:true }
+  ]},
+  TransmitenteITBI: { rot:'Transmitente', aba:'itbi', add:'+ Adicionar transmitente', campos:[
+    { k:'nomeTransmitenteITBI', l:'Nome', t:'text', max:300 },
+    { k:'idTransmitenteITBI', l:'CPF/CNPJ', t:'text', doc:true }
+  ]},
+  AdquirenteITBI: { rot:'Adquirente', aba:'itbi', add:'+ Adicionar adquirente', campos:[
+    { k:'nomeAdquirenteITBI', l:'Nome', t:'text', max:300 },
+    { k:'idAdquirenteITBI', l:'CPF/CNPJ', t:'text', doc:true },
+    { k:'percTransacAdquirenteITBI', l:'% Adquirido', t:'number', step:'0.000001', min:'0' }
+  ]}
+};
+
+/* Forma canônica de um registro (comparar com o original e enviar) */
+function plNorm(chave, o){
+  o = o || {};
+  if(chave === 'Titular'){
+    return { niTitular: plDig(o.niTitular), nomeTitular: plMaiusc(o.nomeTitular), percTitularidade: plNum(o.percTitularidade),
+      dtAquisicaoTitular: o.dtAquisicaoTitular ? String(o.dtAquisicaoTitular).slice(0, 10) : null,
+      contatoTitular: plDig(o.contatoTitular), emailTitular: String(o.emailTitular || '').trim().toLowerCase(),
+      tipoTitularidade: plNum(o.tipoTitularidade), docTitularidade: plNum(o.docTitularidade) };
+  }
+  if(chave === 'TransmitenteITBI') return { nomeTransmitenteITBI: plMaiusc(o.nomeTransmitenteITBI), idTransmitenteITBI: plDig(o.idTransmitenteITBI) };
+  return { nomeAdquirenteITBI: plMaiusc(o.nomeAdquirenteITBI), idAdquirenteITBI: plDig(o.idAdquirenteITBI), percTransacAdquirenteITBI: plNum(o.percTransacAdquirenteITBI) };
+}
+function plVazio(chave, x){
+  if(chave === 'Titular') return !x.niTitular && !x.nomeTitular && !x.dtAquisicaoTitular && !x.contatoTitular && !x.emailTitular && x.tipoTitularidade === null && x.docTitularidade === null;
+  if(chave === 'TransmitenteITBI') return !x.nomeTransmitenteITBI && !x.idTransmitenteITBI;
+  return !x.nomeAdquirenteITBI && !x.idAdquirenteITBI && x.percTransacAdquirenteITBI === null;
+}
+
+function plLinhaHTML(chave, o){
+  const D = PL_DEF[chave];
+  const vals = Object.assign({}, o || {});
+  if(vals.dtAquisicaoTitular) vals.dtAquisicaoTitular = String(vals.dtAquisicaoTitular).slice(0, 10);
+  return '<div class="arr-card pl-row" data-pl-chave="' + chave + '">' +
+    '<h4><span class="pl-num"></span>' +
+      '<button type="button" class="btn btn-danger btn-sm" data-pl-rm="' + chave + '">Remover</button></h4>' +
+    '<div class="detail-grid">' +
+      D.campos.map(function(c){
+        let v = vals[c.k]; v = (v === null || v === undefined) ? '' : v;
+        if(c.doc) v = plFmtDoc(v);
+        let inner;
+        if(c.t === 'select'){
+          const opts = getOptionsForEdit(c.opt, v);
+          inner = '<select data-pl="' + c.k + '"><option value="">—</option>' +
+            opts.map(function(op){ return '<option value="' + esc(op.v) + '"' + (String(op.v) === String(v) ? ' selected' : '') + '>' + esc(op.l) + '</option>'; }).join('') +
+            '</select>';
+        } else {
+          inner = '<input type="' + c.t + '" data-pl="' + c.k + '" value="' + esc(v) + '"' +
+            (c.doc ? ' data-pl-doc="1" maxlength="18" inputmode="numeric" placeholder="000.000.000-00 ou 00.000.000/0000-00"' : '') +
+            (c.max && !c.doc ? ' maxlength="' + c.max + '"' : '') +
+            (c.step ? ' step="' + c.step + '"' : '') + (c.min !== undefined ? ' min="' + c.min + '"' : '') + '>';
+        }
+        return '<div class="edit-item' + (c.full ? ' full' : '') + '"><label>' + esc(c.l) + (c.req ? ' <span class="req">*</span>' : '') + '</label>' + inner + '</div>';
+      }).join('') +
     '</div></div>';
-  }).join('');
+}
+
+function plBlocoHTML(chave, arr){
+  const D = PL_DEF[chave];
+  let itens = (Array.isArray(arr) ? arr : []).filter(function(x){ return !plVazio(chave, plNorm(chave, x)); });
+  if(chave === 'Titular' && !itens.length) itens = [null];
+  return '<div data-pl-lista="' + chave + '">' + itens.map(function(x){ return plLinhaHTML(chave, x); }).join('') + '</div>' +
+    '<button type="button" class="btn btn-soft btn-sm pl-add" data-pl-add="' + chave + '">' + D.add + '</button>' +
+    (chave === 'Titular' ? '<div class="pl-soma" data-pl-soma></div>' : '');
+}
+
+/* Numeração, remover (o último titular não sai) e % de participação */
+function plAtualizar(root, chave, redistribuir){
+  const lista = root.querySelector('[data-pl-lista="' + chave + '"]'); if(!lista) return;
+  const linhas = [].slice.call(lista.querySelectorAll('.pl-row'));
+  linhas.forEach(function(n, i){
+    n.querySelector('.pl-num').textContent = PL_DEF[chave].rot + ' ' + (i + 1);
+    const rm = n.querySelector('[data-pl-rm]');
+    if(rm) rm.style.display = (chave === 'Titular' && linhas.length <= 1) ? 'none' : '';
+  });
+  if(chave !== 'Titular') return;
+  const percs = linhas.map(function(n){ return n.querySelector('[data-pl="percTitularidade"]'); });
+  if(linhas.length === 1){
+    if(redistribuir) percs[0].value = '100';   // ao abrir não mexe: ficha antiga incompleta não deve virar "alterada"
+    percs[0].readOnly = (percs[0].value === '100');
+  } else {
+    percs.forEach(function(p){ p.readOnly = false; });
+    if(redistribuir){
+      const base = plR4(100 / linhas.length);
+      percs.forEach(function(p, i){ p.value = i === percs.length - 1 ? plR4(100 - base * (percs.length - 1)) : base; });
+    }
+  }
+  plSoma(root);
+}
+function plSoma(root){
+  const el = root.querySelector('[data-pl-soma]'); if(!el) return;
+  let soma = 0;
+  root.querySelectorAll('[data-pl-lista="Titular"] [data-pl="percTitularidade"]').forEach(function(i){ soma += plNum(i.value) || 0; });
+  const ruim = Math.abs(soma - 100) > 0.01;
+  el.textContent = 'Soma das participações: ' + plR4(soma) + '%' + (ruim ? ' (deve ser 100%)' : '');
+  el.classList.toggle('bad', ruim);
+}
+function plLigar(root){
+  ['Titular', 'TransmitenteITBI', 'AdquirenteITBI'].forEach(function(c){ plAtualizar(root, c, false); });
+  root.addEventListener('click', function(e){
+    const add = e.target.closest ? e.target.closest('[data-pl-add]') : null;
+    if(add){
+      const chave = add.dataset.plAdd;
+      const lista = root.querySelector('[data-pl-lista="' + chave + '"]');
+      lista.insertAdjacentHTML('beforeend', plLinhaHTML(chave, null));
+      plAtualizar(root, chave, true);
+      return;
+    }
+    const rm = e.target.closest ? e.target.closest('[data-pl-rm]') : null;
+    if(rm){
+      const chave = rm.dataset.plRm;
+      const lista = root.querySelector('[data-pl-lista="' + chave + '"]');
+      if(chave === 'Titular' && lista.querySelectorAll('.pl-row').length <= 1) return;
+      rm.closest('.pl-row').remove();
+      plAtualizar(root, chave, true);
+    }
+  });
+  root.addEventListener('input', function(e){
+    const el = e.target;
+    if(!el || !el.dataset) return;
+    if(el.dataset.plDoc === '1'){ const f = plFmtDoc(el.value); if(el.value !== f) el.value = f; }
+    if(el.dataset.pl === 'percTitularidade') plSoma(root);
+  });
+}
+function plColetar(root){
+  const out = {};
+  Object.keys(PL_DEF).forEach(function(chave){
+    const lista = root.querySelector('[data-pl-lista="' + chave + '"]');
+    out[chave] = [].slice.call(lista ? lista.querySelectorAll('.pl-row') : []).map(function(n){
+      const bruto = {};
+      n.querySelectorAll('[data-pl]').forEach(function(el){ bruto[el.dataset.pl] = el.value; });
+      return { no: n, v: plNorm(chave, bruto) };
+    });
+  });
+  return out;
+}
+function plAlteradas(orig, col){
+  return Object.keys(PL_DEF).filter(function(chave){
+    const atual = col[chave].map(function(p){ return p.v; }).filter(function(v){ return !plVazio(chave, v); });
+    const antes = (Array.isArray(orig[chave]) ? orig[chave] : []).map(function(x){ return plNorm(chave, x); }).filter(function(v){ return !plVazio(chave, v); });
+    return JSON.stringify(atual) !== JSON.stringify(antes);
+  });
+}
+/* Nada é obrigatório: valida só o formato do que foi preenchido. Devolve { msg, chave, el } ou null */
+function plValidar(chaves, col){
+  const falha = function(chave, no, k, msg){ return { chave: chave, msg: msg, el: no ? no.querySelector('[data-pl="' + k + '"]') : null }; };
+  for(let ci = 0; ci < chaves.length; ci++){
+    const chave = chaves[ci];
+    const linhas = col[chave].filter(function(p){ return !plVazio(chave, p.v); });
+    if(chave === 'Titular'){
+      for(let i = 0; i < linhas.length; i++){
+        const no = linhas[i].no, v = linhas[i].v, p = 'Titular ' + (i + 1) + ': ';
+        if(v.niTitular && !plDocOk(v.niTitular)) return falha(chave, no, 'niTitular', p + 'CPF/CNPJ inválido.');
+        if(v.percTitularidade !== null && (v.percTitularidade < 0 || v.percTitularidade > 100)) return falha(chave, no, 'percTitularidade', p + 'participação deve estar entre 0 e 100%.');
+        if(v.emailTitular && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.emailTitular)) return falha(chave, no, 'emailTitular', p + 'e-mail inválido.');
+        if(v.contatoTitular && (v.contatoTitular.length < 10 || v.contatoTitular.length > 11)) return falha(chave, no, 'contatoTitular', p + 'contato deve ter DDD + número (10 ou 11 dígitos).');
+      }
+      if(linhas.length >= 2 && linhas.every(function(p){ return p.v.percTitularidade !== null; })){
+        const soma = linhas.reduce(function(a, p){ return a + p.v.percTitularidade; }, 0);
+        if(Math.abs(soma - 100) > 0.01) return falha(chave, linhas[0].no, 'percTitularidade', 'A soma das participações deve ser 100% (atual: ' + plR4(soma) + '%).');
+      }
+    } else {
+      const kId = chave === 'TransmitenteITBI' ? 'idTransmitenteITBI' : 'idAdquirenteITBI';
+      for(let i = 0; i < linhas.length; i++){
+        const no = linhas[i].no, v = linhas[i].v, rot = PL_DEF[chave].rot + ' ' + (i + 1) + ': ';
+        if(v[kId] && !plDocOk(v[kId])) return falha(chave, no, kId, rot + 'CPF/CNPJ inválido.');
+        if(chave === 'AdquirenteITBI' && v.percTransacAdquirenteITBI !== null && (v.percTransacAdquirenteITBI < 0 || v.percTransacAdquirenteITBI > 100)){
+          return falha(chave, no, 'percTransacAdquirenteITBI', rot + '% adquirido deve estar entre 0 e 100.');
+        }
+      }
+    }
+  }
+  return null;
 }
 
 Pages.registros.edit = function(id){
@@ -2405,26 +2638,9 @@ Pages.registros.edit = function(id){
     let html = '';
     for(const block of schema){
       html += dSection(block.section, block.icon || '');
-      if(block.custom === 'titularesReadonly'){
-        html += eArrReadonly(values.Titular, [
-          { n:'niTitular', l:'CPF/CNPJ' }, { n:'nomeTitular', l:'Nome' },
-          { n:'contatoTitular', l:'Contato' }, { n:'emailTitular', l:'E-mail' },
-          { n:'percTitularidade', l:'% Participação' }, { n:'dtAquisicaoTitular', l:'Data de Aquisição' },
-          { n:'tipoTitularidade', l:'Tipo de Titularidade' }, { n:'docTitularidade', l:'Documento' }
-        ]);
-        continue;
-      }
-      if(block.custom === 'transmitentesReadonly'){
-        html += eArrReadonly(values.TransmitenteITBI, [
-          { n:'nomeTransmitenteITBI', l:'Nome' }, { n:'idTransmitenteITBI', l:'CPF/CNPJ' }
-        ]);
-        continue;
-      }
-      if(block.custom === 'adquirentesReadonly'){
-        html += eArrReadonly(values.AdquirenteITBI, [
-          { n:'nomeAdquirenteITBI', l:'Nome' }, { n:'idAdquirenteITBI', l:'CPF/CNPJ' },
-          { n:'percTransacAdquirenteITBI', l:'% Adquirido' }
-        ]);
+      if(block.custom && block.custom.indexOf('lista') === 0){
+        const chaveL = block.custom.slice(5);
+        html += plBlocoHTML(chaveL, values[chaveL]);
         continue;
       }
       html += '<div class="detail-grid">' + block.fields.map(function(f){ return eField(f, values); }).join('') + '</div>';
@@ -2529,8 +2745,24 @@ Pages.registros.edit = function(id){
         updates['dados_imovel.DadosComplementares.localizacaoCadastral.tipoSegmento'] = flatUpdates.tipo_segmento_lote;
       }
 
+      const listasCol = plColetar(modal);
+      const listasAlt = plAlteradas(values, listasCol);
+      const erroL = plValidar(listasAlt, listasCol);
+      if(erroL){
+        toast('Revise ' + (erroL.chave === 'Titular' ? 'os titulares' : 'o ITBI') + '.', 'warning', erroL.msg);
+        const abaBtn = document.querySelector('#editTabs [data-ftab="' + PL_DEF[erroL.chave].aba + '"]');
+        if(abaBtn) abaBtn.click();
+        if(erroL.el){ try { erroL.el.focus(); } catch(e){} }
+        return false;
+      }
+
       try {
         await api('PATCH', '/fichas/' + encodeURIComponent(id), { updates: updates });
+        if(listasAlt.length){
+          const corpoL = {};
+          listasAlt.forEach(function(c){ corpoL[c] = listasCol[c].map(function(p){ return p.v; }).filter(function(v){ return !plVazio(c, v); }); });
+          await api('PUT', '/fichas/' + encodeURIComponent(id) + '/listas', corpoL);
+        }
         await recarregarFichas(false);
         toast('Ficha atualizada com sucesso.', 'success');
       } catch(err){
@@ -2542,6 +2774,8 @@ Pages.registros.edit = function(id){
   });
 
   setTimeout(function(){
+    const conteudoEd = document.querySelector('.ficha-content');
+    if(conteudoEd) plLigar(conteudoEd);
     const tabsEl = document.getElementById('editTabs');
     if(tabsEl){
       tabsEl.querySelectorAll('.ficha-tab').forEach(function(btn){

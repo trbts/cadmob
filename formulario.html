@@ -191,6 +191,12 @@ body{
 .auth-gate p{ font-size:13.5px; color:rgba(255,255,255,.85); line-height:1.55; }
 .auth-gate .gate-btn{ margin-top:20px; background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22); height:42px; padding:0 20px; border-radius:10px; font-weight:600; font-size:13.5px; }
 
+.geo-block{ margin:0 0 16px; padding:14px; border:1px solid var(--border); border-radius:14px; background:#fbfcfe; }
+.geo-title{ margin:0 0 4px; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--primary); }
+.geo-status{ margin:10px 0; font-size:13.5px; font-weight:600; word-break:break-word; }
+.photo-src{ display:flex; gap:10px; flex-wrap:wrap; }
+.photo-src .photo-btn{ flex:1 1 150px; }
+.dlg-stack{ display:flex; flex-direction:column; gap:10px; margin-top:16px; }
 /* ---------- ABAS PRINCIPAIS ---------- */
 .main-tabs{ display:flex; gap:4px; max-width:420px; margin:14px auto 0; padding:4px; background:rgba(255,255,255,.14); border-radius:14px; }
 .main-tab{ flex:1; min-height:38px; border:0; border-radius:10px; background:transparent; color:rgba(255,255,255,.85); font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; transition:background .2s,color .2s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
@@ -332,22 +338,22 @@ body{
       <div class="card"><div class="card-body">
         <p class="sub-head">Localização Cadastral</p>
         <div class="field">
-          <label for="bairro_imovel">Bairro <span class="opt-tag">(opcional)</span></label>
+          <label for="bairro_imovel">Bairro</label>
           <select id="bairro_imovel" name="bairro_imovel"><option value="">Carregando…</option></select>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="quadra_imovel">Quadra <span class="opt-tag">(opcional)</span></label>
+          <div class="field"><label for="quadra_imovel">Quadra</label>
             <input type="text" id="quadra_imovel" name="quadra_imovel" maxlength="3" inputmode="numeric" placeholder="000">
           </div>
-          <div class="field"><label for="lote_letra">Lote <span class="opt-tag">(opcional)</span></label>
+          <div class="field"><label for="lote_letra">Lote</label>
             <input type="text" id="lote_letra" name="lote_letra" maxlength="3" inputmode="numeric" placeholder="000">
           </div>
         </div>
         <div class="row row-2">
-          <div class="field"><label for="segmento_lote">Segmento do Lote <span class="opt-tag">(opcional)</span></label>
+          <div class="field"><label for="segmento_lote">Segmento do Lote</label>
             <input type="text" id="segmento_lote" name="segmento_lote" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="Ex.: A">
           </div>
-          <div class="field"><label for="tipo_segmento_lote">Classificação <span class="opt-tag">(opcional)</span></label>
+          <div class="field"><label for="tipo_segmento_lote">Classificação</label>
             <select id="tipo_segmento_lote" name="tipo_segmento_lote">
               <option value="">Lote inteiro</option>
               <option value="desmembrado">Desmembrado</option>
@@ -355,7 +361,7 @@ body{
           </div>
         </div>
         <div class="field">
-          <label for="inscricaoImobiliaria">Inscrição Imobiliária <span class="opt-tag">(opcional)</span></label>
+          <label for="inscricaoImobiliaria">Inscrição Imobiliária</label>
           <input type="text" id="inscricaoImobiliaria" name="inscricaoImobiliaria" maxlength="45" readonly placeholder="00.00.000.000.000">
           <div class="hint">Gerada automaticamente a partir do bairro, quadra e lote.</div>
         </div>
@@ -365,8 +371,8 @@ body{
         <p class="sub-head">Dados Gerais</p>
 
         <div class="field">
-          <label for="tipoImovel">Tipo de Imóvel <span class="req">*</span></label>
-          <select id="tipoImovel" name="tipoImovel" required>
+          <label for="tipoImovel">Tipo de Imóvel</label>
+          <select id="tipoImovel" name="tipoImovel">
             <option value="">Selecione…</option>
             <option value="1">1 - Territorial (sem edificação)</option>
             <option value="2">2 - Predial (com edificação)</option>
@@ -491,12 +497,12 @@ body{
       <div class="card"><div class="card-body">
         <p class="sub-head">Área do Imóvel</p>
         <div class="field">
-          <label for="areaTotal">Área Total Construída (m²) <span class="opt-tag">(opcional)</span></label>
+          <label for="areaTotal">Área Total Construída (m²)</label>
           <input type="text" id="areaTotal" name="areaTotal" inputmode="decimal" autocomplete="off" placeholder="0,00">
           <div class="hint">Preenchimento manual, em metros quadrados. Use vírgula nos decimais (ex.: 250,50).</div>
         </div>
         <div class="field">
-          <label for="areaTerreno">Área Total do Terreno (m²) <span class="opt-tag">(opcional)</span></label>
+          <label for="areaTerreno">Área Total do Terreno (m²)</label>
           <input type="text" id="areaTerreno" name="areaTerreno" inputmode="decimal" autocomplete="off" placeholder="0,00">
           <div class="hint">Preenchimento manual, em metros quadrados.</div>
         </div>
@@ -536,15 +542,15 @@ body{
     <section class="step-panel" data-step="3">
       <div class="card"><div class="card-body">
         <div class="field">
-          <label for="bairro">Bairro <span class="req">*</span></label>
-          <select id="bairro" name="bairro" required>
+          <label for="bairro">Bairro</label>
+          <select id="bairro" name="bairro">
             <option value="">Selecione…</option>
           </select>
           <div class="hint">Selecione o bairro para liberar a lista de logradouros.</div>
         </div>
         <div class="field">
-          <label for="tipoLogradouro">Tipo de Logradouro <span class="req">*</span></label>
-          <select id="tipoLogradouro" name="tipoLogradouro" required>
+          <label for="tipoLogradouro">Tipo de Logradouro</label>
+          <select id="tipoLogradouro" name="tipoLogradouro">
             <option value="">Selecione…</option>
             <option value="250">250 - Rua</option>
             <option value="299">299 - Alagado</option>
@@ -569,8 +575,8 @@ body{
           </select>
         </div>
         <div class="field">
-          <label for="nomeLogradouro">Nome do Logradouro <span class="req">*</span></label>
-          <select id="nomeLogradouro" name="nomeLogradouro" required disabled>
+          <label for="nomeLogradouro">Nome do Logradouro</label>
+          <select id="nomeLogradouro" name="nomeLogradouro" disabled>
             <option value="">Selecione o bairro primeiro…</option>
           </select>
           <div class="hint">Os logradouros exibidos correspondem ao bairro selecionado.</div>
@@ -594,7 +600,7 @@ body{
     <!-- ============ ETAPA 4 — TITULARES ============ -->
     <section class="step-panel" data-step="4">
       <div class="card"><div class="card-body">
-        <p class="sub-note">Todos os campos do titular são obrigatórios (<span class="req" style="color:var(--danger)">*</span>). A soma das participações deve resultar em 100%.</p>
+        <p class="sub-note">Nenhum campo é obrigatório. Se informar a participação de todos os titulares, a soma deve resultar em 100%.</p>
         <div id="titulares"></div>
         <button type="button" class="add-btn" data-add="titulares">+ Adicionar titular</button>
       </div></div>
@@ -650,7 +656,7 @@ body{
     <!-- ============ ETAPA 6 — ITBI ============ -->
     <section class="step-panel" data-step="6">
       <div class="card"><div class="card-body">
-        <p class="sub-note">ITBI é opcional. Se preencher um campo, todos os demais passam a ser obrigatórios.</p>
+        <p class="sub-note">Todos os campos do ITBI são opcionais.</p>
 
         <div class="row row-2">
           <div class="field"><label for="baseCalculITBI">Base de Cálculo</label>
@@ -700,14 +706,24 @@ body{
       </div></div>
     </section>
 
-    <!-- ============ ETAPA 7 — FOTO DO IMÓVEL ============ -->
+    <!-- ============ ETAPA 7 — GEORREFERENCIAMENTO E FOTO ============ -->
     <section class="step-panel" data-step="7">
       <div class="card"><div class="card-body">
         <p class="sub-note">
-          <strong>Última etapa · opcional.</strong> A foto não é obrigatória: você pode salvar a ficha sem ela e adicionar depois na aba <strong>Fichas salvas</strong>. Se tirar a foto, as informações do formulário
-          (bairro/quadra/lote, logradouro/número e georreferenciamento) serão gravadas
-          automaticamente no canto inferior esquerdo da imagem.
+          <strong>Última etapa · nada é obrigatório.</strong> Primeiro defina o georreferenciamento com o botão
+          (no local do imóvel). Depois a foto pode ser tirada em qualquer lugar, ou escolhida da galeria:
+          as coordenadas salvas e as informações do formulário são gravadas no canto inferior esquerdo da imagem.
         </p>
+
+        <div class="geo-block" id="geoBlock">
+          <h4 class="geo-title">Georreferenciamento</h4>
+          <div class="geo-status" id="geoStatus"></div>
+          <button type="button" class="photo-btn" id="btnGeo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="btnGeoTxt">Capturar georreferenciamento</span>
+          </button>
+          <p class="hint">Use o GPS do aparelho em área aberta. A precisão precisa ser de até 50&nbsp;m.</p>
+        </div>
 
         <div class="photo-info-preview" id="photoInfoPreview">
           <h4>Informações que serão aplicadas na foto</h4>
@@ -718,23 +734,31 @@ body{
 
         <div class="photo-block" id="photoBlock">
           <input type="file" id="foto_input" accept="image/*" capture="environment" hidden>
+          <input type="file" id="foto_arquivo_input" accept="image/*" hidden>
 
           <div id="photoEmpty">
-            <button type="button" class="photo-btn" id="btnTirarFoto">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-              </svg>
-              Tirar foto
-            </button>
-            <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio. O GPS é acionado em modo de alta precisão.</p>
+            <div class="photo-src">
+              <button type="button" class="photo-btn" id="btnTirarFoto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                Tirar foto
+              </button>
+              <button type="button" class="photo-btn" id="btnArquivoFoto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Escolher arquivo
+              </button>
+            </div>
+            <p class="hint">A imagem é comprimida automaticamente para ~150&nbsp;KB (WebP/JPEG) antes do envio.</p>
           </div>
 
           <div class="photo-preview" id="photoPreview" style="display:none;">
             <img id="photoImg" alt="Prévia da foto do imóvel">
             <div class="photo-info" id="photoInfo"></div>
             <div class="photo-actions">
-              <button type="button" id="btnTrocarFoto">Trocar foto</button>
+              <button type="button" id="btnTrocarFoto">Tirar outra</button>
+              <button type="button" id="btnTrocarArquivo">Escolher outro arquivo</button>
               <button type="button" class="btn-photo-danger" id="btnRemoverFoto">Remover</button>
             </div>
           </div>
@@ -747,9 +771,11 @@ body{
         <div class="extra-photos" id="extraPhotos">
           <h4>Fotos adicionais <span class="opt">(opcional · até 2)</span></h4>
           <input type="file" id="extra_input" accept="image/*" capture="environment" hidden>
+          <input type="file" id="extra_arquivo_input" accept="image/*" hidden>
           <div class="extra-grid" id="extraGrid"></div>
           <button type="button" class="btn-extra-add" id="btnAddExtra">+ Tirar foto adicional</button>
-          <p class="hint" id="extraHint">Tire a foto na hora, com a câmera do aparelho. Cada imagem é comprimida para ~150&nbsp;KB.</p>
+          <button type="button" class="btn-extra-add" id="btnAddExtraArq" style="margin-top:8px;">+ Escolher arquivo</button>
+          <p class="hint" id="extraHint">Tire a foto com a câmera ou escolha um arquivo do aparelho. Cada imagem é comprimida para ~150&nbsp;KB.</p>
         </div>
       </div></div>
     </section>
@@ -809,6 +835,18 @@ body{
   </div>
 </div>
 <input type="file" id="foto_troca_input" accept="image/*" capture="environment" hidden>
+<input type="file" id="foto_troca_arquivo" accept="image/*" hidden>
+<div class="dlg hidden" id="dlgFonte">
+  <div class="dlg-box">
+    <h3 id="dlgFonteTitulo">Enviar foto</h3>
+    <p>Escolha de onde vem a imagem.</p>
+    <div class="dlg-stack">
+      <button type="button" class="btn btn-primary" id="fonteCamera">📷 Tirar foto com a câmera</button>
+      <button type="button" class="btn btn-ghost" id="fonteArquivo">🖼️ Escolher arquivo do aparelho</button>
+      <button type="button" class="btn btn-ghost" id="fonteCancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
 <div class="busy hidden" id="busy"><div class="busy-box"><span class="spinner"></span><span id="busyTxt">Aguarde…</span></div></div>
 <div class="dlg hidden" id="dlgConfirm">
   <div class="dlg-box">
@@ -1507,23 +1545,23 @@ function initFormulario(){
   /* ---------- TEMPLATES ---------- */
   const titularTpl = () => `<div class="list-item">
     <button type="button" class="rm">remover</button>
-    <div class="field"><label>CPF/CNPJ <span class="req">*</span></label>
+    <div class="field"><label>CPF/CNPJ</label>
       <input name="niTitular" data-mask="cpfcnpj" maxlength="18" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00"></div>
-    <div class="field"><label>Nome <span class="req">*</span></label>
+    <div class="field"><label>Nome</label>
       <input name="nomeTitular" maxlength="100"></div>
     <div class="row row-2">
-      <div class="field"><label>% Participação <span class="req">*</span></label>
+      <div class="field"><label>% Participação</label>
         <input type="number" step="0.0001" min="0" max="100" name="percTitular"></div>
-      <div class="field"><label>Data de Aquisição <span class="req">*</span></label>
+      <div class="field"><label>Data de Aquisição</label>
         <input type="date" name="dtAquisicaoTitular"></div>
     </div>
     <div class="row row-2">
-      <div class="field"><label>Contato <span class="opt-tag">(opcional)</span></label>
+      <div class="field"><label>Contato</label>
         <input type="tel" name="contatoTitular" data-mask="telefone" inputmode="tel" maxlength="15" autocomplete="off" placeholder="(00) 00000-0000"></div>
-      <div class="field"><label>E-mail <span class="opt-tag">(opcional)</span></label>
+      <div class="field"><label>E-mail</label>
         <input type="email" name="emailTitular" inputmode="email" maxlength="120" autocomplete="off" autocapitalize="off" placeholder="nome@exemplo.com"></div>
     </div>
-    <div class="field"><label>Tipo de Titularidade <span class="req">*</span></label>
+    <div class="field"><label>Tipo de Titularidade</label>
       <select name="tipoTitularidade"><option value="">Selecione…</option>
         <option value="1">1 - Proprietário</option><option value="2">2 - Nu proprietário</option>
         <option value="3">3 - Senhorio Direto</option><option value="4">4 - Credor Fiduciário</option>
@@ -1536,7 +1574,7 @@ function initFormulario(){
         <option value="16">16 - Promitente comprador (demais)</option>
         <option value="17">17 - Arrendatário</option>
       </select></div>
-    <div class="field"><label>Doc. de Titularidade <span class="req">*</span></label>
+    <div class="field"><label>Doc. de Titularidade</label>
       <select name="docTitularidade"><option value="">Selecione…</option>
         <option value="1">1 - Escritura Pública</option><option value="2">2 - Contrato com força de Escritura</option>
         <option value="3">3 - Instrumento Particular</option><option value="4">4 - Sentença Judicial</option>
@@ -1772,6 +1810,14 @@ function initFormulario(){
   let fotoGeo = null;
   let fotoInfoSnapshot = null;
 
+  /* Georreferenciamento da ficha: capturado por botão (independe da foto) */
+  let geoFixo = null;   // { lat, lng, precisao, horario }
+  const PRECISAO_MAX_M = 50;
+  const LIMITES_CAREEIRO = { latMin: -5.00, latMax: -2.50, lngMin: -62.00, lngMax: -58.50 };
+  function textoGeo(g){
+    return g.lat.toFixed(6) + ', ' + g.lng.toFixed(6) + (g.precisao ? ' (±' + Math.round(g.precisao) + ' m)' : '');
+  }
+
   const photoInput   = document.getElementById('foto_input');
   const photoBlock   = document.getElementById('photoBlock');
   const photoEmpty   = document.getElementById('photoEmpty');
@@ -1789,7 +1835,7 @@ function initFormulario(){
     if(info.bairroCad) itens.push({ lbl:'Bairro', val:info.bairroCad });
     if(info.quadra || info.lote) itens.push({ lbl:'Quadra / Lote', val:(info.quadra||'—') + ' / ' + (info.lote||'—') + (info.segmento ? '-' + info.segmento : '') });
     if(info.logradouro) itens.push({ lbl:'Logradouro', val:info.logradouro + (info.numero ? ', Nº ' + info.numero : '') });
-    itens.push({ lbl:'Georreferenciamento', val:'Capturado no momento da foto (GPS de alta precisão)' });
+    itens.push({ lbl:'Georreferenciamento', val: geoFixo ? textoGeo(geoFixo) : 'Não definido — toque em "Capturar georreferenciamento"' });
 
     photoInfoList.innerHTML = itens.map(it =>
       '<li><span class="lbl">' + esc(it.lbl) + '</span><span class="val">' + esc(it.val) + '</span></li>'
@@ -1818,11 +1864,15 @@ function initFormulario(){
     fotoBlob = null; fotoUrl = ''; fotoTipo = ''; fotoTamanhoBytes = 0; fotoGeo = null; fotoInfoSnapshot = null;
     if(photoImg) photoImg.removeAttribute('src');
     if(photoInput) photoInput.value = '';
+    if(photoArquivoInput) photoArquivoInput.value = '';
     if(photoBlock) photoBlock.classList.remove('invalid');
     renderFotoUI();
   }
+  const photoArquivoInput = document.getElementById('foto_arquivo_input');
   document.getElementById('btnTirarFoto')?.addEventListener('click', () => photoInput && photoInput.click());
   document.getElementById('btnTrocarFoto')?.addEventListener('click', () => photoInput && photoInput.click());
+  document.getElementById('btnArquivoFoto')?.addEventListener('click', () => photoArquivoInput && photoArquivoInput.click());
+  document.getElementById('btnTrocarArquivo')?.addEventListener('click', () => photoArquivoInput && photoArquivoInput.click());
   document.getElementById('btnRemoverFoto')?.addEventListener('click', () => {
     resetFoto();
     toast('Foto removida.', 'success');
@@ -1885,6 +1935,58 @@ function initFormulario(){
     });
   }
 
+  /* Lê o GPS e já valida (município e precisão). Devolve { lat, lng, precisao, horario } ou null (com aviso). */
+  async function capturarGeo(setTexto){
+    const geo = await obterLocalizacaoPrecisa({
+      timeoutMs: 10000, alvoPrecisao: 8,
+      onUpdate: (melhor, ms) => {
+        if(!setTexto) return;
+        const restante = Math.max(0, Math.round((10000 - ms) / 1000));
+        setTexto(!melhor || melhor.precisao == null
+          ? 'Localizando… aguardando leitura (' + restante + 's)'
+          : 'Localizando… precisão ' + Math.round(melhor.precisao) + ' m (restam ' + restante + 's)');
+      }
+    });
+    if(!geo){
+      toast('Não foi possível obter a localização. Verifique o GPS e a permissão de localização do navegador.', 'error');
+      return null;
+    }
+    const L = LIMITES_CAREEIRO;
+    if(geo.lat < L.latMin || geo.lat > L.latMax || geo.lng < L.lngMin || geo.lng > L.lngMax){
+      toast('Coordenadas fora dos limites do município do Careiro.', 'error');
+      return null;
+    }
+    if(geo.precisao != null && geo.precisao > PRECISAO_MAX_M){
+      toast('Precisão baixa (±' + Math.round(geo.precisao) + ' m, máximo ' + PRECISAO_MAX_M + ' m). Vá para um local aberto e tente de novo.', 'warning');
+      return null;
+    }
+    return geo;
+  }
+
+  const geoStatusEl = document.getElementById('geoStatus');
+  const btnGeoEl = document.getElementById('btnGeo');
+  function renderGeo(){
+    if(geoStatusEl) geoStatusEl.innerHTML = geoFixo
+      ? '<strong>Definido:</strong> 📍 ' + esc(textoGeo(geoFixo))
+      : '<span style="color:var(--muted)">Ainda não definido.</span>';
+    const tx = document.getElementById('btnGeoTxt');
+    if(tx) tx.textContent = geoFixo ? 'Atualizar georreferenciamento' : 'Capturar georreferenciamento';
+    atualizarPreviewInfo();
+  }
+  btnGeoEl?.addEventListener('click', async () => {
+    btnGeoEl.disabled = true;
+    const tx = document.getElementById('btnGeoTxt');
+    const rotulo = tx ? tx.textContent : '';
+    try {
+      const geo = await capturarGeo(txt => { if(tx) tx.textContent = txt; });
+      if(geo){ geoFixo = geo; toast('Georreferenciamento salvo.', 'success'); }
+    } finally {
+      btnGeoEl.disabled = false;
+      if(tx) tx.textContent = rotulo;
+      renderGeo();
+    }
+  });
+
   async function comprimirImagem(file, maxBytes, geo, info){
     const alvo = maxBytes || (150 * 1024);
     const img = await loadImageFromFile(file);
@@ -1926,30 +2028,19 @@ function initFormulario(){
     return { blob: melhorBlob, tipo: tipoReal, tamanho: melhorBlob.size, width: w, height: h };
   }
 
-  photoInput?.addEventListener('change', async () => {
-    const file = photoInput.files && photoInput.files[0];
+  /* Foto principal: câmera ou arquivo. O GPS não é lido aqui: usa o georreferenciamento salvo no botão. */
+  async function aoEscolherFotoPrincipal(inp){
+    const file = inp.files && inp.files[0];
     if(!file) return;
     if(!/^image\//.test(file.type)){
       toast('Selecione um arquivo de imagem.', 'error');
-      photoInput.value = '';
+      inp.value = '';
       return;
     }
     setFotoLoading(true);
-    setFotoLoadingTexto('Localizando… buscando sinal de GPS');
-    const geo = await obterLocalizacaoPrecisa({
-      timeoutMs: 8000, alvoPrecisao: 8,
-      onUpdate: (melhor, decorridoMs) => {
-        const restante = Math.max(0, Math.round((8000 - decorridoMs) / 1000));
-        if(!melhor || melhor.precisao == null){
-          setFotoLoadingTexto('Localizando… aguardando leitura (' + restante + 's)');
-          return;
-        }
-        const p = Math.round(melhor.precisao);
-        setFotoLoadingTexto('Localizando… precisão ' + p + ' m (restam ' + restante + 's)');
-      }
-    });
     setFotoLoadingTexto('Aplicando informações na imagem…');
     try {
+      const geo = geoFixo;
       const info = coletarInfoFoto();
       const res = await comprimirImagem(file, 150 * 1024, geo, info);
       if(fotoUrl){ try { URL.revokeObjectURL(fotoUrl); } catch(e){} }
@@ -1965,10 +2056,9 @@ function initFormulario(){
       let infoHtml = 'Tamanho final: <strong>' + (res.tamanho / 1024).toFixed(1) + ' KB</strong> · ' +
         res.width + '×' + res.height + ' px · ' + fmtLabel;
       if(geo){
-        infoHtml += '<br>📍 ' + geo.lat.toFixed(6) + ', ' + geo.lng.toFixed(6) +
-          (geo.precisao ? ' <span style="color:var(--muted)">(±' + Math.round(geo.precisao) + ' m)</span>' : '');
+        infoHtml += '<br>📍 ' + esc(textoGeo(geo));
       } else {
-        infoHtml += '<br><span style="color:var(--danger)">Localização não incluída.</span>';
+        infoHtml += '<br><span style="color:var(--muted)">Sem coordenadas: defina o georreferenciamento antes de tirar a foto para gravá-las na imagem.</span>';
       }
       photoInfo.innerHTML = infoHtml;
       renderFotoUI();
@@ -1978,9 +2068,12 @@ function initFormulario(){
       console.error('[foto]', err);
       renderFotoUI();
       toast('Não foi possível processar a imagem.', 'error');
-      photoInput.value = '';
+    } finally {
+      inp.value = '';
     }
-  });
+  }
+  photoInput?.addEventListener('change', () => aoEscolherFotoPrincipal(photoInput));
+  photoArquivoInput?.addEventListener('change', () => aoEscolherFotoPrincipal(photoArquivoInput));
 
   /* ---------- FOTOS ADICIONAIS (opcionais · até 2) ---------- */
   const MAX_FOTOS_EXTRAS = 2;
@@ -1988,6 +2081,8 @@ function initFormulario(){
   const extraInput  = document.getElementById('extra_input');
   const extraGrid   = document.getElementById('extraGrid');
   const btnAddExtra = document.getElementById('btnAddExtra');
+  const extraArquivoInput = document.getElementById('extra_arquivo_input');
+  const btnAddExtraArq = document.getElementById('btnAddExtraArq');
 
   function renderExtras(){
     if(!extraGrid) return;
@@ -2000,6 +2095,7 @@ function initFormulario(){
     ).join('');
     if(btnAddExtra){
       btnAddExtra.style.display = fotosExtras.length >= MAX_FOTOS_EXTRAS ? 'none' : '';
+      if(btnAddExtraArq) btnAddExtraArq.style.display = fotosExtras.length >= MAX_FOTOS_EXTRAS ? 'none' : '';
       btnAddExtra.textContent = fotosExtras.length
         ? '+ Tirar mais uma foto (' + fotosExtras.length + '/' + MAX_FOTOS_EXTRAS + ')'
         : '+ Tirar foto adicional';
@@ -2009,6 +2105,7 @@ function initFormulario(){
     fotosExtras.forEach(f => { try { URL.revokeObjectURL(f.url); } catch(e){} });
     fotosExtras = [];
     if(extraInput) extraInput.value = '';
+    if(extraArquivoInput) extraArquivoInput.value = '';
     renderExtras();
   }
   btnAddExtra?.addEventListener('click', () => {
@@ -2018,6 +2115,13 @@ function initFormulario(){
     }
     extraInput && extraInput.click();
   });
+  btnAddExtraArq?.addEventListener('click', () => {
+    if(fotosExtras.length >= MAX_FOTOS_EXTRAS){
+      toast('Limite de ' + MAX_FOTOS_EXTRAS + ' fotos adicionais.', 'warning');
+      return;
+    }
+    extraArquivoInput && extraArquivoInput.click();
+  });
   extraGrid?.addEventListener('click', (e) => {
     const b = e.target.closest ? e.target.closest('[data-rm-extra]') : null;
     if(!b) return;
@@ -2026,7 +2130,7 @@ function initFormulario(){
     renderExtras();
     toast('Foto adicional removida.', 'success');
   });
-  extraInput?.addEventListener('change', async () => {
+  async function aoEscolherExtra(extraInput){
     const file = extraInput.files && extraInput.files[0];
     if(!file) return;
     if(!/^image\//.test(file.type)){
@@ -2053,7 +2157,9 @@ function initFormulario(){
       if(btnAddExtra){ btnAddExtra.disabled = false; btnAddExtra.textContent = rotulo; }
       renderExtras();
     }
-  });
+  }
+  extraInput?.addEventListener('change', () => aoEscolherExtra(extraInput));
+  extraArquivoInput?.addEventListener('change', () => aoEscolherExtra(extraArquivoInput));
 
   /* ============================================================
      STEPS
@@ -2066,7 +2172,7 @@ function initFormulario(){
     'Titulares',
     'Registro e Cartório',
     'ITBI',
-    'Foto do Imóvel (opcional)'
+    'Georreferenciamento e Foto'
   ];
   let currentStep = 1;
   const completedSteps = new Set();
@@ -2130,7 +2236,7 @@ function initFormulario(){
   /* ---------- PROGRESSO ---------- */
   function getFields(){
     return [...form.querySelectorAll(
-      'input[required]:not([type="checkbox"]):not([type="radio"]):not([readonly]), select[required]'
+      'input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([readonly]), select'
     )].filter(el => !!el.name && !el.disabled);
   }
   function updateProgress(){
@@ -2160,18 +2266,6 @@ function initFormulario(){
     const invalidos = [];
     panel.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
 
-    panel.querySelectorAll('[required]').forEach(el => {
-      if(el.disabled) return;
-      const wrap = el.closest('.field');
-      const val = String(el.value || '').trim();
-      if(!val){
-        if(wrap) wrap.classList.add('invalid');
-        const labelEl = wrap ? wrap.querySelector('label') : null;
-        const labelTxt = labelEl ? labelEl.textContent.trim().replace(/\s*\*$/,'') : el.name;
-        invalidos.push({ el, msg: 'Campo obrigatório: ' + labelTxt });
-      }
-    });
-
     const g = n => { const el = form.querySelector('[name="' + n + '"]'); return el ? el.value : ''; };
     const q = n => form.querySelector('[name="' + n + '"]');
 
@@ -2183,17 +2277,9 @@ function initFormulario(){
       if(quadra && !/^\d{3}$/.test(quadra)) invalidos.push({ el: q('quadra_imovel'), msg: 'Quadra deve ter exatamente 3 dígitos.' });
       if(lote && !/^\d{3}$/.test(lote)) invalidos.push({ el: q('lote_letra'), msg: 'Lote deve ter exatamente 3 dígitos.' });
 
-      const segLote = String(g('segmento_lote') || '').trim();
-      if(g('tipo_segmento_lote') && !segLote) invalidos.push({ el: q('segmento_lote'), msg: 'Informe o segmento do lote para usar a classificação.' });
-
       const tipo = g('tipoImovel');
-      if(!tipo) invalidos.push({ el: q('tipoImovel'), msg: 'Selecione o tipo de imóvel.' });
-      if(tipo === '2' && !g('tpArquitetonico')) invalidos.push({ el: q('tpArquitetonico'), msg: 'Tipo arquitetônico é obrigatório para imóvel predial.' });
-      if(tipo === '2' && !g('anoConstrutivo')) invalidos.push({ el: q('anoConstrutivo'), msg: 'Ano construtivo é obrigatório para imóvel predial.' });
       if(tipo === '1' && g('anoConstrutivo')) invalidos.push({ el: q('anoConstrutivo'), msg: 'Ano construtivo não deve ser informado para territorial.' });
       if(tipo === '1' && g('idParcela')) invalidos.push({ el: q('idParcela'), msg: 'ID da parcela não deve ser informado para territorial.' });
-      if(tipo === '3' && !g('bice')) invalidos.push({ el: q('bice'), msg: 'BICE é obrigatório para bem especial.' });
-      if(tipo && tipo !== '1' && !g('destinacaoImovel')) invalidos.push({ el: q('destinacaoImovel'), msg: 'Destinação é obrigatória, exceto para territorial.' });
     }
     if(stepNum === 2){
       const at = lerAreaTotal(g('areaTotal'));
@@ -2202,40 +2288,21 @@ function initFormulario(){
       if(att !== null && !(att > 0)) invalidos.push({ el: q('areaTerreno'), msg: 'Área total do terreno inválida. Informe um valor maior que zero (ex.: 250,50) ou deixe em branco.' });
     }
     if(stepNum === 3){
-      if(!g('bairro')) invalidos.push({ el: q('bairro'), msg: 'Selecione o bairro.' });
-      if(!g('tipoLogradouro')) invalidos.push({ el: q('tipoLogradouro'), msg: 'Selecione o tipo de logradouro.' });
-      if(!g('nomeLogradouro')) invalidos.push({ el: q('nomeLogradouro'), msg: 'Selecione o nome do logradouro.' });
       const cepVal = (g('cep').replace(/\D/g,'') || CEP_PADRAO);
-      if(!cepVal) invalidos.push({ el: q('cep'), msg: 'Informe o CEP.' });
-      else if(!/^\d{8}$/.test(cepVal)) invalidos.push({ el: q('cep'), msg: 'CEP deve conter 8 dígitos.' });
+      if(!/^\d{8}$/.test(cepVal)) invalidos.push({ el: q('cep'), msg: 'CEP deve conter 8 dígitos.' });
     }
     if(stepNum === 4){
-      const rows = [...document.querySelectorAll('#titulares .list-item')];
-      if(!rows.length){
-        invalidos.push({ el: document.getElementById('titulares'), msg: 'Informe ao menos um titular.' });
-      }
-      const ROTULOS_TITULAR = {
-        percTitular: '% de participação',
-        dtAquisicaoTitular: 'data de aquisição',
-        tipoTitularidade: 'tipo de titularidade',
-        docTitularidade: 'documento de titularidade'
-      };
+      /* Nada é obrigatório: valida só o formato do que foi preenchido */
+      const rows = [...document.querySelectorAll('#titulares .list-item')].filter(r => !titularVazio(r));
       rows.forEach((r, i) => {
         const pref = 'Titular ' + (i+1) + ': ';
-        const niEl  = r.querySelector('[name=niTitular]');
-        const nomeEl = r.querySelector('[name=nomeTitular]');
+        const niEl = r.querySelector('[name=niTitular]');
         const ni = niEl.value.trim();
-        const nome = nomeEl.value.trim();
-
-        if(!ni){
-          invalidos.push({ el: niEl, msg: pref + 'informe o CPF/CNPJ.' });
-        } else if(!validarCPFouCNPJ(ni)){
+        if(ni && !validarCPFouCNPJ(ni)){
           const wrap = niEl.closest('.field');
           if(wrap) wrap.classList.add('invalid');
           invalidos.push({ el: niEl, msg: pref + 'CPF/CNPJ inválido.' });
         }
-        if(!nome) invalidos.push({ el: nomeEl, msg: pref + 'informe o nome.' });
-
         const emailEl = r.querySelector('[name=emailTitular]');
         const email = emailEl ? emailEl.value.trim() : '';
         if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){
@@ -2246,21 +2313,12 @@ function initFormulario(){
         if(telDig && (telDig.length < 10 || telDig.length > 11)){
           invalidos.push({ el: telEl, msg: pref + 'contato deve ter DDD + número (10 ou 11 dígitos).' });
         }
-
-        Object.keys(ROTULOS_TITULAR).forEach(f => {
-          const inp = r.querySelector('[name=' + f + ']');
-          if(inp && !String(inp.value).trim()){
-            invalidos.push({ el: inp, msg: pref + 'informe ' + ROTULOS_TITULAR[f] + '.' });
-          }
-        });
       });
 
-      if(rows.length >= 2){
-        let soma = 0;
-        rows.forEach(r => {
-          const v = r.querySelector('[name=percTitular]').value;
-          soma += parseFloat(String(v).replace(',', '.')) || 0;
-        });
+      // Soma de 100% só é cobrada com 2+ titulares e todos com participação informada
+      const percs = rows.map(r => String(r.querySelector('[name=percTitular]').value).trim());
+      if(rows.length >= 2 && percs.every(v => v !== '')){
+        const soma = percs.reduce((a, v) => a + (parseFloat(v.replace(',', '.')) || 0), 0);
         if(Math.abs(soma - 100) > 0.01){
           invalidos.push({ el: rows[0].querySelector('[name=percTitular]'), msg: 'A soma das participações deve ser 100% (atual: ' + round4(soma) + '%).' });
         }
@@ -2285,14 +2343,14 @@ function initFormulario(){
           invalidos.push({ el: inp, msg: 'Adquirente ' + (i+1) + ': CPF/CNPJ inválido.' });
         }
       });
-
-      const itbiFields = ['baseCalculITBI','valorRefITBI','dtTransacaoITBI','tpTransacaoITBI','percTransacionadoITBI'];
-      const anyItbi = itbiFields.some(k => g(k));
-      if(anyItbi){
-        itbiFields.forEach(k => { if(!g(k)) invalidos.push({ el: q(k), msg: 'ITBI incompleto. Preencha todos os campos de ITBI.' }); });
-      }
     }
     return invalidos;
+  }
+
+  /* Linha de titular sem nenhum dado (a participação 100% automática não conta) */
+  function titularVazio(r){
+    return ['niTitular','nomeTitular','dtAquisicaoTitular','contatoTitular','emailTitular','tipoTitularidade','docTitularidade']
+      .every(n => { const el = r.querySelector('[name=' + n + ']'); return !el || !String(el.value || '').trim(); });
   }
 
   /* ---------- HELPERS DE CONVERSÃO ---------- */
@@ -2360,7 +2418,7 @@ function initFormulario(){
       complEndereco:   up(g('complEndereco'))
     };
 
-    dadosImovel.Titular = [...document.querySelectorAll('#titulares .list-item')].map(r => ({
+    dadosImovel.Titular = [...document.querySelectorAll('#titulares .list-item')].filter(r => !titularVazio(r)).map(r => ({
       niTitular:            onlyDigits(r.querySelector('[name=niTitular]').value),
       nomeTitular:          up(r.querySelector('[name=nomeTitular]').value),
       percTitularidade:     toNum(r.querySelector('[name=percTitular]').value),
@@ -2418,6 +2476,11 @@ function initFormulario(){
         numFrentes: toInt(g('num_frentes')),
         numAndares: toInt(g('num_andares'))
       },
+      /* Georreferenciamento da ficha (botão), independe da foto */
+      georreferenciamento: geoFixo ? {
+        latitude: geoFixo.lat, longitude: geoFixo.lng,
+        precisaoM: geoFixo.precisao, geolocalizacaoHorario: geoFixo.horario
+      } : null,
       /* Só metadados: as imagens vão como arquivos binários (ver enviarFichaViaWorker) */
       foto: fotoBlob ? {
         tipo:                   fotoTipo || null,
@@ -2442,6 +2505,8 @@ function initFormulario(){
     form.reset();
     resetFoto();
     resetExtras();
+    geoFixo = null;
+    renderGeo();
     document.querySelectorAll('.field.invalid,.field.valid').forEach(f => f.classList.remove('invalid','valid'));
     ['titulares','transmitentes','adquirentes'].forEach(k => {
       lists[k].el.innerHTML = '';
@@ -2721,7 +2786,12 @@ function initFormulario(){
       TransmitenteITBI:   Array.isArray(itbi.TransmitenteITBI) ? itbi.TransmitenteITBI : [],
       AdquirenteITBI:     Array.isArray(itbi.AdquirenteITBI) ? itbi.AdquirenteITBI : [],
       temFoto:            !!(ft && (ft.arquivo || ft.base64)),
-      fotoGeo:            (ft && ft.latitude != null && ft.longitude != null) ? ft : null,
+      geo:                (() => {
+        const g = (dc.georreferenciamento && dc.georreferenciamento.latitude != null) ? dc.georreferenciamento
+                : ((ft && ft.latitude != null && ft.longitude != null) ? ft : null);
+        return g ? { lat: Number(g.latitude), lng: Number(g.longitude),
+          precisao: g.precisaoM == null ? null : Number(g.precisaoM), horario: g.geolocalizacaoHorario || null } : null;
+      })(),
       extras:             extras.length
     });
   }
@@ -2878,10 +2948,6 @@ function initFormulario(){
     let h = '<div class="sv-photo' + (extra ? ' extra' : '') + '">' +
       '<div class="sv-title">' + esc(rotulo) + '</div>' +
       '<div class="sv-img">' + (existe ? '<img data-img="' + esc(f.id) + '|' + slot + '" alt="' + esc(rotulo) + '">' : '<span>Nenhuma imagem</span>') + '</div>';
-    if(existe && !extra && f.fotoGeo){
-      h += '<div class="sv-meta">📍 ' + Number(f.fotoGeo.latitude).toFixed(6) + ', ' + Number(f.fotoGeo.longitude).toFixed(6) +
-        (f.fotoGeo.precisaoM ? ' (±' + Math.round(Number(f.fotoGeo.precisaoM)) + ' m)' : '') + '</div>';
-    }
     h += '<div class="photo-actions">';
     if(existe){
       h += '<button type="button" data-foto-act="trocar" data-slot="' + slot + '">Trocar foto</button>' +
@@ -2892,11 +2958,28 @@ function initFormulario(){
     return h + '</div></div>';
   }
 
+  function htmlGeo(f){
+    let corpo;
+    if(f.geo){
+      corpo = linha('Latitude', f.geo.lat.toFixed(6)) + linha('Longitude', f.geo.lng.toFixed(6)) +
+        linhaSe('Precisão', f.geo.precisao ? '± ' + Math.round(f.geo.precisao) + ' m' : '') +
+        linhaSe('Capturado em', f.geo.horario ? fmtDataHora(typeof f.geo.horario === 'number' ? f.geo.horario : f.geo.horario) : '') +
+        '<div style="margin-top:10px"><a href="https://www.google.com/maps?q=' + f.geo.lat + ',' + f.geo.lng + '" target="_blank" rel="noopener" style="color:var(--primary);font-weight:700;font-size:13px;">Abrir no mapa ↗</a></div>';
+    } else {
+      corpo = '<div class="saved-empty" style="margin:0">Georreferenciamento ainda não definido.</div>';
+    }
+    return cartao('Georreferenciamento', corpo +
+      '<div class="photo-actions" style="margin-top:12px"><button type="button" data-geo-act="capturar">📍 ' +
+      (f.geo ? 'Atualizar georreferenciamento' : 'Capturar georreferenciamento') + '</button></div>');
+  }
+
   function htmlDetalhe(f){
     let fotos = blocoFoto(f, 'foto', 'Foto do imóvel', f.temFoto);
     for(let i = 1; i <= f.extras; i++) fotos += blocoFoto(f, 'anexo' + i, 'Foto adicional ' + i, true);
     if(f.extras < 2) fotos += blocoFoto(f, 'anexo' + (f.extras + 1), 'Foto adicional ' + (f.extras + 1), false);
-    fotos += '<p class="hint" style="margin:12px 0 0;font-size:11.5px;color:var(--muted);">Fotos adicionais são excluídas automaticamente 30 dias após o envio.</p>';
+    fotos += '<p class="hint" style="margin:12px 0 0;font-size:11.5px;color:var(--muted);">Ao enviar, escolha entre a câmera e um arquivo do aparelho. ' +
+      (f.geo ? 'A foto principal recebe o georreferenciamento salvo na ficha. ' : 'Sem georreferenciamento salvo, a foto principal fica sem coordenadas. ') +
+      'Fotos adicionais são excluídas automaticamente 30 dias após o envio.</p>';
 
     const loc =
       linha('Inscrição imobiliária', f.inscricaoImobiliaria) +
@@ -2972,7 +3055,7 @@ function initFormulario(){
       linhaSe('Criada em', fmtDataHora(f.criado_em)) +
       linhaSe('Última alteração', fmtDataHora(f.atualizado_em));
 
-    return cartao('Fotos', fotos) + cartao('Localização cadastral', loc) + cartao('Endereço', end) +
+    return htmlGeo(f) + cartao('Fotos', fotos) + cartao('Localização cadastral', loc) + cartao('Endereço', end) +
       cartao('Dados gerais', gerais) + cartao('Área e construção', area) +
       cartao('Titulares', titulares) +
       (registro ? cartao('Registro e cartório', registro) : '') +
@@ -2981,17 +3064,23 @@ function initFormulario(){
 
   /* ---------- ações de foto: trocar / adicionar / excluir ---------- */
   const trocaInput = document.getElementById('foto_troca_input');
+  const trocaArquivoInput = document.getElementById('foto_troca_arquivo');
   let fotoAlvo = null;
 
   sheetBody.addEventListener('click', async e => {
+    const gb = e.target.closest ? e.target.closest('[data-geo-act]') : null;
+    if(gb){ const fg = fichaAtual(); if(fg) await capturarGeoFicha(fg); return; }
     const b = e.target.closest ? e.target.closest('[data-foto-act]') : null;
     if(!b) return;
     const f = fichaAtual(); if(!f) return;
     const slot = b.dataset.slot;
     if(b.dataset.fotoAct === 'trocar'){
       fotoAlvo = { id: f.id, slot: slot };
-      trocaInput.value = '';
-      trocaInput.click();
+      escolherFonteFoto(slot === 'foto' ? 'Foto do imóvel' : 'Foto adicional', fonte => {
+        const inp = fonte === 'camera' ? trocaInput : trocaArquivoInput;
+        inp.value = '';
+        inp.click();
+      });
     } else if(b.dataset.fotoAct === 'remover'){
       await excluirFoto(f, slot);
     }
@@ -3023,33 +3112,53 @@ function initFormulario(){
              numero: f.numeroImovel || '', complemento: f.complNroImovel || '' };
   }
 
-  trocaInput.addEventListener('change', async () => {
-    const file = trocaInput.files && trocaInput.files[0];
+  /* Pergunta de onde vem a imagem. O input.click() acontece dentro do toque no botão (exigência dos navegadores). */
+  function escolherFonteFoto(titulo, aoEscolher){
+    const dlg = document.getElementById('dlgFonte');
+    const cam = document.getElementById('fonteCamera'), arq = document.getElementById('fonteArquivo'), can = document.getElementById('fonteCancelar');
+    document.getElementById('dlgFonteTitulo').textContent = titulo || 'Enviar foto';
+    const fim = () => { dlg.classList.add('hidden'); cam.onclick = arq.onclick = can.onclick = dlg.onclick = null; };
+    cam.onclick = () => { fim(); aoEscolher('camera'); };
+    arq.onclick = () => { fim(); aoEscolher('arquivo'); };
+    can.onclick = () => { fim(); fotoAlvo = null; };
+    dlg.onclick = ev => { if(ev.target === dlg){ fim(); fotoAlvo = null; } };
+    dlg.classList.remove('hidden');
+  }
+
+  /* Georreferenciamento da ficha: botão captura o GPS e salva (independe da foto) */
+  async function capturarGeoFicha(f){
+    mostrarBusy('Localizando… buscando sinal de GPS');
+    try {
+      const geo = await capturarGeo(setBusyTexto);
+      if(!geo) return;
+      setBusyTexto('Salvando georreferenciamento…');
+      await api('PUT', '/fichas/' + encodeURIComponent(f.id) + '/geo', {
+        latitude: geo.lat, longitude: geo.lng, precisaoM: geo.precisao, geolocalizacaoHorario: geo.horario
+      });
+      await atualizarFichaAberta();
+      toast('Georreferenciamento salvo.', 'success');
+    } catch(err){
+      console.error('[geo ficha]', err);
+      toast(err.mensagemUsuario || 'Não foi possível salvar o georreferenciamento.', 'error');
+    } finally { esconderBusy(); }
+  }
+
+  async function aoTrocarFoto(inp){
+    const file = inp.files && inp.files[0];
     const alvo = fotoAlvo;
     if(!file || !alvo) return;
     fotoAlvo = null;
     if(!/^image\//.test(file.type)){
-      toast('Selecione um arquivo de imagem.', 'error'); trocaInput.value = ''; return;
+      toast('Selecione um arquivo de imagem.', 'error'); inp.value = ''; return;
     }
     const f = salvas.find(x => x.id === alvo.id);
     if(!f) return;
     const principal = alvo.slot === 'foto';
-    mostrarBusy(principal ? 'Localizando… buscando sinal de GPS' : 'Processando imagem…');
+    mostrarBusy('Processando imagem…');
     try {
-      let geo = null, info = null;
-      if(principal){
-        geo = await obterLocalizacaoPrecisa({
-          timeoutMs: 8000, alvoPrecisao: 8,
-          onUpdate: (melhor, ms) => {
-            const restante = Math.max(0, Math.round((8000 - ms) / 1000));
-            setBusyTexto(!melhor || melhor.precisao == null
-              ? 'Localizando… aguardando leitura (' + restante + 's)'
-              : 'Localizando… precisão ' + Math.round(melhor.precisao) + ' m (restam ' + restante + 's)');
-          }
-        });
-        setBusyTexto('Aplicando informações na imagem…');
-        info = infoDaFicha(f);
-      }
+      // A foto principal recebe o georreferenciamento SALVO na ficha (não lê o GPS agora)
+      const geo = principal ? f.geo : null;
+      const info = principal ? infoDaFicha(f) : null;
       const res = await comprimirImagem(file, 150 * 1024, geo, info);
       setBusyTexto('Enviando imagem…');
       const fd = new FormData();
@@ -3069,9 +3178,11 @@ function initFormulario(){
       toast(err.mensagemUsuario || 'Não foi possível salvar a foto.', 'error');
     } finally {
       esconderBusy();
-      trocaInput.value = '';
+      inp.value = '';
     }
-  });
+  }
+  trocaInput.addEventListener('change', () => aoTrocarFoto(trocaInput));
+  trocaArquivoInput.addEventListener('change', () => aoTrocarFoto(trocaArquivoInput));
 
   /* ---------- edição ---------- */
   const DG = 'dados_imovel.DadosGeraisImovel.', AC = 'dados_imovel.AreaConstruidaCompl.',
@@ -3109,20 +3220,20 @@ function initFormulario(){
      Um array dentro de "campos" = duas colunas lado a lado. */
   const EDIT_SECOES = [
     { titulo:'Localização cadastral', campos:[
-      { n:'bairro_imovel', l:'Bairro (opcional)', t:'sel', src:'bairro_imovel', up:true },
-      [ { n:'quadra_imovel', l:'Quadra (opcional)', t:'text', dig:3 }, { n:'lote_letra', l:'Lote (opcional)', t:'text', dig:3 } ],
-      [ { n:'segmento_lote', l:'Segmento (opcional)', t:'text', seg:true, up:true }, { n:'tipo_segmento_lote', l:'Classificação', t:'sel', src:'tipo_segmento_lote' } ]
+      { n:'bairro_imovel', l:'Bairro', t:'sel', src:'bairro_imovel', up:true },
+      [ { n:'quadra_imovel', l:'Quadra', t:'text', dig:3 }, { n:'lote_letra', l:'Lote', t:'text', dig:3 } ],
+      [ { n:'segmento_lote', l:'Segmento', t:'text', seg:true, up:true }, { n:'tipo_segmento_lote', l:'Classificação', t:'sel', src:'tipo_segmento_lote' } ]
     ]},
     { titulo:'Endereço', campos:[
-      { n:'tipoLogradouro', l:'Tipo de logradouro', t:'sel', src:'tipoLogradouro', k:'int', req:true },
-      { n:'bairro', l:'Bairro (endereço)', t:'sel', src:'bairro', up:true, req:true },
-      { n:'nomeLogradouro', l:'Nome do logradouro', t:'logra', up:true, req:true },
+      { n:'tipoLogradouro', l:'Tipo de logradouro', t:'sel', src:'tipoLogradouro', k:'int' },
+      { n:'bairro', l:'Bairro (endereço)', t:'sel', src:'bairro', up:true },
+      { n:'nomeLogradouro', l:'Nome do logradouro', t:'logra', up:true },
       [ { n:'numeroImovel', l:'Número', t:'text', up:true, max:8 }, { n:'cep', l:'CEP', t:'text', ro:true, dica:'CEP padrão do município. Não pode ser alterado.' } ],
       [ { n:'complNroImovel', l:'Compl. Nº', t:'text', up:true, max:30 }, { n:'complEndereco', l:'Complemento', t:'text', up:true, max:30 } ],
       { n:'temBairro', l:'Há divisão política (bairro)', t:'bool' }
     ]},
     { titulo:'Dados gerais', campos:[
-      { n:'tipoImovel', l:'Tipo de imóvel', t:'sel', src:'tipoImovel', k:'int', req:true },
+      { n:'tipoImovel', l:'Tipo de imóvel', t:'sel', src:'tipoImovel', k:'int' },
       { n:'tpArquitetonico', l:'Tipo arquitetônico', t:'sel', src:'tpArquitetonico', k:'int' },
       { n:'destinacaoImovel', l:'Destinação', t:'sel', src:'destinacaoImovel', k:'int' },
       [ { n:'padraoConstrutivo', l:'Padrão construtivo', t:'sel', src:'padraoConstrutivo', k:'int' }, { n:'qtdGaragem', l:'Qtd. garagens', t:'number', k:'int' } ],
@@ -3139,6 +3250,7 @@ function initFormulario(){
       [ { n:'areaPrivativa', l:'Área privativa (m²)', t:'number', k:'num' }, { n:'areaComum', l:'Área comum (m²)', t:'number', k:'num' } ],
       { n:'fraIdeal', l:'Fração ideal', t:'number', k:'num' }
     ]},
+    { titulo:'Titulares', lista:'Titular' },
     { titulo:'Registro de imóvel', campos:[
       { n:'nomeServentiaRI', l:'Nome da serventia', t:'text', up:true, max:300 },
       [ { n:'cnsRI', l:'CNS', t:'number', k:'int' }, { n:'cnmRI', l:'CNM', t:'text', dig:16, k:'num' } ],
@@ -3151,15 +3263,17 @@ function initFormulario(){
       [ { n:'cnsNotas', l:'CNS', t:'number', k:'int' }, { n:'lvCartNotas', l:'Livro', t:'text', up:true, max:4 } ],
       { n:'flCartNotas', l:'Folha', t:'text', up:true, max:4 }
     ]},
-    { titulo:'ITBI', nota:'Se preencher um campo do ITBI, preencha todos. Transmitentes e adquirentes não são editáveis aqui.', campos:[
+    { titulo:'ITBI', campos:[
       [ { n:'baseCalculITBI', l:'Base de cálculo', t:'number', k:'num' }, { n:'valorRefITBI', l:'Valor de referência', t:'number', k:'num' } ],
       [ { n:'dtTransacaoITBI', l:'Data da transação', t:'date' }, { n:'percTransacionadoITBI', l:'% transacionado', t:'number', k:'num' } ],
       { n:'tpTransacaoITBI', l:'Tipo da transação', t:'sel', src:'tpTransacaoITBI', k:'int' }
-    ]}
+    ]},
+    { titulo:'Transmitentes (ITBI)', lista:'TransmitenteITBI' },
+    { titulo:'Adquirentes (ITBI)', lista:'AdquirenteITBI' }
   ];
   function todosCampos(){
     const out = [];
-    EDIT_SECOES.forEach(s => s.campos.forEach(c => { (Array.isArray(c) ? c : [c]).forEach(x => out.push(x)); }));
+    EDIT_SECOES.forEach(s => (s.campos || []).forEach(c => { (Array.isArray(c) ? c : [c]).forEach(x => out.push(x)); }));
     return out;
   }
 
@@ -3203,17 +3317,18 @@ function initFormulario(){
         (c.ro ? ' readonly tabindex="-1" aria-readonly="true"' : '') +
         ' autocomplete="off" value="' + esc(valorInicial(c, v)) + '">';
     }
-    return '<div class="field"><label for="' + id + '">' + esc(c.l) + (c.req ? ' <span class="req">*</span>' : '') + '</label>' + ctl +
+    return '<div class="field"><label for="' + id + '">' + esc(c.l) + (c.req ? '' : '') + '</label>' + ctl +
       (c.dica ? '<div class="hint">' + esc(c.dica) + '</div>' : '') + '</div>';
   }
   function htmlEdicao(f){
     const secoes = EDIT_SECOES.map(s => {
+      if(s.lista) return cartao(s.titulo, htmlListaEdicao(s.lista));
       const corpo = s.campos.map(c => Array.isArray(c)
         ? '<div class="row row-2">' + c.map(x => htmlCampo(x, f)).join('') + '</div>'
         : htmlCampo(c, f)).join('');
       return cartao(s.titulo, (s.nota ? '<p class="sub-note">' + esc(s.nota) + '</p>' : '') + corpo);
     }).join('');
-    return '<div class="alert warn show" style="margin:0 0 12px">Titulares não são editáveis por aqui. As fotos são gerenciadas na tela de detalhe (botão voltar).</div>' + secoes;
+    return '<div class="alert warn show" style="margin:0 0 12px">As fotos são gerenciadas na tela de detalhe (botão voltar).</div>' + secoes;
   }
   function ligarEdicao(){
     sheetBody.querySelectorAll('[data-dig]').forEach(el => el.addEventListener('input', () => {
@@ -3226,6 +3341,194 @@ function initFormulario(){
     const bEnd = sheetBody.querySelector('[data-ef="bairro"]');
     const logra = sheetBody.querySelector('[data-ef="nomeLogradouro"]');
     if(bEnd && logra) bEnd.addEventListener('change', () => { logra.innerHTML = opcoesLogra(bEnd.value, ''); });
+    edInicializarListas();
+  }
+
+  /* ============================================================
+     LISTAS_ED EDITÁVEIS: titulares · transmitentes · adquirentes
+     (a rota PUT /fichas/:id/listas substitui a lista inteira)
+     ============================================================ */
+  const soDig  = v => String(v == null ? '' : v).replace(/\D/g, '');
+  const maiusc = v => String(v == null ? '' : v).toUpperCase().trim();
+  const LISTAS_ED = {
+    Titular:          { cont:'edTitulares',     btn:'edAddTit',   tpl: titularTpl, rot:'Titular',      add:'+ Adicionar titular' },
+    TransmitenteITBI: { cont:'edTransmitentes', btn:'edAddTrans', tpl: transTpl,   rot:'Transmitente', add:'+ Adicionar transmitente' },
+    AdquirenteITBI:   { cont:'edAdquirentes',   btn:'edAddAdq',   tpl: adqTpl,     rot:'Adquirente',   add:'+ Adicionar adquirente' }
+  };
+
+  function htmlListaEdicao(chave){
+    const L = LISTAS_ED[chave];
+    return '<div id="' + L.cont + '"></div>' +
+      '<button type="button" class="add-btn" id="' + L.btn + '">' + L.add + '</button>' +
+      (chave === 'Titular' ? '<div class="hint" id="edSoma" style="margin-top:10px;font-weight:700;"></div>' : '');
+  }
+
+  /* Forma canônica de um registro (usada para comparar com o original e para enviar) */
+  function normItem(chave, o){
+    o = o || {};
+    if(chave === 'Titular'){
+      return { niTitular: soDig(o.niTitular), nomeTitular: maiusc(o.nomeTitular), percTitularidade: toNum(o.percTitularidade),
+        dtAquisicaoTitular: toDateOrNull(o.dtAquisicaoTitular ? String(o.dtAquisicaoTitular).slice(0, 10) : ''),
+        contatoTitular: soDig(o.contatoTitular), emailTitular: String(o.emailTitular || '').trim().toLowerCase(),
+        tipoTitularidade: toInt(o.tipoTitularidade), docTitularidade: toInt(o.docTitularidade) };
+    }
+    if(chave === 'TransmitenteITBI'){
+      return { nomeTransmitenteITBI: maiusc(o.nomeTransmitenteITBI), idTransmitenteITBI: soDig(o.idTransmitenteITBI) };
+    }
+    return { nomeAdquirenteITBI: maiusc(o.nomeAdquirenteITBI), idAdquirenteITBI: soDig(o.idAdquirenteITBI),
+      percTransacAdquirenteITBI: toNum(o.percTransacAdquirenteITBI) };
+  }
+  function itemVazio(chave, x){
+    if(chave === 'Titular') return !x.niTitular && !x.nomeTitular && !x.dtAquisicaoTitular && !x.contatoTitular && !x.emailTitular && x.tipoTitularidade === null && x.docTitularidade === null;
+    if(chave === 'TransmitenteITBI') return !x.nomeTransmitenteITBI && !x.idTransmitenteITBI;
+    return !x.nomeAdquirenteITBI && !x.idAdquirenteITBI && x.percTransacAdquirenteITBI === null;
+  }
+  const NOMES_LINHA = {
+    Titular: { niTitular:'niTitular', nomeTitular:'nomeTitular', percTitularidade:'percTitular', dtAquisicaoTitular:'dtAquisicaoTitular',
+      contatoTitular:'contatoTitular', emailTitular:'emailTitular', tipoTitularidade:'tipoTitularidade', docTitularidade:'docTitularidade' },
+    TransmitenteITBI: { nomeTransmitenteITBI:'nomeTransmitenteITBI', idTransmitenteITBI:'idTransmitenteITBI' },
+    AdquirenteITBI: { nomeAdquirenteITBI:'nomeAdquirenteITBI', idAdquirenteITBI:'idAdquirenteITBI', percTransacAdquirenteITBI:'percTransacAdquirenteITBI' }
+  };
+
+  function mascaraTel(inp){
+    inp.addEventListener('input', () => {
+      const d = inp.value.replace(/\D/g, '').slice(0, 11);
+      let o = d;
+      if(d.length > 10)     o = '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+      else if(d.length > 6) o = '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6);
+      else if(d.length > 2) o = '(' + d.slice(0,2) + ') ' + d.slice(2);
+      else if(d.length)     o = '(' + d;
+      inp.value = o;
+    });
+  }
+
+  function edAddLinha(chave, valores){
+    const L = LISTAS_ED[chave];
+    const cont = document.getElementById(L.cont);
+    if(!cont) return;
+    const div = document.createElement('div');
+    div.innerHTML = L.tpl();
+    const node = div.firstElementChild;
+    node.insertAdjacentHTML('afterbegin', '<div class="sv-title ed-num"></div>');
+    node.querySelector('.rm').onclick = () => { node.remove(); edAtualizarLista(chave, true); };
+    node.querySelectorAll('[data-mask="cpfcnpj"]').forEach(setupCpfCnpjInput);
+    node.querySelectorAll('[data-mask="telefone"]').forEach(mascaraTel);
+    if(valores){
+      const o = normItem(chave, valores);
+      const mapa = NOMES_LINHA[chave];
+      Object.keys(mapa).forEach(k => {
+        const el = node.querySelector('[name="' + mapa[k] + '"]');
+        if(!el || o[k] === null || o[k] === undefined || o[k] === '') return;
+        el.value = String(o[k]);
+      });
+      node.querySelectorAll('[data-mask="cpfcnpj"]').forEach(el => { el.value = formatCpfCnpj(el.value); });
+      const tel = node.querySelector('[name="contatoTitular"]');
+      if(tel) tel.value = fmtTel(tel.value);
+    }
+    cont.appendChild(node);
+  }
+
+  /* Numeração, botão remover (o último titular não pode sair) e % de participação */
+  function edAtualizarLista(chave, redistribuir){
+    const L = LISTAS_ED[chave];
+    const cont = document.getElementById(L.cont);
+    if(!cont) return;
+    const linhas = [...cont.querySelectorAll('.list-item')];
+    linhas.forEach((n, i) => {
+      const num = n.querySelector('.ed-num'); if(num) num.textContent = L.rot + ' ' + (i + 1);
+      const rm = n.querySelector('.rm');
+      if(rm) rm.style.display = '';
+    });
+    if(chave !== 'Titular') return;
+    const percs = linhas.map(n => n.querySelector('[name="percTitular"]'));
+    if(linhas.length === 1){
+      if(redistribuir) percs[0].value = '100';   // ao abrir não mexe: ficha antiga incompleta não deve virar "alterada"
+      percs[0].readOnly = (percs[0].value === '100');
+    } else {
+      percs.forEach(p => { p.readOnly = false; });
+      if(redistribuir){
+        const base = round4(100 / linhas.length);
+        percs.forEach((p, i) => { p.value = i === percs.length - 1 ? round4(100 - base * (percs.length - 1)) : base; });
+      }
+    }
+    edAtualizarSoma();
+  }
+  function edAtualizarSoma(){
+    const el = document.getElementById('edSoma'); if(!el) return;
+    const soma = [...document.querySelectorAll('#edTitulares [name="percTitular"]')]
+      .reduce((a, i) => a + (parseFloat(String(i.value).replace(',', '.')) || 0), 0);
+    el.textContent = 'Soma das participações: ' + round4(soma) + '%' + (Math.abs(soma - 100) > 0.01 ? ' (deve ser 100%)' : '');
+    el.style.color = Math.abs(soma - 100) > 0.01 ? 'var(--danger)' : 'var(--muted)';
+  }
+
+  function edInicializarListas(){
+    const f = fichaAtual(); if(!f) return;
+    Object.keys(LISTAS_ED).forEach(chave => {
+      const L = LISTAS_ED[chave];
+      let itens = (f[chave] || []).map(x => ({ x: x, n: normItem(chave, x) })).filter(p => !itemVazio(chave, p.n)).map(p => p.x);
+      if(chave === 'Titular' && !itens.length) itens = [null];
+      itens.forEach(x => edAddLinha(chave, x));
+      edAtualizarLista(chave, false);
+      const btn = document.getElementById(L.btn);
+      if(btn) btn.onclick = () => { edAddLinha(chave, null); edAtualizarLista(chave, true); };
+    });
+    const ct = document.getElementById('edTitulares');
+    if(ct) ct.addEventListener('input', e => { if(e.target && e.target.name === 'percTitular') edAtualizarSoma(); });
+  }
+
+  /* Lê as linhas da tela já na forma canônica */
+  function edColetarListas(){
+    const out = {};
+    Object.keys(LISTAS_ED).forEach(chave => {
+      const cont = document.getElementById(LISTAS_ED[chave].cont);
+      const mapa = NOMES_LINHA[chave];
+      out[chave] = [...(cont ? cont.querySelectorAll('.list-item') : [])].map(n => {
+        const bruto = {};
+        Object.keys(mapa).forEach(k => { const el = n.querySelector('[name="' + mapa[k] + '"]'); bruto[k] = el ? el.value : ''; });
+        return { no: n, v: normItem(chave, bruto) };
+      });
+    });
+    return out;
+  }
+  /* Quais listas diferem do que está salvo */
+  function edListasAlteradas(f, coletadas){
+    return Object.keys(LISTAS_ED).filter(chave => {
+      const atual = coletadas[chave].map(p => p.v).filter(v => !itemVazio(chave, v));
+      const orig = (f[chave] || []).map(x => normItem(chave, x)).filter(v => !itemVazio(chave, v));
+      return JSON.stringify(atual) !== JSON.stringify(orig);
+    });
+  }
+  /* Nada é obrigatório: valida só o formato do que foi preenchido */
+  function edValidarListas(chaves, coletadas){
+    const falha = (no, nome, msg) => ({ el: no ? no.querySelector('[name="' + nome + '"]') : null, msg: msg });
+    for(const chave of chaves){
+      const linhas = coletadas[chave].filter(p => !itemVazio(chave, p.v));
+      const L = LISTAS_ED[chave];
+      if(chave === 'Titular'){
+        for(let i = 0; i < linhas.length; i++){
+          const { no, v } = linhas[i];
+          const p = 'Titular ' + (i + 1) + ': ';
+          if(v.niTitular && !validarCPFouCNPJ(v.niTitular)) return falha(no, 'niTitular', p + 'CPF/CNPJ inválido.');
+          if(v.percTitularidade !== null && (v.percTitularidade < 0 || v.percTitularidade > 100)) return falha(no, 'percTitular', p + 'participação deve estar entre 0 e 100%.');
+          if(v.emailTitular && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.emailTitular)) return falha(no, 'emailTitular', p + 'e-mail inválido.');
+          if(v.contatoTitular && (v.contatoTitular.length < 10 || v.contatoTitular.length > 11)) return falha(no, 'contatoTitular', p + 'contato deve ter DDD + número (10 ou 11 dígitos).');
+        }
+        if(linhas.length >= 2 && linhas.every(p => p.v.percTitularidade !== null)){
+          const soma = linhas.reduce((a, p) => a + p.v.percTitularidade, 0);
+          if(Math.abs(soma - 100) > 0.01) return falha(linhas[0].no, 'percTitular', 'A soma das participações deve ser 100% (atual: ' + round4(soma) + '%).');
+        }
+      } else {
+        const kId = chave === 'TransmitenteITBI' ? 'idTransmitenteITBI' : 'idAdquirenteITBI';
+        for(let i = 0; i < linhas.length; i++){
+          const { no, v } = linhas[i];
+          if(v[kId] && !validarCPFouCNPJ(v[kId])) return falha(no, kId, L.rot + ' ' + (i + 1) + ': CPF/CNPJ inválido.');
+          if(chave === 'AdquirenteITBI' && v.percTransacAdquirenteITBI !== null && (v.percTransacAdquirenteITBI < 0 || v.percTransacAdquirenteITBI > 100)){
+            return falha(no, 'percTransacAdquirenteITBI', 'Adquirente ' + (i + 1) + ': % adquirido deve estar entre 0 e 100.');
+          }
+        }
+      }
+    }
+    return null;
   }
 
   function lerCampo(c){
@@ -3264,33 +3567,19 @@ function initFormulario(){
     if(v.quadra_imovel && !/^\d{3}$/.test(v.quadra_imovel)) return e('quadra_imovel', 'Quadra deve ter exatamente 3 dígitos.');
     if(v.lote_letra && !/^\d{3}$/.test(v.lote_letra)) return e('lote_letra', 'Lote deve ter exatamente 3 dígitos.');
     if(v.segmento_lote && !/^[A-Z0-9]{1,4}$/.test(v.segmento_lote)) return e('segmento_lote', 'Segmento: use até 4 letras ou números.');
-    if(v.tipo_segmento_lote && !v.segmento_lote) return e('segmento_lote', 'Informe o segmento do lote para usar a classificação.');
-    if(v.tipoLogradouro == null) return e('tipoLogradouro', 'Selecione o tipo de logradouro.');
-    if(!v.bairro) return e('bairro', 'Selecione o bairro do endereço.');
-    if(!v.nomeLogradouro) return e('nomeLogradouro', 'Selecione o nome do logradouro.');
     if(!/^\d{8}$/.test(v.cep || '')) return e('cep', 'CEP deve conter 8 dígitos.');
     const tipo = v.tipoImovel == null ? '' : String(v.tipoImovel);
-    if(!tipo) return e('tipoImovel', 'Selecione o tipo de imóvel.');
-    if(tipo === '2' && v.tpArquitetonico == null) return e('tpArquitetonico', 'Tipo arquitetônico é obrigatório para imóvel predial.');
-    if(tipo === '2' && v.anoConstrutivo == null) return e('anoConstrutivo', 'Ano construtivo é obrigatório para imóvel predial.');
     if(tipo === '1' && v.anoConstrutivo != null) return e('anoConstrutivo', 'Ano construtivo não deve ser informado para territorial.');
     if(tipo === '1' && v.idParcela) return e('idParcela', 'ID da parcela não deve ser informado para territorial.');
-    if(tipo === '3' && v.bice == null) return e('bice', 'BICE é obrigatório para bem especial.');
-    if(tipo !== '1' && v.destinacaoImovel == null) return e('destinacaoImovel', 'Destinação é obrigatória, exceto para territorial.');
     if(v.areaTotal != null && !(v.areaTotal > 0)) return e('areaTotal', 'Informe uma área total construída válida (maior que zero).');
     if(v.areaTerreno != null && !(v.areaTerreno > 0)) return e('areaTerreno', 'Informe uma área do terreno válida (maior que zero).');
     if(v.cnmRI != null && !/^\d{15,16}$/.test(String(v.cnmRI))) return e('cnmRI', 'CNM deve ter 15 ou 16 dígitos.');
-    const itbi = ['baseCalculITBI', 'valorRefITBI', 'dtTransacaoITBI', 'tpTransacaoITBI', 'percTransacionadoITBI'];
-    if(itbi.some(k => v[k] != null && v[k] !== '')){
-      const falta = itbi.find(k => v[k] == null || v[k] === '');
-      if(falta) return e(falta, 'ITBI incompleto. Preencha todos os campos de ITBI.');
-    }
     return null;
   }
 
   async function sairEdicao(){
     const f = fichaAtual();
-    if(f && coletarEdicao(f).alterados.length){
+    if(f && (coletarEdicao(f).alterados.length || edListasAlteradas(f, edColetarListas()).length)){
       const ok = await confirmar({ titulo:'Descartar alterações?', msg:'Você alterou campos que ainda não foram salvos.', ok:'Descartar' });
       if(!ok) return;
     }
@@ -3311,7 +3600,18 @@ function initFormulario(){
       }
       return;
     }
-    if(!alterados.length){ toast('Nenhuma alteração para salvar.', 'warning'); return; }
+    const coletadas = edColetarListas();
+    const listasAlt = edListasAlteradas(f, coletadas);
+    if(!alterados.length && !listasAlt.length){ toast('Nenhuma alteração para salvar.', 'warning'); return; }
+    const erroLista = edValidarListas(listasAlt, coletadas);
+    if(erroLista){
+      toast(erroLista.msg, 'error');
+      if(erroLista.el){
+        try { erroLista.el.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(e){}
+        setTimeout(() => { try { erroLista.el.focus({ preventScroll:true }); } catch(e){} }, 320);
+      }
+      return;
+    }
 
     const updates = {};
     alterados.forEach(c => { [].concat(CAMINHOS[c.n]).forEach(p => { updates[p] = novos[c.n]; }); });
@@ -3329,7 +3629,14 @@ function initFormulario(){
     const rotulo = btn.textContent;
     btn.textContent = 'Salvando…';
     try {
-      await api('PATCH', '/fichas/' + encodeURIComponent(f.id), { updates: updates });
+      if(Object.keys(updates).length){
+        await api('PATCH', '/fichas/' + encodeURIComponent(f.id), { updates: updates });
+      }
+      if(listasAlt.length){
+        const corpo = {};
+        listasAlt.forEach(chave => { corpo[chave] = coletadas[chave].map(p => p.v).filter(v => !itemVazio(chave, v)); });
+        await api('PUT', '/fichas/' + encodeURIComponent(f.id) + '/listas', corpo);
+      }
       modoSheet = 'ver';
       await atualizarFichaAberta();
       toast('Ficha atualizada.', 'success');
@@ -3354,7 +3661,7 @@ function initFormulario(){
   renderFotoUI();
   renderExtras();
   atualizarTitularesUI();
-  atualizarPreviewInfo();
+  renderGeo();
 
 })();
 }
